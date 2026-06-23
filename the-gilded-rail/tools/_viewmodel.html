@@ -1,0 +1,53 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>viewmodel</title>
+<style>html,body{margin:0;background:#8a8f96}</style>
+<script type="importmap">
+{"imports":{
+  "three":"/node_modules/three/build/three.module.js",
+  "three/addons/":"/node_modules/three/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* render a single GLB on a neutral lit stage and hand back a PNG dataURL, so a model
+   can be inspected without the game's dark room / async init getting in the way.
+   __view(url, {yaw, az, el}) - az/el orbit angles (radians), yaw spins the model. */
+window.__view = (url, opt) => new Promise((resolve, reject) => {
+  opt = opt || {};
+  const W = 760, H = 600;
+  const renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+  renderer.setSize(W, H); renderer.outputEncoding = THREE.sRGBEncoding;
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8a8f96);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x404048, 1.1));
+  const key = new THREE.DirectionalLight(0xffffff, 1.4); key.position.set(2,3,2); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(-2,1,-1); scene.add(fill);
+  const cam = new THREE.PerspectiveCamera(40, W/H, 0.01, 100);
+
+  new GLTFLoader().load(url, (g) => {
+    const root = g.scene || g.scenes[0];
+    if (opt.yaw) root.rotation.y = opt.yaw;
+    scene.add(root);
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(root);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const ctr = new THREE.Vector3(); box.getCenter(ctr);
+    const r = Math.max(size.x, size.y, size.z) * 0.5 || 1;
+    const dist = r / Math.tan(Math.PI/180 * 20) * 1.3;
+    const az = opt.az ?? 0.7, el = opt.el ?? 0.35;
+    cam.position.set(
+      ctr.x + Math.cos(az)*Math.cos(el)*dist,
+      ctr.y + Math.sin(el)*dist,
+      ctr.z + Math.sin(az)*Math.cos(el)*dist);
+    cam.lookAt(ctr);
+    /* a ground plane just under the model so "sits on the floor" reads clearly */
+    const gp = new THREE.Mesh(new THREE.PlaneGeometry(r*8, r*8),
+      new THREE.MeshStandardMaterial({ color:0x6b7077 }));
+    gp.rotation.x = -Math.PI/2; gp.position.y = box.min.y; scene.add(gp);
+    renderer.render(scene, cam);
+    resolve(renderer.domElement.toDataURL('image/png'));
+  }, undefined, (e) => reject('load: ' + (e && e.message || e)));
+});
+window.__ready = true;
+</script></head><body></body></html>

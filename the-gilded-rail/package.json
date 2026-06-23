@@ -1,0 +1,17 @@
+{
+  "name": "the-gilded-rail",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A 1920s-styled browser 3D 8-ball pool game built on Three.js.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node tools/build-single-file.mjs",
+    "test": "node tools/smoke-test.cjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.61.0",
+    "three": "0.128.0",
+    "vite": "^8.0.16"
+  }
+}

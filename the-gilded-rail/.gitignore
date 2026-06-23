@@ -1,0 +1,19 @@
+node_modules/
+dist/
+dist-vite/
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# Dev-only capture / inspection artifacts (regenerated on demand by tools/*.mjs)
+tools/_shot_*.png
+tools/_view_*.png
+
+# Heavy source assets: raw inputs already processed into public/assets.
+# Kept locally, not shipped to the repo or the deploy.
+3D assets/
+pool game assets/
+Pool-game sounds/
+pool game sounds/
+images/

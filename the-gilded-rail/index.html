@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- Content Security Policy: only our own origin plus the Three.js CDN and Google Fonts
+     may load. Blocks third-party script/connect injection, framing, and base-tag hijack. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>The Gilded Rail - 8-Ball Billiards</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/ui/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/ui/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Albert+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+<canvas id="gl" aria-label="3D pool table - drag to aim, hold to charge a shot" role="img"></canvas>
+<!-- flashlight beam framing (secret unlock): a soft radial vignette over the 3D view -->
+<div id="flashlight-overlay" aria-hidden="true"></div>
+
+<!-- gentle, non-blocking suggestion to rotate on portrait phones (game still works behind it) -->
+<div id="rotate-hint" role="status" aria-live="polite"><span class="rh-ico">▭</span><span>Rotate your device for the best view</span></div>
+
+<!-- ===================== HUD ===================== -->
+<button id="ui-restore" title="Show interface (H)" aria-label="Show interface">◫</button>
+<div id="hud">
+  <div id="scoreboard">
+    <div class="pstrip" id="pc0"><span class="turn-dot"></span><span class="p-av" id="p0av"><span class="p-av-ini">G</span></span><span class="pname-s" id="p0name">GUEST</span><span class="mini-balls" id="p0balls"></span></div>
+    <div id="vs-sep">vs</div>
+    <div class="pstrip" id="pc1"><span class="mini-balls" id="p1balls"></span><span class="pname-s" id="p1name">HOUSE</span><span class="p-av" id="p1av"><span class="p-av-ini">H</span></span><span class="turn-dot"></span></div>
+  </div>
+
+  <div id="match-strip" class="panel"></div>
+
+  <div id="banner" class="panel"><div class="big" id="banner-big"></div><div class="sub" id="banner-sub"></div></div>
+
+  <div id="profile" class="panel">
+    <div id="lvl-ring">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="19" fill="none" stroke="rgba(201,163,92,.18)" stroke-width="3"/>
+        <circle id="lvl-arc" cx="22" cy="22" r="19" fill="none" stroke="#e8c987" stroke-width="3"
+          stroke-linecap="round" stroke-dasharray="119.4" stroke-dashoffset="119.4"/>
+      </svg>
+      <div id="lvl-num">1</div>
+    </div>
+    <div>
+      <div class="pname" id="hud-pname">Guest</div>
+      <div class="pxp" id="hud-pxp">0 XP</div>
+    </div>
+  </div>
+  <!-- in-match actions: a single trigger that drops down the full set (same on mobile) -->
+  <div id="top-actions" class="ta-closed">
+    <button class="icon-btn" id="ta-toggle" data-tip="Menu &amp; options" aria-label="Open quick menu" aria-haspopup="true" aria-expanded="false" aria-controls="ta-menu">≡</button>
+    <div id="ta-menu" role="menu" aria-label="Quick menu">
+      <button class="ta-item" id="btn-menu" role="menuitem"><span class="ta-ic">⌂</span><span class="ta-lbl">Main Menu</span></button>
+      <button class="ta-item" id="btn-settings" role="menuitem"><span class="ta-ic">⚙</span><span class="ta-lbl">Settings</span></button>
+      <button class="ta-item" id="btn-custom2" role="menuitem"><span class="ta-ic">✦</span><span class="ta-lbl">Customize</span></button>
+      <button class="ta-item" id="btn-fullscreen" role="menuitem"><span class="ta-ic">⛶</span><span class="ta-lbl">Fullscreen</span></button>
+      <button class="ta-item" id="btn-uitoggle" role="menuitem"><span class="ta-ic">◫</span><span class="ta-lbl">Hide Interface</span></button>
+    </div>
+  </div>
+
+  <div id="mode-controls">
+    <button class="mode-ic" id="btn-orbit" data-tip="Walk &amp; Orbit (Tab)" aria-label="Walk and orbit">⟲</button>
+    <button class="mode-ic" id="btn-shoot" data-tip="Shoot Mode (Tab)" aria-label="Shoot mode">◉</button>
+    <button class="mode-ic" id="btn-fine" data-tip="Fine-Tune Aim (E)" aria-label="Fine-tune aim">✛</button>
+  </div>
+
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <div id="stick" role="application" aria-label="Move joystick - walk around the room"><div id="stick-knob"></div></div>
+
+  <div id="bih-notice" class="panel">Ball in hand - click the felt to place the cue ball</div>
+
+  <div id="call-pockets"></div>
+
+  <div id="spin-wrap" class="panel">
+    <div class="title">Cue-Ball Spin</div>
+    <div id="spin-ball" role="slider" aria-label="Cue-ball contact point (spin / english)" tabindex="0">
+      <div class="axis h"></div><div class="axis v"></div>
+      <div id="spin-dot"></div>
+    </div>
+    <div id="spin-readout">center strike</div>
+    <button id="spin-reset">Reset</button>
+  </div>
+
+  <div id="power-wrap">
+    <div id="pbar-row">
+      <div id="pbar"><div id="pbar-fill"></div><div id="pbar-marks"></div></div>
+      <span id="power-pct">0%</span>
+    </div>
+    <div id="power-label">Hold Space · Release to strike</div>
+    <button class="btn primary" id="charge-btn">Hold to Charge</button>
+  </div>
+</div>
+
+<!-- ===================== MENU (Bento) ===================== -->
+<div class="overlay" id="menu-overlay">
+  <div id="bento">
+    <!-- top-right: profile (name / stats / picture) + settings -->
+    <div class="bento-top">
+      <button class="bento-ic" id="btn-settings3" data-tip="Settings" aria-label="Settings">⚙</button>
+      <button class="bento-ic bento-avatar" id="btn-profile" data-tip="Profile" aria-label="Profile, change name and picture">
+        <span class="avatar-img" id="menu-avatar"></span>
+        <span class="avatar-fallback" id="menu-avatar-initials">G</span>
+      </button>
+    </div>
+    <header class="bento-head">
+      <div class="deco-eyebrow">EST. 2026 · MEMBERS ONLY</div>
+      <div class="brand-lockup">
+        <img class="brand-mark" src="/assets/ui/logo-mark.png" alt="" aria-hidden="true">
+        <h1 class="title-main">The <em>Gilded</em> Rail</h1>
+      </div>
+      <div class="title-sub">Regulation Billiards · Real Physics · One Table</div>
+    </header>
+
+    <!-- Bento grid (matches the reference layout): a hero Career block on the left
+         spanning the full height, a 2x2 cluster of feature tiles, and a full-width
+         bar across the bottom. Tiles carry artwork via the --art-* vars on #bento. -->
+    <div class="b-grid">
+      <!-- Career: the BIGGEST block (tall, left) -->
+      <button class="b-tile b-career" id="btn-campaign">
+        <div class="b-art art-career" aria-hidden="true"></div><div class="b-shade"></div>
+        <div class="b-label">
+          <span class="b-k">Career</span>
+          <span class="b-t">The Career Ladder</span>
+          <span class="b-s">Five leagues · climb to House Champion</span>
+        </div>
+      </button>
+
+      <!-- Quick Match: opens the setup overlay -->
+      <button class="b-tile b-quick" id="btn-quick">
+        <div class="b-art art-quick" aria-hidden="true"></div><div class="b-shade"></div>
+        <div class="b-label">
+          <span class="b-k">Play Now</span>
+          <span class="b-t">Quick Match</span>
+          <span class="b-s">Pick a game and break</span>
+        </div>
+      </button>
+
+      <!-- Online: disabled (in development) -->
+      <button class="b-tile b-locked b-online" id="btn-online" disabled aria-disabled="true">
+        <div class="b-art art-online" aria-hidden="true"></div><div class="b-shade"></div>
+        <div class="b-label">
+          <span class="b-k">Versus</span>
+          <span class="b-t">Online Multiplayer</span>
+          <span class="b-s">Private rooms &amp; ranked play</span>
+        </div>
+        <span class="soon-pill b-pill">In Development</span>
+      </button>
+
+      <!-- Challenges -->
+      <button class="b-tile b-chal" id="btn-challenges">
+        <div class="b-art art-chal" aria-hidden="true"></div><div class="b-shade"></div>
+        <div class="b-label">
+          <span class="b-k">Daily &amp; Weekly</span>
+          <span class="b-t">Challenges</span>
+          <span class="b-s">Objectives &amp; achievements</span>
+        </div>
+      </button>
+
+      <!-- Trick Shots -->
+      <button class="b-tile b-trick" id="btn-trickshots">
+        <div class="b-art art-trick" aria-hidden="true"></div><div class="b-shade"></div>
+        <div class="b-label"><span class="b-k">Practice</span><span class="b-t">Trick Shots</span></div>
+      </button>
+
+      <!-- Customize: full-width bottom bar -->
+      <button class="b-tile b-wide b-custom" id="btn-custom">
+        <div class="b-art art-custom" aria-hidden="true"></div><div class="b-shade"></div>
+        <div class="b-label"><span class="b-t">Customize Your Table</span>
+          <span class="b-s">Unlock &amp; equip cloth colours, cue woods and rail finishes as you level up.</span></div>
+      </button>
+    </div>
+
+    <footer class="bento-foot">
+      <span>Playing as <b id="menu-pname">Guest</b></span>
+      <nav class="bento-links">
+        <button class="linklike" id="btn-howto">How to Play</button>
+        <button class="linklike" id="btn-rules">House Rules</button>
+      </nav>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== QUICK MATCH (setup overlay) ===================== -->
+<div class="overlay hidden" id="quick-overlay">
+  <div id="quick-card" class="panel">
+    <button class="modal-close" id="quick-close" aria-label="Close">✕</button>
+    <div class="deco-eyebrow">PLAY NOW</div>
+    <h2 class="quick-title">Quick Match</h2>
+
+    <span class="q-lbl">Choose your game</span>
+    <div class="gt-grid" id="type-row">
+      <button class="gt-card sel" data-t="8ball">
+        <div class="gt-art gt-8ball" aria-hidden="true"></div><div class="gt-shade"></div>
+        <div class="gt-cap"><span class="gt-name">8-Ball</span><span class="gt-sub">Solids vs stripes</span></div>
+      </button>
+      <button class="gt-card" data-t="blackball">
+        <div class="gt-art gt-english" aria-hidden="true"></div><div class="gt-shade"></div>
+        <div class="gt-cap"><span class="gt-name">English</span><span class="gt-sub">Reds vs yellows</span></div>
+      </button>
+      <button class="gt-card" data-t="9ball">
+        <div class="gt-art gt-9ball" aria-hidden="true"></div><div class="gt-shade"></div>
+        <div class="gt-cap"><span class="gt-name">9-Ball</span><span class="gt-sub">Lowest ball first</span></div>
+      </button>
+      <button class="gt-card" data-t="practice">
+        <div class="gt-art gt-practice" aria-hidden="true"></div><div class="gt-shade"></div>
+        <div class="gt-cap"><span class="gt-name">Practice</span><span class="gt-sub">Free play, no rules</span></div>
+      </button>
+    </div>
+
+    <div class="q-section" id="mode-group"><span class="q-lbl">Players</span>
+      <div class="chip-row" id="mode-row">
+        <button class="chip sel" data-m="cpu">vs CPU</button>
+        <button class="chip" data-m="local">2 Players</button>
+      </div>
+    </div>
+    <div class="q-section" id="diff-group"><span class="q-lbl">Difficulty</span>
+      <div class="chip-row" id="diff-row">
+        <button class="chip" data-d="0">Regular</button>
+        <button class="chip sel" data-d="1">Hustler</button>
+        <button class="chip" data-d="2">Shark</button>
+      </div>
+    </div>
+    <button class="btn primary" id="btn-newgame">Start Match</button>
+  </div>
+</div>
+
+<!-- ===================== TUTORIAL ===================== -->
+<div class="overlay hidden" id="tutorial-overlay">
+  <div id="tutorial-card" class="panel">
+    <div class="deco-eyebrow">HOW TO PLAY</div>
+    <div id="tut-title"></div>
+    <div id="tut-body"></div>
+    <div id="tut-dots"></div>
+    <div class="tut-actions">
+      <button class="linklike" id="tut-skip">Skip</button>
+      <button class="btn primary" id="tut-next">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+<div class="overlay hidden" id="modal-overlay">
+  <div class="modal-card panel" id="modal-card">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="gameover-overlay">
+  <div id="gameover-card" class="panel">
+    <div class="deco-eyebrow" id="go-eyebrow">FRAME COMPLETE</div>
+    <div id="go-title">Victory</div>
+    <div id="go-sub"></div>
+    <div id="go-stats"></div>
+    <div class="goldline"></div>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:26px">
+      <button class="btn primary" id="go-rematch">Rematch</button>
+      <button class="btn ghost" id="go-menu">Back to Club</button>
+    </div>
+  </div>
+</div>
+
+<!-- Three.js (global UMD build). The engine below is plain global-scope script,
+     loaded in numeric order - each file depends on symbols from earlier ones. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- post-processing passes (r128 examples) for the depth-of-field + bloom effects.
+     VENDORED LOCALLY (served from our own origin) so the DoF/bloom never depend on a
+     third-party CDN being reachable - the copies live in vendor/ (from the three npm dep). -->
+<script src="vendor/CopyShader.js"></script>
+<script src="vendor/BokehShader.js"></script>
+<script src="vendor/EffectComposer.js"></script>
+<script src="vendor/RenderPass.js"></script>
+<script src="vendor/ShaderPass.js"></script>
+<script src="vendor/MaskPass.js"></script>
+<script src="vendor/BokehPass.js"></script>
+<!-- bloom for the lamps + glowing highlights -->
+<script src="vendor/LuminosityHighPassShader.js"></script>
+<script src="vendor/UnrealBloomPass.js"></script>
+<!-- glTF loader for the external 3D props (red cup, ashtray, beer glass, bottles, Jack Daniels) -->
+<script src="vendor/GLTFLoader.js"></script>
+
+<!-- Point the soundtrack at the bundled asset. _song() fetches & decodes it
+     into WebAudio. (A data: URL also works here, which is how the single-file
+     build inlines it - see tools/build-single-file.mjs.) -->
+<script>window.__SONG = "public/assets/audio/soundtrack.mp3";</script>
+<!-- One-shot, non-impact audio (UI clicks, victory crowd, fail sting, distant
+     thunder). Decoded once into WebAudio buffers; inlined as data: URLs by the build. -->
+<script>window.__AUDIO = {
+  ui:      ["public/assets/audio/ui-click.wav"],
+  cheer:   ["public/assets/audio/victory-cheer.mp3"],
+  fail:    ["public/assets/audio/fail.mp3"],
+  thunder: ["public/assets/audio/thunder-distant.mp3"]
+};</script>
+<!-- Real recorded SFX (sourced from the supplied "Pool-game sounds"). The engine
+     round-robins + pitch/level-scales them by impact. Paths are inlined as data:
+     URLs by the single-file build. -->
+<!-- External 3D prop models (converted to self-contained GLBs). The single-file
+     build copies these into dist/assets/models/ and rewrites the paths. -->
+<script>window.__MODELS = {
+  ashtray:     "public/assets/models/ashtray.glb",
+  redcup:      "public/assets/models/redcup.glb",
+  bottles:     "public/assets/models/bottles.glb",
+  jackdaniels: "public/assets/models/jackdaniels.glb",
+  stool:       "public/assets/models/stool.glb",
+  chalk:       "public/assets/models/chalk.glb",
+  dartcab:     "public/assets/models/dartcab.glb"
+};</script>
+<script>window.__SFX = {
+  clack:  ["public/assets/audio/sfx/ball-1.wav","public/assets/audio/sfx/ball-2.mp3","public/assets/audio/sfx/ball-3.mp3","public/assets/audio/sfx/ball-4.mp3","public/assets/audio/sfx/ball-hard.wav"],
+  cushion:["public/assets/audio/sfx/rail-1.wav"],
+  pocket: ["public/assets/audio/sfx/pocket-1.mp3","public/assets/audio/sfx/pocket-2.mp3"],
+  cue:    ["public/assets/audio/sfx/cue-1.wav","public/assets/audio/sfx/cue-2.wav"]
+};</script>
+
+
+  <script src="src/engine/00-storage.js"></script>
+  <script src="src/engine/01-config.js"></script>
+  <script src="src/engine/02-profile.js"></script>
+  <script src="src/engine/03-audio.js"></script>
+  <script src="src/engine/04-scene-materials.js"></script>
+  <script src="src/engine/04b-models.js"></script>
+  <script src="src/engine/05-table.js"></script>
+  <script src="src/engine/06-balls.js"></script>
+  <script src="src/engine/07-decor-smoke.js"></script>
+  <script src="src/engine/08-decor-cigarette.js"></script>
+  <script src="src/engine/09-decor-ball-return.js"></script>
+  <script src="src/engine/10-decor-furniture.js"></script>
+  <script src="src/engine/11-decor-lounge.js"></script>
+  <script src="src/engine/12-decor-bar.js"></script>
+  <script src="src/engine/13-flicker.js"></script>
+  <script src="src/engine/14-unlocks.js"></script>
+  <script src="src/engine/15-physics.js"></script>
+  <script src="src/engine/16-cue-stick.js"></script>
+  <script src="src/engine/17-aim-guide.js"></script>
+  <script src="src/engine/18-game-rules.js"></script>
+  <script src="src/engine/19-ai-opponent.js"></script>
+  <script src="src/engine/19a-campaign.js"></script>
+  <script src="src/engine/19b-progression.js"></script>
+  <script src="src/engine/20-input-camera.js"></script>
+  <script src="src/engine/21-ui.js"></script>
+  <script src="src/engine/21b-postfx.js"></script>
+  <script src="src/engine/22-loop.js"></script>
+  <script src="src/engine/23-init.js"></script>
+</body>
+</html>

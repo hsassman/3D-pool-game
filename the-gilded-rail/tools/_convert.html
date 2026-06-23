@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>convert</title>
+<script type="importmap">
+{"imports":{
+  "three":"/node_modules/three/build/three.module.js",
+  "three/addons/":"/node_modules/three/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader }  from 'three/addons/loaders/GLTFLoader.js';
+import { FBXLoader }   from 'three/addons/loaders/FBXLoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+/* load a source model (gltf or fbx) and re-export it as a self-contained binary GLB.
+   Returns base64 of the GLB so the node driver can write the file. */
+/* shrink oversized textures (these are small background props) so the inlined
+   build stays lean - cap the longest side at 512px */
+function downscaleTextures(root, max) {
+  const seen = new Set();
+  root.traverse(o => {
+    if (!o.material) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach(m => ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap'].forEach(k => {
+      const tex = m[k]; if (!tex || !tex.image || seen.has(tex)) return; seen.add(tex);
+      const img = tex.image, w = img.width || img.videoWidth, h = img.height || img.videoHeight;
+      if (!w || !h || Math.max(w, h) <= max) return;
+      const s = max / Math.max(w, h), cw = Math.max(1, Math.round(w*s)), ch = Math.max(1, Math.round(h*s));
+      const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+      cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
+      tex.image = cv; tex.needsUpdate = true;
+    }));
+  });
+}
+
+window.__convert = (url, kind) => new Promise((resolve, reject) => {
+  const done = (root) => {
+    try {
+      downscaleTextures(root, 512);
+      const exporter = new GLTFExporter();
+      exporter.parse(root, (glb) => {
+        const bytes = new Uint8Array(glb);
+        let bin = ''; const CH = 0x8000;
+        for (let i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+        resolve(btoa(bin));
+      }, { binary: true, embedImages: true });
+    } catch (e) { reject(e.message || String(e)); }
+  };
+  if (kind === 'fbx') {
+    new FBXLoader().load(url, (g) => done(g), undefined, (e) => reject('fbx load: ' + (e && e.message || e)));
+  } else {
+    new GLTFLoader().load(url, (g) => done(g.scene), undefined, (e) => reject('gltf load: ' + (e && e.message || e)));
+  }
+});
+window.__ready = true;
+</script></head><body>converter</body></html>
