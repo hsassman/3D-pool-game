@@ -21,10 +21,18 @@ const Input = {
   bihGhost:null, bihValid:false, _mx:0, _my:0,
 
   init(){
-    /* the room comes alive on the first touch - browser autoplay rules need a gesture */
+    /* the room comes alive on the first gesture - browser autoplay rules need one.
+       We bind several gesture types (mobile Safari unlocks on touchend/click as well
+       as pointerdown) and keep nudging resume() on every gesture until the audio
+       context is actually 'running', so audio reliably starts on all mobile browsers. */
+    const gestures=['pointerdown','touchend','click','keydown'];
     const wake=()=>{ Sfx.ensure(); Sfx.startAtmosphere(); };
-    addEventListener('pointerdown', wake, {once:true});
-    addEventListener('keydown', wake, {once:true});
+    gestures.forEach(ev=>addEventListener(ev, wake, {once:true}));
+    const resumeAudio=()=>{
+      try{ if(Sfx.ctx && Sfx.ctx.state!=='running') Sfx.ctx.resume(); }catch(_){}
+      if(Sfx.ctx && Sfx.ctx.state==='running') gestures.forEach(ev=>removeEventListener(ev, resumeAudio));
+    };
+    gestures.forEach(ev=>addEventListener(ev, resumeAudio));
     addEventListener('keydown', e=>{
       if(e.repeat) return;
       this.keys[e.code]=true;
@@ -120,12 +128,18 @@ const Input = {
       stick.addEventListener('pointerup', release); stick.addEventListener('pointercancel', release);
     }
 
-    /* touch / mouse charge button */
+    /* touch / mouse charge button.
+       We CAPTURE the pointer on press so the button keeps receiving events even if
+       the finger drifts off it (common in landscape, where a small slip used to fire
+       pointerleave and silently cancel the shot). Release on up OR cancel; we no
+       longer release on pointerleave, which was the landscape "charge does nothing" bug. */
     const cb=document.getElementById('charge-btn');
-    const dn=e=>{ e.preventDefault(); if(Game.phase==='AIM') this.beginCharge(); };
+    const dn=e=>{ e.preventDefault(); try{ cb.setPointerCapture(e.pointerId); }catch(_){}
+      if(Game.phase==='AIM') this.beginCharge(); };
     const up=e=>{ e.preventDefault(); if(this.charging) this.releaseCharge(); };
-    cb.addEventListener('pointerdown', dn); cb.addEventListener('pointerup', up);
-    cb.addEventListener('pointerleave', up);
+    cb.addEventListener('pointerdown', dn);
+    cb.addEventListener('pointerup', up);
+    cb.addEventListener('pointercancel', up);
   },
 
   toggleOrbitShoot(){

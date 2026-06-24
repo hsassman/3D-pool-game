@@ -721,6 +721,76 @@ body.touch .ta-item{min-height:var(--tap)}
   font-size:12px;letter-spacing:.08em;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.6)}
 #rotate-hint .rh-ico{font-size:18px;animation:rh-turn 2.4s ease-in-out infinite}
 @keyframes rh-turn{0%,60%{transform:rotate(0)}80%{transform:rotate(-90deg)}100%{transform:rotate(-90deg)}}
-@media (orientation:portrait){
-  body.touch #rotate-hint{display:flex}
+/* shown briefly on startup / when turned to portrait, then auto-dismissed by JS
+   (UI.rotateHint). The .show class is what reveals it - no permanent portrait nag. */
+#rotate-hint.show{display:flex}
+#rotate-hint{transition:opacity .4s ease;opacity:1}
+#rotate-hint.fading{opacity:0}
+
+/* ============================================================
+   MOBILE-ONLY REFINEMENTS (2026-06) - touch phones, both orientations.
+   Everything here is gated on body.touch + a phone-sized media query, so the
+   DESKTOP layout is never affected. Landscape phones are WIDE (width>760) but
+   SHORT (height<520), hence the dual media query on the in-game controls.
+   ============================================================ */
+
+/* ---- in-game controls: phones in EITHER orientation ---- */
+@media (max-width:760px), (max-height:520px){
+  /* (1) the three mode buttons sit in the very bottom-left corner, in a row */
+  body.touch #mode-controls{flex-direction:row;gap:9px;
+    left:max(12px,var(--safe-l));bottom:max(12px,var(--safe-b))}
+  /* the walk thumbstick moves up to sit just ABOVE that corner cluster */
+  body.touch #stick{left:max(14px,var(--safe-l));
+    bottom:max(78px,calc(var(--safe-b) + 68px))}
+
+  /* (2) the charge control becomes a compact round icon button; the
+     "Hold Space / Release" helper text is dropped on touch. The power meter
+     stays anchored to the bottom-RIGHT corner. */
+  body.touch #power-label{display:none}
+  body.touch #charge-btn{width:62px;height:62px;min-height:62px;min-width:62px;
+    padding:0;border-radius:50%;font-size:0;letter-spacing:0;
+    box-shadow:0 6px 22px rgba(201,163,92,.45)}
+  body.touch #charge-btn .cb-txt{display:none}
+  body.touch #charge-btn::before{content:'⚡';font-size:27px;line-height:1;color:#15110a}
+  body.touch #charge-btn:active{filter:brightness(1.12)}
+}
+
+/* slightly smaller charge icon + tighter corner on short landscape phones */
+@media (max-height:520px){
+  body.touch #charge-btn{width:54px;height:54px;min-height:54px;min-width:54px}
+  body.touch #charge-btn::before{font-size:24px}
+  body.touch #stick{bottom:max(62px,calc(var(--safe-b) + 54px));width:88px;height:88px}
+  /* drop the spin pad down to the bottom row, just LEFT of the meter, so it clears
+     the level ring + burger menu in the top-right corner (Fine-aim mode) */
+  body.touch #spin-wrap{bottom:max(10px,var(--safe-b));
+    right:max(86px,calc(var(--safe-r) + 74px));
+    transform:scale(.82);transform-origin:bottom right}
+}
+
+/* ---- top HUD bar: fit the scoreboard + drop level/menu clear of it (portrait) ---- */
+@media (max-width:760px){
+  /* compact the Guest/House strip + its potted-ball pips so the row fits */
+  #scoreboard{top:max(8px,var(--safe-t));gap:6px;
+    transform:translateX(-50%) scale(.8);transform-origin:top center}
+  #scoreboard .pname-s{font-size:11px;letter-spacing:.1em}
+  #scoreboard .mini-balls{gap:3px}
+  /* push the level ring + burger menu down a row so they never overlap the strip */
+  #profile{top:max(58px,calc(var(--safe-t) + 50px));right:max(8px,var(--safe-r));
+    transform:scale(.82);transform-origin:top right}
+  #top-actions{top:max(110px,calc(var(--safe-t) + 102px))}
+  /* drop the message banner below the (now lower) level ring + burger so they
+     never sit on top of each other */
+  #banner{top:max(168px,calc(var(--safe-t) + 160px))}
+
+  /* rotate hint: centre it (clear of the whole top bar) - JS reveals it briefly
+     on startup / on turning to portrait, then auto-dismisses it */
+  #rotate-hint{top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px}
+}
+
+/* ---- main menu (Bento): keep the settings/profile icons off the logo ---- */
+@media (max-width:760px), (max-height:520px){
+  .bento-top{top:10px;right:12px;gap:8px}
+  .bento-ic{width:40px;height:40px;font-size:16px}
+  /* pad the header so the eyebrow + wordmark always sit BELOW the icon row */
+  .bento-head{padding-top:54px}
 }

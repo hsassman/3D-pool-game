@@ -770,15 +770,39 @@ const UI = {
     this.$('btn-settings').addEventListener('click',()=>this.settingsModal());
     this.$('btn-custom').addEventListener('click',()=>this.customizeModal());
     this.$('btn-custom2').addEventListener('click',()=>this.customizeModal());
+    /* fullscreen: works across browsers via vendor prefixes (Android Chrome/Firefox,
+       desktop). iOS Safari has no element-fullscreen API, so the button just no-ops
+       there - everything else still runs. */
+    const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement;
+    const fsEnter=()=>{ const el=document.documentElement;
+      (el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen||function(){}).call(el); };
+    const fsExit=()=>{ (document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen||function(){}).call(document); };
     this.$('btn-fullscreen').addEventListener('click',()=>{
-      if(document.fullscreenElement){ document.exitFullscreen&&document.exitFullscreen(); }
-      else if(document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen(); }
+      if(fsEl()) fsExit(); else fsEnter();
       Sfx.play('ui');
     });
-    document.addEventListener('fullscreenchange',()=>{
+    const onFsChange=()=>{
       const fsb=this.$('btn-fullscreen'); if(!fsb) return;
-      fsb.title = document.fullscreenElement ? 'Exit fullscreen (Esc)' : 'Fullscreen';
-    });
+      fsb.title = fsEl() ? 'Exit fullscreen (Esc)' : 'Fullscreen';
+      const lbl=fsb.querySelector('.ta-lbl'); if(lbl) lbl.textContent = fsEl() ? 'Exit Fullscreen' : 'Fullscreen';
+    };
+    ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
+      .forEach(ev=>document.addEventListener(ev,onFsChange));
+
+    /* portrait "rotate your device" hint: a brief, self-dismissing nudge rather than a
+       permanent banner. Shows for ~5s on startup (and again whenever the phone is
+       turned back to portrait), then fades out on its own. Touch portrait only. */
+    const rh=this.$('rotate-hint'); let rhFade=null, rhGone=null;
+    const showRotate=()=>{
+      if(!rh || !document.body.classList.contains('touch')) return;
+      if(!(typeof matchMedia!=='undefined' && matchMedia('(orientation:portrait)').matches)) return;
+      clearTimeout(rhFade); clearTimeout(rhGone);
+      rh.classList.remove('fading'); rh.classList.add('show');
+      rhFade=setTimeout(()=>{ rh.classList.add('fading');
+        rhGone=setTimeout(()=>rh.classList.remove('show','fading'), 450); }, 5000);
+    };
+    showRotate();
+    addEventListener('orientationchange',()=>setTimeout(showRotate,300));
     const toggleUI=()=>{ document.body.classList.toggle('ui-hidden'); Sfx.play('ui'); };
     this.$('btn-uitoggle').addEventListener('click',toggleUI);
     this.$('ui-restore').addEventListener('click',toggleUI);

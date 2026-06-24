@@ -21,6 +21,11 @@ const Sfx = {
           const g=this.ctx.createGain(); g.gain.value=Profile.data.vol[b];
           g.connect(this.master); this.bus[b]=g;
         });
+        /* iOS/Safari unlock: play a 1-frame silent buffer inside the user gesture.
+           resume() alone often isn't enough on mobile Safari - this kick-starts the
+           output so music + SFX actually play in the browser. */
+        try{ const b=this.ctx.createBuffer(1,1,22050), s=this.ctx.createBufferSource();
+             s.buffer=b; s.connect(this.ctx.destination); s.start(0); }catch(e){}
       }catch(e){}
     }
     if(this.ctx && this.ctx.state==='suspended') this.ctx.resume();
