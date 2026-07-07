@@ -188,6 +188,11 @@ body.charging #status.show{transform:translate(-50%,0)}
   box-shadow:0 6px 20px rgba(0,0,0,.6)}
 #top-actions [data-tip]:hover::after,#top-actions [data-tip]:focus-visible::after{
   bottom:auto;left:auto;top:50%;right:calc(100% + 8px);transform:translateY(-50%)}
+/* the menu's top-right icons (settings gear, profile avatar) sit against the panel's
+   clipped top edge - an above-the-icon hint gets cut off. Drop it BELOW the icon and
+   hug the right edge so it can never spill off-screen either. */
+.bento-top [data-tip]:hover::after,.bento-top [data-tip]:focus-visible::after{
+  bottom:auto;top:calc(100% + 8px);left:auto;right:0;transform:none}
 @media (pointer:coarse){[data-tip]:hover::after{display:none}}
 
 /* mode buttons - compact icon row, bottom-left (small, doesn't block the view) */

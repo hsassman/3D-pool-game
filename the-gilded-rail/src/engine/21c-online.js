@@ -346,6 +346,30 @@ const Net = {
     }
   };
 
+  /* the profile card is where players expect account things - offer the same
+     sign-in (or account management) there, not just behind the Multiplayer tile */
+  const _profileModal=UI.profileModal.bind(UI);
+  UI.profileModal=function(){
+    _profileModal();
+    if(typeof Account==='undefined' || !Account.available()) return;
+    const mc=this.$('modal-content'), saveBtn=this.$('prof-save');
+    if(!mc) return;
+    const wrap=document.createElement('div');
+    if(Account.signedIn()){
+      wrap.innerHTML='<h3>Account</h3>'+
+        '<div class="acct-row"><span class="acct-k">Signed in as</span><b></b></div>'+
+        '<button class="qual-btn" id="prof-acct" style="width:100%">Manage account · 2FA · cloud save</button>';
+      wrap.querySelector('.acct-row b').textContent=(Account.user&&Account.user.email)||'';
+    } else {
+      wrap.innerHTML='<h3>Account</h3>'+
+        '<p class="acct-fine">Playing as a guest - progress lives only on this device. '+
+        'Sign in to keep it <b>permanently</b> (across devices) and to play online multiplayer.</p>'+
+        '<button class="btn primary" id="prof-acct" style="width:100%">Sign In / Create Account</button>';
+    }
+    if(saveBtn) mc.insertBefore(wrap, saveBtn); else mc.appendChild(wrap);
+    wrap.querySelector('#prof-acct').addEventListener('click',()=>AccountUI.accountModal());
+  };
+
   const _tryPlaceBIH=Input.tryPlaceBIH.bind(Input);
   Input.tryPlaceBIH=function(e){
     if(Game.mode==='online' && Net.seat===1 && Game.phase==='BIH'){
