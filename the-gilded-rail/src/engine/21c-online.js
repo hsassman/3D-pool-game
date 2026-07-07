@@ -17,6 +17,11 @@
 
 /* strip anything that could smuggle markup through a remote player's name */
 function grCleanName(n){ return String(n||'').replace(/[<>&"'`]/g,'').slice(0,18) || 'Player'; }
+/* chat text: drop control characters, clamp length (rendered via textContent only) */
+function grCleanChat(t){
+  return String(t||'').split('').filter(c=>{ const k=c.charCodeAt(0); return k>31 && k!==127; })
+    .join('').trim().slice(0,120);
+}
 
 const Net = {
   channel:null, code:null, seat:-1,           // seat 0 = host, 1 = guest
@@ -58,6 +63,7 @@ const Net = {
     ch.on('broadcast', {event:'sync'},  ({payload})=>this._onSync(payload));
     ch.on('broadcast', {event:'over'},  ({payload})=>this._onOver(payload));
     ch.on('broadcast', {event:'ready'}, ()=>this._onReady());
+    ch.on('broadcast', {event:'chat'},  ({payload})=>ChatUI.recv(payload));
     ch.on('broadcast', {event:'bye'},   ()=>this._onPeerLeft(true));
     return new Promise(resolve=>{
       ch.subscribe(async status=>{
@@ -97,6 +103,17 @@ const Net = {
     try{ if(this.channel) this.channel.send({type:'broadcast', event, payload}); }catch(e){}
   },
 
+  /* live chat: plain text only (rendered via textContent), clamped, flood-guarded */
+  sendChat(text){
+    text=grCleanChat(text);
+    if(!text || !this.active) return;
+    const now=Date.now();
+    if(this._lastChat && now-this._lastChat<400) return;
+    this._lastChat=now;
+    this.send('chat', { t:text });
+    ChatUI.push(this.names[this.seat]||'You', text, true);   // self isn't echoed back
+  },
+
   leave(quiet){
     if(this.channel){
       if(!quiet) this.send('bye',{});
@@ -105,6 +122,7 @@ const Net = {
     clearInterval(this._stream); this._stream=null;
     this.channel=null; this.code=null; this.seat=-1; this.active=false; this.peerHere=false;
     if(Game.mode==='online') Game.mode='cpu';
+    if(typeof ChatUI!=='undefined') ChatUI.setOn(false);
   },
 
   _onPeerLeft(said){
@@ -132,6 +150,7 @@ const Net = {
   },
   _begin(breaker){
     this.active=true;
+    if(typeof ChatUI!=='undefined') ChatUI.setOn(true);
     document.getElementById('menu-overlay').classList.add('hidden');
     document.getElementById('quick-overlay').classList.add('hidden');
     document.getElementById('modal-overlay').classList.add('hidden');
@@ -687,6 +706,7 @@ const LobbyUI = {
     const acct=this.$('btn-account');
     if(acct) acct.addEventListener('click',()=>{ Sfx.play('ui'); AccountUI.accountModal(); });
     AccountUI.refreshBadge();
+    ChatUI.ensure();
 
     /* leaving an online match must be deliberate: intercept menu/quit paths first */
     document.addEventListener('click',e=>{
@@ -699,6 +719,8 @@ const LobbyUI = {
     }, true);
     addEventListener('keydown',e=>{
       if(e.code==='Escape' && Net.active && Game.phase!=='MENU'){
+        /* an open chat box swallows the first Esc */
+        if(typeof ChatUI!=='undefined' && ChatUI.isOpen()){ ChatUI.close(); e.stopPropagation(); return; }
         const mo=document.getElementById('modal-overlay');
         if(mo && !mo.classList.contains('hidden')){ mo.classList.add('hidden'); e.stopPropagation(); return; }
         e.stopPropagation();
@@ -724,5 +746,83 @@ const LobbyUI = {
     }, true);
     /* if the tab dies mid-match, tell the other side */
     addEventListener('pagehide',()=>{ if(Net.channel) Net.send('bye',{}); });
+  }
+};
+
+/* ================= LIVE MATCH CHAT =================
+   A quiet feed on the left edge during online matches. Messages travel over
+   the same private room channel as the game itself (only the two seated
+   players can send or see them), render via textContent only, and fade away
+   a few seconds after arriving. The feed ignores the pointer entirely, so it
+   can never block aiming; the input opens with Enter (desktop) or the little
+   bubble button (touch). */
+const ChatUI = {
+  feed:null, bar:null, inp:null, btn:null,
+
+  ensure(){
+    if(this.feed) return;
+    const feed=document.createElement('div');
+    feed.id='chat-feed'; feed.setAttribute('aria-live','polite');
+    const bar=document.createElement('div');
+    bar.id='chat-bar';
+    bar.innerHTML='<button id="chat-btn" data-tip="Chat (Enter)" aria-label="Open chat">💬</button>'+
+      '<input id="chat-in" maxlength="120" placeholder="Message… (Enter to send)" autocomplete="off" spellcheck="false">';
+    document.body.appendChild(feed);
+    document.body.appendChild(bar);
+    this.feed=feed; this.bar=bar;
+    this.btn=bar.querySelector('#chat-btn');
+    this.inp=bar.querySelector('#chat-in');
+    this.btn.addEventListener('click',()=>this.toggle());
+    /* typing must never reach the game's hotkeys (Space charges, Tab flips view…) */
+    this.inp.addEventListener('keydown',e=>{
+      e.stopPropagation();
+      if(e.key==='Enter'){ Net.sendChat(this.inp.value); this.inp.value=''; this.close(); }
+      else if(e.key==='Escape'){ this.inp.value=''; this.close(); }
+    });
+    this.inp.addEventListener('keyup',e=>e.stopPropagation());
+    /* Enter opens the box mid-match (unless a modal or another input has focus) */
+    addEventListener('keydown',e=>{
+      if(e.key!=='Enter' || !Net.active || this.isOpen()) return;
+      const ae=document.activeElement;
+      if(ae && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')) return;
+      const mo=document.getElementById('modal-overlay');
+      if(mo && !mo.classList.contains('hidden')) return;
+      const go=document.getElementById('gameover-overlay');
+      if(go && !go.classList.contains('hidden')) return;
+      this.open();
+    });
+  },
+
+  setOn(on){
+    this.ensure();
+    document.body.classList.toggle('chat-on', !!on);
+    if(!on){ this.close(); this.feed.innerHTML=''; }
+  },
+  isOpen(){ return !!(this.inp && this.inp.classList.contains('open')); },
+  open(){ this.ensure(); this.inp.classList.add('open'); this.inp.focus(); },
+  close(){ if(!this.inp) return; this.inp.classList.remove('open'); this.inp.blur(); },
+  toggle(){ this.isOpen() ? this.close() : this.open(); },
+
+  recv(p){
+    if(!Net.active || !p) return;
+    const t=grCleanChat(p.t);
+    if(!t) return;
+    this.push(Net.names[1-Net.seat]||'Opponent', t, false);
+    Sfx.play('ui',0.25);
+  },
+
+  /* one message: slides in, sits ~6.5s, fades out, removes itself */
+  push(name, text, mine){
+    this.ensure();
+    const d=document.createElement('div');
+    d.className='chat-msg'+(mine?' mine':'');
+    const n=document.createElement('span'); n.className='cm-n'; n.textContent=name;
+    const t=document.createElement('span'); t.textContent=text;
+    d.appendChild(n); d.appendChild(t);
+    this.feed.appendChild(d);
+    while(this.feed.children.length>6) this.feed.firstChild.remove();
+    setTimeout(()=>d.classList.add('in'), 20);
+    setTimeout(()=>d.classList.add('fading'), 6500);
+    setTimeout(()=>d.remove(), 7500);
   }
 };

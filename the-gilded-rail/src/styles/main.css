@@ -834,3 +834,38 @@ body.touch .ta-item{min-height:var(--tap)}
 .acct-dot.on{background:#3ecf8e;box-shadow:0 0 9px rgba(62,207,142,.75)}
 .acct-state{color:rgba(239,231,214,.45)}
 .acct-state.on{color:#6fc7b4}
+
+/* ---- online match chat: a quiet feed on the LEFT edge that fades away ----
+   pointer-events:none on the feed - it can never block aiming or buttons.
+   Sits above the mode buttons (desktop) / joystick (touch); capped height so
+   it can't climb into the scoreboard. Newest message at the bottom. */
+#chat-feed{position:fixed;left:max(14px,var(--safe-l));bottom:110px;width:min(280px,44vw);
+  max-height:34vh;overflow:hidden;display:none;flex-direction:column;justify-content:flex-end;
+  gap:6px;pointer-events:none;z-index:26}
+body.chat-on #chat-feed{display:flex}
+.chat-msg{background:rgba(13,14,18,.78);border:1px solid rgba(201,163,92,.28);border-radius:9px;
+  padding:7px 10px;font-size:12.5px;line-height:1.45;color:var(--cream);
+  overflow-wrap:break-word;opacity:0;transform:translateX(-8px);
+  transition:opacity .25s ease, transform .25s ease;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+.chat-msg.in{opacity:1;transform:none}
+.chat-msg.fading{opacity:0;transition:opacity .9s ease}
+.chat-msg .cm-n{color:var(--gold-bright,#e8c987);font-weight:600;margin-right:6px}
+.chat-msg.mine .cm-n{color:#6fc7b4}
+#chat-bar{position:fixed;left:max(14px,var(--safe-l));bottom:64px;display:none;
+  align-items:center;gap:8px;z-index:26}
+body.chat-on #chat-bar{display:flex}
+#chat-btn{width:34px;height:34px;border-radius:9px;background:var(--panel);border:var(--hairline);
+  color:var(--cream);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#chat-btn:hover{background:rgba(201,163,92,.16)}
+#chat-in{width:198px;padding:8px 11px;background:rgba(13,14,18,.92);border:1px solid rgba(201,163,92,.4);
+  border-radius:9px;color:var(--cream);font-size:13px;outline:none;display:none;font-family:inherit}
+#chat-in.open{display:block}
+#chat-in:focus{border-color:var(--gold-bright,#e8c987)}
+body.ui-hidden #chat-feed,body.ui-hidden #chat-bar{display:none!important}
+/* touch: clear the joystick + stacked mode buttons (tablets sit them higher) */
+body.touch #chat-bar{bottom:258px}
+body.touch #chat-feed{bottom:302px}
+@media (max-width:760px), (max-height:520px){
+  body.touch #chat-bar{bottom:200px}
+  body.touch #chat-feed{bottom:244px;width:min(240px,52vw)}
+}
