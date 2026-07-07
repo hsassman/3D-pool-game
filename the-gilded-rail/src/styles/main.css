@@ -293,8 +293,10 @@ body.charging #status.show{transform:translate(-50%,0)}
   font-size:18px;color:var(--cream);background:var(--panel);border:var(--hairline);
   box-shadow:0 6px 18px rgba(0,0,0,.5);transition:all .15s}
 .bento-ic:hover{background:rgba(201,163,92,.18);border-color:var(--gold-bright);transform:translateY(-1px)}
-.bento-avatar{position:relative;overflow:hidden;padding:0;border-color:rgba(201,163,92,.55)}
-.bento-avatar .avatar-img{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat}
+/* clip the PICTURE (not the button) into the circle, so the account status lamp
+   can sit on the rim without getting cut off */
+.bento-avatar{position:relative;padding:0;border-color:rgba(201,163,92,.55)}
+.bento-avatar .avatar-img{position:absolute;inset:0;border-radius:50%;background-size:cover;background-position:center;background-repeat:no-repeat}
 .bento-avatar .avatar-fallback{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--gold-bright)}
 .bento-avatar.has-pic{border-color:var(--gold-bright)}
 
