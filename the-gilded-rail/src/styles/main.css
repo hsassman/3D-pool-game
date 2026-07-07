@@ -869,3 +869,58 @@ body.touch #chat-feed{bottom:302px}
   body.touch #chat-bar{bottom:200px}
   body.touch #chat-feed{bottom:244px;width:min(240px,52vw)}
 }
+
+/* ============================================================
+   MOBILE MENU FIT + MODAL POLISH (phones)
+   ============================================================ */
+/* dynamic-viewport heights: vh ignores the mobile URL bar, so the menu and
+   modals were losing their bottom edge under the browser chrome. dvh doesn't. */
+#bento{max-height:calc(100dvh - 10px);overscroll-behavior:contain}
+.modal-card{max-height:calc(100dvh - 16px);overscroll-behavior:contain}
+/* inputs at 16px+ so iOS Safari stops auto-zooming the whole page on focus */
+@media (pointer:coarse){
+  .acct-in,#chat-in,.prof-name-in{font-size:16px}
+  #code-in{font-size:16px!important}
+}
+/* portrait phones: tighter menu so everything fits on screen */
+@media (max-width:760px){
+  #bento{padding:12px 12px 10px;gap:9px}
+  .bento-head .brand-mark{height:34px}
+  .bento-head .title-main{font-size:clamp(24px,7.4vw,32px)}
+  .bento-head .deco-eyebrow{font-size:8px;margin-bottom:3px}
+  .bento-head .title-sub{font-size:8px;letter-spacing:.26em;margin-top:4px}
+  .b-grid{gap:8px}
+  .b-career{min-height:118px}
+  .b-career .b-t{font-size:21px}
+  .b-tile{border-radius:13px}
+  .b-tile .b-label{padding:10px 12px}
+  .b-career .b-label{padding:12px 14px}
+  .b-t{font-size:16px}
+  .b-k{font-size:8px}
+  .b-s{font-size:10px;line-height:1.35}
+  .b-wide{min-height:64px}
+  .b-pill{top:8px;right:8px;font-size:7.5px;padding:2px 7px;letter-spacing:.14em}
+  .bento-foot{font-size:10.5px;gap:8px;flex-wrap:wrap}
+}
+/* landscape phones (short screens): compress the header + rows to fit ~360px */
+@media (max-height:520px){
+  #bento{padding:10px 16px 8px;gap:7px}
+  .bento-head{padding-top:4px}
+  .bento-head .brand-mark{height:26px}
+  .bento-head .title-main{font-size:24px}
+  .bento-head .deco-eyebrow{display:none}
+  .bento-head .title-sub{display:none}
+  .b-grid{gap:7px}
+  .b-tile{min-height:64px}
+  .b-career{min-height:0}
+  .b-career .b-t{font-size:18px}
+  .b-tile .b-label{padding:8px 11px}
+  .b-t{font-size:14px}
+  .b-k{font-size:7.5px}
+  .b-s{display:none}
+  .b-wide{min-height:44px}
+  .b-pill{top:7px;right:7px;font-size:7px;padding:2px 6px}
+  .bento-foot{font-size:9.5px}
+  .bento-ic{width:34px;height:34px;font-size:14px}
+  .bento-top{top:8px;right:10px}
+}
