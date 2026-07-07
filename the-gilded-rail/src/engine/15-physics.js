@@ -149,7 +149,10 @@ function stepBall(b, dt){
       seg.pulse=Math.min(1, 0.35+speed*0.18);
       shotEvents.anyCushion++;
       if(shotEvents.firstContact) shotEvents.cushionAfterContact=true;
-      if(speed>0.1) Sfx.play('cushion', Math.min(1, Math.max(0.22, speed*0.26)));
+      /* loudness follows impact speed on a smooth curve with NO floor, so a
+         soft roll into the rail stays quiet and only a hard hit reaches full
+         volume (was clamped to a minimum of 0.22 - every touch sounded loud) */
+      if(speed>0.03) Sfx.play('cushion', Math.min(1, Math.pow(speed/6, 0.6)));
     }
   }
   // hard outer containment (should rarely trigger)
@@ -185,7 +188,11 @@ function collideBalls(){
         if(a.num===0) shotEvents.firstContact=c;
         else if(c.num===0) shotEvents.firstContact=a;
       }
-      Sfx.play('clack', Math.min(1, Math.max(0.26, vn*0.2)));
+      /* loudness follows the relative impact speed (vn) on a smooth curve
+         with NO floor - a whisper-soft kiss between balls stays whisper-soft
+         and only a hard, break-speed hit reaches full volume (was clamped to
+         a minimum of 0.26, which made every contact sound roughly as loud) */
+      if(vn>0.03) Sfx.play('clack', Math.min(1, Math.pow(vn/6, 0.65)));
     }
   }
 }

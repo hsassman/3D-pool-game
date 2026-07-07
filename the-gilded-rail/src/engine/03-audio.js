@@ -91,12 +91,20 @@ const Sfx = {
     const buf=list[idx];
     const src=c.createBufferSource(); src.buffer=buf;
     src.playbackRate.value = 0.97 + vol*0.05 + (Math.random()-0.5)*0.035;   /* tiny jitter only; pitch ~constant */
-    /* LOUDNESS TRACKS SHOT FORCE: a steep, near-linear map on the impact strength
-       (vol), times the clip's normalization - minimal randomness so a soft hit is
-       always soft and a hard hit is always loud. A solid floor (0.2) means even the
-       gentlest real contact is clearly audible - no more "silent" hits. */
-    const force = 0.2 + Math.pow(vol, 1.1) * 1.2;
-    const sg=c.createGain(); sg.gain.value = Math.min(1.6, force) * (buf._norm||1);
+    let force;
+    if(type==='clack' || type==='cushion'){
+      /* ball-on-ball / ball-on-rail impacts: vol already carries a proper
+         velocity-based curve from the physics layer (15-physics.js), so NO
+         floor here - a soft touch stays soft and only a hard hit is loud.
+         The ceiling is eased too, so a full-power break isn't ear-splitting. */
+      force = Math.min(1.0, Math.pow(vol, 0.92) * 0.95);
+    } else {
+      /* pockets dropping / cue strikes: unrelated to the impact-loudness fix
+         above (they're called with a fixed feel, not a raw velocity), so they
+         keep their original punchy curve and stay clearly audible. */
+      force = Math.min(1.6, 0.2 + Math.pow(vol, 1.1) * 1.2);
+    }
+    const sg=c.createGain(); sg.gain.value = force * (buf._norm||1);
     src.connect(sg); sg.connect(g); src.start(t);
     return true;
   },

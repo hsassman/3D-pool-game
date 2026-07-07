@@ -6,11 +6,15 @@
    and rules for both players and streams ball states to the guest, so a
    tampered client can't invent outcomes. The guest aims locally (positions are
    always synced) and sends only the shot parameters. Rooms are private
-   Supabase Realtime channels - server policies reject anyone who isn't a
-   signed-in, email-verified member - keyed by an unguessable 6-character code.
-   Two phones on the same Wi-Fi just share a code; so do two players an ocean
-   apart. (Browsers expose no Bluetooth/raw-LAN sockets to games - room codes
-   are the web's way of doing "local" play.)
+   Supabase Realtime channels - server policies reject anyone without a live
+   auth session - keyed by an unguessable 6-character code. No account is
+   required to play: Account.playAsGuest() opens a disposable, anonymous
+   Supabase Auth session (still a real 'authenticated' session for RLS, just
+   with no email/password and no cloud save) purely so multiplayer works
+   without friction; a permanent account additionally syncs progress and adds
+   2FA. Two phones on the same Wi-Fi just share a code; so do two players an
+   ocean apart. (Browsers expose no Bluetooth/raw-LAN sockets to games - room
+   codes are the web's way of doing "local" play.)
 
    All game-flow integration is done by WRAPPING Game/Input methods at load
    time, so solo / local / campaign play is untouched. */
@@ -374,7 +378,7 @@ const Net = {
     const mc=this.$('modal-content'), saveBtn=this.$('prof-save');
     if(!mc) return;
     const wrap=document.createElement('div');
-    if(Account.signedIn()){
+    if(Account.isMember()){
       wrap.innerHTML='<h3>Account</h3>'+
         '<div class="acct-row"><span class="acct-k">Signed in as</span><b></b></div>'+
         '<button class="qual-btn" id="prof-acct" style="width:100%">Manage account · 2FA · cloud save</button>';
@@ -382,7 +386,8 @@ const Net = {
     } else {
       wrap.innerHTML='<h3>Account</h3>'+
         '<p class="acct-fine">Playing as a guest - progress lives only on this device. '+
-        'Sign in to keep it <b>permanently</b> (across devices) and to play online multiplayer.</p>'+
+        'Sign in to keep it <b>permanently</b> (across devices) and add 2FA protection. '+
+        '<i>Online multiplayer doesn’t need an account - find it under Multiplayer on the main menu.</i></p>'+
         '<button class="btn primary" id="prof-acct" style="width:100%">Sign In / Create Account</button>';
     }
     /* right under the name/avatar header, ABOVE the cosmetics - a guest should
@@ -417,7 +422,11 @@ const AccountUI = {
   $(id){ return document.getElementById(id); },
 
   refreshBadge(){
-    const on = typeof Account!=='undefined' && Account.signedIn();
+    /* isMember(), not signedIn(): a guest multiplayer session is a real auth
+       session under the hood, but it isn't "signed in" from the player's
+       point of view - no cloud save applies to it, so the indicators should
+       read exactly as they would for a plain guest who never touched Multiplayer */
+    const on = typeof Account!=='undefined' && Account.isMember();
     const b=this.$('btn-account'); if(b) b.textContent = on ? 'Account ☁' : 'Sign In';
     /* status lamp on the menu avatar: green = signed in, dim = guest */
     const dot=this.$('acct-dot'); if(dot) dot.classList.toggle('on', on);
@@ -451,10 +460,11 @@ const AccountUI = {
       UI.modal('<h2>Account</h2><p>Online features are unavailable right now (no connection to the club server). Your progress still saves on this device.</p>');
       return;
     }
-    if(Account.signedIn()) return this.statusModal();
+    if(Account.isMember()) return this.statusModal();
     UI.modal('<h2>Member Account</h2>'+
       (note?('<p class="acct-note">'+note+'</p>'):'')+
-      '<p>Optional - sign in to keep your progress <b>permanently</b> (it follows you across devices and survives cleared browsers) and to play <b>online multiplayer</b>.</p>'+
+      '<p>Optional - sign in to keep your progress <b>permanently</b> (it follows you across devices and survives cleared browsers) and add 2FA protection. '+
+      '<b>Online multiplayer works without an account</b> too - see the Multiplayer tile on the main menu.</p>'+
       '<div class="acct-tabs"><button class="qual-btn sel" id="tab-in">Sign In</button><button class="qual-btn" id="tab-up">Create Account</button></div>'+
       '<div id="acct-form"></div>');
     const form=()=>this.$('acct-form');
@@ -619,12 +629,37 @@ const LobbyUI = {
       UI.modal('<h2>Multiplayer</h2><p>Online play needs a connection to the club server, which isn’t reachable right now.</p>');
       return;
     }
-    if(!Account.signedIn()){
-      AccountUI.accountModal('Online multiplayer is members-only - sign in (or create a free account) to play.');
-      return;
-    }
+    /* no session at all yet: offer the fast no-signup path first (this is the
+       door most players hit first, and requiring an account here was the
+       friction that discouraged people from ever trying multiplayer) */
+    if(!Account.signedIn()){ this.entryModal(); return; }
     this.view='idle';
     this.render();
+  },
+
+  _msg(id){ return '<div id="'+id+'" class="acct-msg"></div>'; },
+  _say(id, text){ const el=this.$(id); if(el) el.textContent=text||''; },
+
+  /* the very first gate: play instantly as a guest, or sign in for progress
+     that follows you across devices. Both lead to the same room lobby below -
+     a guest can host or join exactly like a signed-in member. */
+  entryModal(){
+    UI.modal('<h2>Multiplayer</h2>'+
+      '<p>Play a friend head-to-head - 8-ball, real physics, one shared table. Create a private room and pass them the code, or join theirs. No account needed.</p>'+
+      '<button class="btn primary" id="mp-guest" style="width:100%;margin-top:4px">Play as Guest</button>'+
+      this._msg('mp-entry-msg')+
+      '<p class="acct-fine" style="margin-top:14px">Prefer to keep your win streak and unlocks synced across devices? '+
+      '<button class="linklike" id="mp-signin-instead" style="display:inline;padding:0">Sign in or create an account</button> instead.</p>');
+    const go=this.$('mp-guest');
+    go.addEventListener('click', async ()=>{
+      go.disabled=true; go.textContent='Joining the club…';
+      const r=await Account.playAsGuest();
+      if(r.error){ go.disabled=false; go.textContent='Play as Guest'; this._say('mp-entry-msg', r.error); return; }
+      Sfx.play('ui'); this.view='idle'; this.render();
+    });
+    this.$('mp-signin-instead').addEventListener('click',()=>{
+      Sfx.play('ui'); AccountUI.accountModal();
+    });
   },
 
   render(){

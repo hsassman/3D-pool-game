@@ -26,7 +26,17 @@ const Account = {
   _pushTimers: {},
 
   available(){ return !!this.sb; },
+  /* any usable session - a permanent member OR a throwaway guest (both are
+     real Supabase Auth sessions with the 'authenticated' role, which is all
+     online multiplayer needs: the room-membership check is the 6-char code,
+     not who you are) */
   signedIn(){ return !!this.user && !this.aalPending; },
+  isGuest(){ return !!(this.user && this.user.is_anonymous); },
+  /* a real, permanent account - the only kind cloud saves / 2FA / the account
+     status indicators apply to. A guest session is intentionally NOT "signed
+     in" from the player's point of view: it's disposable and never synced. */
+  isMember(){ return this.signedIn() && !this.isGuest(); },
+  canSync(){ return this.isMember(); },
 
   init(){
     try{
@@ -52,6 +62,7 @@ const Account = {
   /* a session exists - but if this account enrolled 2FA, hold everything until
      the authenticator code has been verified (AAL2) */
   async _onSignedIn(){
+    if(this.isGuest()){ this.aalPending=false; return; }   // guests have no MFA and no cloud save to pull
     try{
       const { data } = await this.sb.auth.mfa.getAuthenticatorAssuranceLevel();
       if(data && data.nextLevel === 'aal2' && data.currentLevel !== 'aal2'){
@@ -87,6 +98,17 @@ const Account = {
     const { error } = await this.sb.auth.signInWithPassword({ email, password });
     if(error) return { error: this._nice(error) };
     return { ok:true };   // _onSignedIn decides whether a 2FA code is still needed
+  },
+  /* a disposable session for online play only - no email, no password, no
+     cloud save. Real Supabase Auth session under the hood (not a local fake),
+     so it satisfies the same 'authenticated' RLS check a permanent member's
+     session does; the room's 6-character code is what actually guards entry. */
+  async playAsGuest(){
+    if(!this.sb) return { error:'Online features are unavailable right now.' };
+    if(this.isMember()) return { ok:true };         // already a real account - nothing to do
+    const { error } = await this.sb.auth.signInAnonymously();
+    if(error) return { error: this._nice(error) };
+    return { ok:true };
   },
   async signOut(){
     try{ await this.sb.auth.signOut(); }catch(e){}
@@ -144,19 +166,19 @@ const Account = {
     };
     if(rawRemove) store.remove = async function(key){
       const r = await rawRemove(key);
-      if(typeof key==='string' && key.indexOf(GR_NET.SAVE_PREFIX)===0 && self.signedIn()){
+      if(typeof key==='string' && key.indexOf(GR_NET.SAVE_PREFIX)===0 && self.canSync()){
         try{ await self.sb.from('game_saves').delete().eq('key', key); }catch(e){}
       }
       return r;
     };
   },
   _queuePush(key, value){
-    if(!this.signedIn()) return;
+    if(!this.canSync()) return;
     clearTimeout(this._pushTimers[key]);
     this._pushTimers[key] = setTimeout(()=>this._push(key, value), 1500);
   },
   async _push(key, value){
-    if(!this.signedIn()) return;
+    if(!this.canSync()) return;
     try{
       this.syncState='syncing';
       const { error } = await this.sb.from('game_saves')
@@ -216,7 +238,7 @@ const Account = {
   },
   /* on sign-in (and when returning to the tab): reconcile cloud vs local */
   async syncIn(){
-    if(!this.signedIn()) return;
+    if(!this.canSync()) return;
     this.syncState='syncing'; this._lastPull=Date.now();
     if(typeof AccountUI !== 'undefined') AccountUI.refreshSyncLine();
     try{
@@ -262,7 +284,7 @@ const Account = {
   },
   /* returning to the tab (e.g. switching devices mid-session): re-pull, gently */
   _maybeResync(){
-    if(!this.signedIn()) return;
+    if(!this.canSync()) return;
     if(typeof Game!=='undefined' && Game.phase!=='MENU') return;   // never mid-frame
     if(Date.now()-(this._lastPull||0) < 60000) return;
     this.syncIn();

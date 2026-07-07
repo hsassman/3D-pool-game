@@ -539,11 +539,13 @@ body.touch .cos-sw{min-height:var(--tap)}
 .tut-actions{display:flex;align-items:center;justify-content:space-between;gap:14px}
 .tut-actions .btn{min-width:120px}
 
-/* game over */
-#gameover-card{text-align:center;padding:50px 56px}
-#go-title{font-family:'Fraunces',serif;font-size:44px;font-weight:300;color:var(--gold-bright)}
+/* game over: a touch smaller overall, and constrained to the viewport (with its
+   own scroll) so a short landscape phone screen can never cut off the card */
+#gameover-card{text-align:center;padding:40px 46px;width:min(460px,92vw);
+  max-height:calc(100dvh - 24px);overflow:auto}
+#go-title{font-family:'Fraunces',serif;font-size:38px;font-weight:300;color:var(--gold-bright)}
 #go-sub{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-top:8px}
-#go-stats{display:flex;gap:26px;justify-content:center;margin:28px 0}
+#go-stats{display:flex;gap:22px;justify-content:center;margin:22px 0}
 #go-stats div b{display:block;font-family:'Fraunces',serif;font-size:24px;color:var(--cream)}
 #go-stats div span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 
@@ -653,6 +655,23 @@ body.touch #mode-controls{bottom:max(212px,calc(var(--safe-b) + 196px))}   /* si
   .title-main{font-size:clamp(30px,8vh,46px)}
   .diff-row{margin-top:14px}
   .menu-stack{margin-top:16px;gap:8px}
+  /* the win/loss card, compacted further so it always fits a short landscape screen.
+     The stat cells are laid out by the .go-grid rules injected from 21-ui.js -
+     that's the selector that actually needs shrinking, not #go-stats itself
+     (a plain wrapper with a single .go-grid child). */
+  #gameover-card{padding:16px 22px;max-height:calc(100dvh - 16px)}
+  #go-eyebrow{font-size:9px;margin-bottom:0}
+  #go-title{font-size:21px}
+  #go-sub{margin-top:3px}
+  /* higher specificity than the bare .go-grid rules injected at runtime from
+     21-ui.js (that <style> tag lands later in <head>, so an equal-specificity
+     bare selector there would otherwise win the cascade even inside this
+     matching media query) */
+  #gameover-card .go-grid{gap:6px;margin:8px 0}
+  #gameover-card .go-grid div{padding:5px}
+  #gameover-card .go-grid b{font-size:15px}
+  #gameover-card .go-grid span{font-size:8px}
+  #gameover-card [style*="margin-top:26px"]{margin-top:8px!important}
 }
 
 /* ============================================================
