@@ -699,7 +699,7 @@ const UI = {
         const el=e.target.closest&&e.target.closest(CLICKABLE);
         if(!el) return;
         if(el.disabled || el.classList.contains('locked') || el.classList.contains('b-locked')) return;
-        Sfx.ensure(); Sfx.play('ui',0.5);
+        Sfx.ensure(); Sfx.play('ui',0.35);
       }catch(_){/* a click must never be blocked by an audio hiccup */}
     }, true);
     /* difficulty */

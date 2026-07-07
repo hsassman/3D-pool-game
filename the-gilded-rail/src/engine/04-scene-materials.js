@@ -11,7 +11,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;   /* eased back so the lit cloth reads warm, not blown-out white */
+renderer.toneMappingExposure = 1.10;   /* eased back so the lit cloth reads warm, not blown-out white; +5% room brightness */
 renderer.physicallyCorrectLights = false;
 
 const scene = new THREE.Scene();
