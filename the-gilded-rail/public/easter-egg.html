@@ -327,7 +327,10 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- vendored locally (see vendor/three.min.js) - the site's CSP allows only
+     same-origin scripts, so the old CDN reference left this page a black
+     screen (THREE never loaded). Inlined here at build time. -->
+<script src="vendor/three.min.js"></script>
 <script>
 /* ============================================================
    THE GILDED RAIL — regulation 8-ball with simulated physics

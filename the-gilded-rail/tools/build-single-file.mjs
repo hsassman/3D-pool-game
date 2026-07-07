@@ -45,10 +45,16 @@ externalize('ui');      // menu artwork
 /* the build also tolerates server-root /assets/ui paths from the CSS */
 html = html.replace(/\/assets\/ui\//g, 'assets/ui/');
 
-/* the secret "original build" easter egg is a standalone page loaded in an iframe;
-   copy it alongside the main HTML so easter-egg.html resolves in the deploy */
-if (existsSync(join(root, 'public', 'easter-egg.html')))
-  copyFileSync(join(root, 'public', 'easter-egg.html'), join(root, 'dist', 'easter-egg.html'));
+/* the secret "original build" easter egg is a standalone page loaded in an iframe.
+   It has its own copy of three.js (vendor/three.min.js), inlined the same way as
+   the main page above - the dist build never copies vendor/ itself, so a plain
+   file copy would leave that <script src> dangling and the page black. */
+if (existsSync(join(root, 'public', 'easter-egg.html'))) {
+  let egg = r('public', 'easter-egg.html');
+  egg = egg.replace('<script src="vendor/three.min.js"></script>',
+    `<script>\n/* vendored: three.min */\n${r('vendor', 'three.min.js')}\n</script>`);
+  writeFileSync(join(root, 'dist', 'easter-egg.html'), egg);
+}
 
 /* web-app manifest ("Add to Home Screen" fullscreen on phones) */
 if (existsSync(join(root, 'public', 'manifest.webmanifest')))
