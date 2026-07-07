@@ -826,3 +826,9 @@ body.touch .ta-item{min-height:var(--tap)}
   text-shadow:0 0 22px rgba(232,201,135,.35);user-select:all}
 .room-in{text-transform:uppercase;text-align:center;font-size:24px;letter-spacing:.3em;
   font-family:Fraunces,serif}
+/* signed-in indicator: a status lamp on the menu avatar + a footer note */
+.acct-dot{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;border-radius:50%;
+  background:#565b66;border:2px solid #101116;transition:background .25s, box-shadow .25s}
+.acct-dot.on{background:#3ecf8e;box-shadow:0 0 9px rgba(62,207,142,.75)}
+.acct-state{color:rgba(239,231,214,.45)}
+.acct-state.on{color:#6fc7b4}

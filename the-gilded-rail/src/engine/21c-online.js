@@ -366,7 +366,12 @@ const Net = {
         'Sign in to keep it <b>permanently</b> (across devices) and to play online multiplayer.</p>'+
         '<button class="btn primary" id="prof-acct" style="width:100%">Sign In / Create Account</button>';
     }
-    if(saveBtn) mc.insertBefore(wrap, saveBtn); else mc.appendChild(wrap);
+    /* right under the name/avatar header, ABOVE the cosmetics - a guest should
+       see the sign-in offer without scrolling */
+    const firstH3=mc.querySelector('h3');
+    if(firstH3) mc.insertBefore(wrap, firstH3);
+    else if(saveBtn) mc.insertBefore(wrap, saveBtn);
+    else mc.appendChild(wrap);
     wrap.querySelector('#prof-acct').addEventListener('click',()=>AccountUI.accountModal());
   };
 
@@ -393,8 +398,15 @@ const AccountUI = {
   $(id){ return document.getElementById(id); },
 
   refreshBadge(){
-    const b=this.$('btn-account'); if(!b) return;
-    b.textContent = (typeof Account!=='undefined' && Account.signedIn()) ? 'Account ☁' : 'Sign In';
+    const on = typeof Account!=='undefined' && Account.signedIn();
+    const b=this.$('btn-account'); if(b) b.textContent = on ? 'Account ☁' : 'Sign In';
+    /* status lamp on the menu avatar: green = signed in, dim = guest */
+    const dot=this.$('acct-dot'); if(dot) dot.classList.toggle('on', on);
+    const prof=this.$('btn-profile');
+    if(prof) prof.setAttribute('data-tip', on ? 'Profile · signed in' : 'Profile · not signed in');
+    /* footer note next to the member name */
+    const st=this.$('acct-state');
+    if(st){ st.textContent = on ? ' · ☁ signed in' : ' · local save only'; st.classList.toggle('on', on); }
   },
   refreshSyncLine(){
     const el=this.$('acct-sync-line'); if(!el || typeof Account==='undefined') return;
