@@ -1,0 +1,15 @@
+{
+  "name": "The Gilded Rail - 8-Ball Billiards",
+  "short_name": "Gilded Rail",
+  "description": "A 1920s members-club 3D billiards hall. Real physics, career ladder, online rooms.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0d0e12",
+  "theme_color": "#0d0e12",
+  "icons": [
+    { "src": "/assets/ui/favicon-32.png",  "sizes": "32x32",   "type": "image/png" },
+    { "src": "/assets/ui/favicon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}

@@ -26,6 +26,19 @@ const Sfx = {
            output so music + SFX actually play in the browser. */
         try{ const b=this.ctx.createBuffer(1,1,22050), s=this.ctx.createBufferSource();
              s.buffer=b; s.connect(this.ctx.destination); s.start(0); }catch(e){}
+        /* iOS routes WebAudio like a RINGER (mute switch → silence / headset-only)
+           until a media element plays. A looping silent <audio> flips the audio
+           session to 'playback', so the game sounds through the SPEAKER like any
+           music or video app. Must start inside the same user gesture. */
+        try{
+          if(!this._mediaKick){
+            const a=document.createElement('audio');
+            a.setAttribute('playsinline',''); a.loop=true; a.preload='auto';
+            a.src='data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+            const pl=a.play(); if(pl && pl.catch) pl.catch(()=>{});
+            this._mediaKick=a;
+          }
+        }catch(e){}
       }catch(e){}
     }
     if(this.ctx && this.ctx.state==='suspended') this.ctx.resume();

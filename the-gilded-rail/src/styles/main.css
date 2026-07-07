@@ -160,7 +160,11 @@ body.a11y .mini-ball.potted{opacity:.32}
   font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--gold-bright)}
 #profile .pname{font-size:12px;font-weight:600;letter-spacing:.08em;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #profile .pxp{font-size:10px;color:var(--muted);letter-spacing:.1em;margin-top:2px}
-#top-actions{position:fixed;top:74px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+/* the container must NOT catch taps: its invisible column reaches down the right
+   edge and was swallowing presses on the charge button in landscape - only the
+   toggle and the open dropdown are real targets */
+#top-actions{position:fixed;top:74px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+#ta-toggle,#ta-menu{pointer-events:auto}
 .icon-btn{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;
   background:var(--panel);border:var(--hairline)}
 .icon-btn:hover{background:rgba(201,163,92,.16)}
@@ -424,7 +428,7 @@ body.touch .cos-sw{min-height:var(--tap)}
 #btn-newgame{width:100%;margin-top:22px}
 
 /* ---------- in-match actions dropdown ---------- */
-#top-actions{position:fixed;top:74px;right:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:20}
+#top-actions{position:fixed;top:74px;right:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:20;pointer-events:none}
 #ta-menu{display:flex;flex-direction:column;gap:6px;padding:7px;border-radius:12px;
   background:var(--panel);border:var(--hairline);backdrop-filter:blur(10px);
   box-shadow:0 14px 40px rgba(0,0,0,.6);transform-origin:top right;

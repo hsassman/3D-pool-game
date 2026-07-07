@@ -50,6 +50,10 @@ html = html.replace(/\/assets\/ui\//g, 'assets/ui/');
 if (existsSync(join(root, 'public', 'easter-egg.html')))
   copyFileSync(join(root, 'public', 'easter-egg.html'), join(root, 'dist', 'easter-egg.html'));
 
+/* web-app manifest ("Add to Home Screen" fullscreen on phones) */
+if (existsSync(join(root, 'public', 'manifest.webmanifest')))
+  copyFileSync(join(root, 'public', 'manifest.webmanifest'), join(root, 'dist', 'manifest.webmanifest'));
+
 writeFileSync(join(root, 'dist', 'the-gilded-rail.html'), html);
 writeFileSync(join(root, 'dist', 'index.html'), html);
 console.log(`Built dist/ (${(html.length / 1e6).toFixed(2)} MB HTML + external assets, ${engineFiles.length} engine files)`);

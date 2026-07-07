@@ -11,6 +11,14 @@
 <title>The Gilded Rail - 8-Ball Billiards</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/ui/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/ui/favicon-180.png">
+<!-- installable web app: "Add to Home Screen" launches the game truly fullscreen
+     (the only route to fullscreen on iPhone, where browsers expose no fullscreen API) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gilded Rail">
+<meta name="theme-color" content="#0d0e12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Albert+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/styles/main.css">
