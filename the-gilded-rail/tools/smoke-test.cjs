@@ -309,8 +309,12 @@ ok(G.Input.stickVec.x===0&&G.Input.stickVec.y===0, 'stick recenters on release')
 console.log('--- flickering light ---');
 ok(G.flickerLights.length>=6, 'light pool collected ('+G.flickerLights.length+' lights)');
 G.Flicker.next=0; G.Flicker.t=0;
+/* pin the episode-type roll: 20% of episodes are blackouts (active.l is undefined
+   there), which used to crash the single-lamp assertions below ~1 run in 5 */
+const _rnd=Math.random; Math.random=()=>0.5;
 G.Flicker.update(0.1);
-ok(!!G.Flicker.active, 'flicker episode triggers');
+Math.random=_rnd;
+ok(!!G.Flicker.active && !!G.Flicker.active.l, 'flicker episode triggers (single-lamp)');
 const fl=G.Flicker.active.l, base=G.Flicker.active.base;
 let changed=false;
 for(let i=0;i<30;i++){ G.Flicker.update(0.1); if(Math.abs(fl.intensity-base)>1e-6) changed=true; }

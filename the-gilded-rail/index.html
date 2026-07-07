@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<!-- Content Security Policy: only our own origin plus the Three.js CDN and Google Fonts
-     may load. Blocks third-party script/connect injection, framing, and base-tag hijack. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<!-- Content Security Policy: scripts run only from our own origin (all libraries are
+     vendored); Google Fonts for type, the club's Supabase server for accounts/saves/
+     multiplayer. Blocks third-party script injection, framing, and base-tag hijack. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob: https://thoctsmffbrttdkuezjf.supabase.co wss://thoctsmffbrttdkuezjf.supabase.co; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>The Gilded Rail - 8-Ball Billiards</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/ui/favicon-32.png">
@@ -139,15 +140,15 @@
         </div>
       </button>
 
-      <!-- Online: disabled (in development) -->
-      <button class="b-tile b-locked b-online" id="btn-online" disabled aria-disabled="true">
+      <!-- Online multiplayer: private rooms over the club server (members only) -->
+      <button class="b-tile b-online" id="btn-online">
         <div class="b-art art-online" aria-hidden="true"></div><div class="b-shade"></div>
         <div class="b-label">
           <span class="b-k">Versus</span>
           <span class="b-t">Multiplayer</span>
-          <span class="b-s">Private rooms &amp; ranked play</span>
+          <span class="b-s">Private rooms · share a code, play a friend</span>
         </div>
-        <span class="soon-pill b-pill">In Development</span>
+        <span class="soon-pill b-pill">Online · New</span>
       </button>
 
       <!-- Challenges -->
@@ -177,6 +178,7 @@
     <footer class="bento-foot">
       <span>Playing as <b id="menu-pname">Guest</b></span>
       <nav class="bento-links">
+        <button class="linklike" id="btn-account">Sign In</button>
         <button class="linklike" id="btn-howto">How to Play</button>
         <button class="linklike" id="btn-rules">House Rules</button>
       </nav>
@@ -264,9 +266,11 @@
   </div>
 </div>
 
-<!-- Three.js (global UMD build). The engine below is plain global-scope script,
-     loaded in numeric order - each file depends on symbols from earlier ones. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Three.js (global UMD build), VENDORED LOCALLY like the passes below - the game
+     no longer depends on any third-party CDN being reachable. The engine below is
+     plain global-scope script, loaded in numeric order - each file depends on
+     symbols from earlier ones. -->
+<script src="vendor/three.min.js"></script>
 <!-- post-processing passes (r128 examples) for the depth-of-field + bloom effects.
      VENDORED LOCALLY (served from our own origin) so the DoF/bloom never depend on a
      third-party CDN being reachable - the copies live in vendor/ (from the three npm dep). -->
@@ -282,6 +286,10 @@
 <script src="vendor/UnrealBloomPass.js"></script>
 <!-- glTF loader for the external 3D props (red cup, ashtray, beer glass, bottles, Jack Daniels) -->
 <script src="vendor/GLTFLoader.js"></script>
+<!-- Supabase client (vendored UMD) for the optional member accounts, cloud saves
+     and online multiplayer. The publishable key it uses is safe to ship; all data
+     access is guarded by Row Level Security on the server. -->
+<script src="vendor/supabase.js"></script>
 
 <!-- Point the soundtrack at the bundled asset. _song() fetches & decodes it
      into WebAudio. (A data: URL also works here, which is how the single-file
@@ -320,6 +328,7 @@
   <script src="src/engine/00-storage.js"></script>
   <script src="src/engine/01-config.js"></script>
   <script src="src/engine/02-profile.js"></script>
+  <script src="src/engine/02a-account.js"></script>
   <script src="src/engine/03-audio.js"></script>
   <script src="src/engine/04-scene-materials.js"></script>
   <script src="src/engine/04b-models.js"></script>
@@ -343,6 +352,7 @@
   <script src="src/engine/20-input-camera.js"></script>
   <script src="src/engine/21-ui.js"></script>
   <script src="src/engine/21b-postfx.js"></script>
+  <script src="src/engine/21c-online.js"></script>
   <script src="src/engine/22-loop.js"></script>
   <script src="src/engine/23-init.js"></script>
 </body>

@@ -12,6 +12,9 @@
   Input.init();
   UI.wire();
   await Profile.load();
+  /* optional member accounts + cloud saves + online rooms (no-ops offline) */
+  if(typeof Account!=='undefined') Account.init();
+  if(typeof LobbyUI!=='undefined') LobbyUI.wire();
   Unlocks.applyAll();
   UI.applyA11y();
   Graphics.apply();

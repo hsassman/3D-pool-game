@@ -21,8 +21,8 @@ html = html.replace(/(?:\s*<script src="src\/engine\/[^"]+"><\/script>)+/, `\n<s
 /* inline the locally-vendored three.js example scripts (post-processing for DoF + bloom,
    GLTFLoader) in place, so the deployed file carries them itself and never depends on a CDN.
    Order is preserved - each must run after three.min.js and before the engine. */
-const vendorOrder = ['CopyShader','BokehShader','EffectComposer','RenderPass','ShaderPass',
-  'MaskPass','BokehPass','LuminosityHighPassShader','UnrealBloomPass','GLTFLoader'];
+const vendorOrder = ['three.min','CopyShader','BokehShader','EffectComposer','RenderPass','ShaderPass',
+  'MaskPass','BokehPass','LuminosityHighPassShader','UnrealBloomPass','GLTFLoader','supabase'];
 for (const name of vendorOrder) {
   html = html.replace(`<script src="vendor/${name}.js"></script>`,
     `<script>\n/* vendored: ${name} */\n${r('vendor', name + '.js')}\n</script>`);
