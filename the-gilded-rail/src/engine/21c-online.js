@@ -761,17 +761,22 @@ const ChatUI = {
 
   ensure(){
     if(this.feed) return;
+    /* built element-by-element (no innerHTML/querySelector) so the headless
+       smoke-test's minimal DOM stub can wire() without exploding */
     const feed=document.createElement('div');
     feed.id='chat-feed'; feed.setAttribute('aria-live','polite');
     const bar=document.createElement('div');
     bar.id='chat-bar';
-    bar.innerHTML='<button id="chat-btn" data-tip="Chat (Enter)" aria-label="Open chat">💬</button>'+
-      '<input id="chat-in" maxlength="120" placeholder="Message… (Enter to send)" autocomplete="off" spellcheck="false">';
+    const btn=document.createElement('button');
+    btn.id='chat-btn'; btn.textContent='💬';
+    btn.setAttribute('data-tip','Chat (Enter)'); btn.setAttribute('aria-label','Open chat');
+    const inp=document.createElement('input');
+    inp.id='chat-in'; inp.maxLength=120; inp.placeholder='Message… (Enter to send)';
+    inp.autocomplete='off'; inp.spellcheck=false;
+    bar.appendChild(btn); bar.appendChild(inp);
     document.body.appendChild(feed);
     document.body.appendChild(bar);
-    this.feed=feed; this.bar=bar;
-    this.btn=bar.querySelector('#chat-btn');
-    this.inp=bar.querySelector('#chat-in');
+    this.feed=feed; this.bar=bar; this.btn=btn; this.inp=inp;
     this.btn.addEventListener('click',()=>this.toggle());
     /* typing must never reach the game's hotkeys (Space charges, Tab flips view…) */
     this.inp.addEventListener('keydown',e=>{
@@ -799,8 +804,8 @@ const ChatUI = {
     if(!on){ this.close(); this.feed.innerHTML=''; }
   },
   isOpen(){ return !!(this.inp && this.inp.classList.contains('open')); },
-  open(){ this.ensure(); this.inp.classList.add('open'); this.inp.focus(); },
-  close(){ if(!this.inp) return; this.inp.classList.remove('open'); this.inp.blur(); },
+  open(){ this.ensure(); this.inp.classList.add('open'); if(this.inp.focus) this.inp.focus(); },
+  close(){ if(!this.inp) return; this.inp.classList.remove('open'); if(this.inp.blur) this.inp.blur(); },
   toggle(){ this.isOpen() ? this.close() : this.open(); },
 
   recv(p){
