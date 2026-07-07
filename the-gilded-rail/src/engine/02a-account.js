@@ -61,11 +61,19 @@ const Account = {
   },
 
   /* ---------- auth ---------- */
+  /* translate raw network failures ("Failed to fetch") into something a player
+     can act on - the request never left the browser, the server never saw it */
+  _nice(error){
+    const m=(error && error.message) || 'Something went wrong';
+    if(/failed to fetch|network|load failed|fetch/i.test(m))
+      return 'Can’t reach the club server. Reload the page (Ctrl+Shift+R) and try again — if it keeps happening, an ad-blocker, VPN or network filter is likely blocking supabase.co.';
+    return m;
+  },
   async signUp(email, password){
     const { data, error } = await this.sb.auth.signUp({
       email, password, options:{ emailRedirectTo: location.origin + location.pathname }
     });
-    if(error) return { error: error.message };
+    if(error) return { error: this._nice(error) };
     /* Supabase answers "ok" for an already-registered email (anti-enumeration);
        a fresh signup has no session until the emailed link is clicked */
     if(data && data.user && !data.session) return { needsConfirm:true };
@@ -73,7 +81,7 @@ const Account = {
   },
   async signIn(email, password){
     const { error } = await this.sb.auth.signInWithPassword({ email, password });
-    if(error) return { error: error.message };
+    if(error) return { error: this._nice(error) };
     return { ok:true };   // _onSignedIn decides whether a 2FA code is still needed
   },
   async signOut(){
@@ -83,7 +91,7 @@ const Account = {
   async resetPassword(email){
     const { error } = await this.sb.auth.resetPasswordForEmail(email, {
       redirectTo: location.origin + location.pathname });
-    return error ? { error: error.message } : { ok:true };
+    return error ? { error: this._nice(error) } : { ok:true };
   },
   async setNewPassword(password){
     const { error } = await this.sb.auth.updateUser({ password });
