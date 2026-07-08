@@ -455,12 +455,17 @@ const AccountUI = {
     el.style.color = good ? 'var(--teal, #6fc7b4)' : 'var(--red, #e2685c)';
   },
 
+  /* all captcha containers this UI ever mounts, for defensive cleanup */
+  _captchaIds:['ac-captcha','ac-captcha2','mp-captcha'],
+  _clearCaptchas(){ this._captchaIds.forEach(id=>{ if(typeof Captcha!=='undefined') Captcha.remove(id); }); },
+
   accountModal(note){
     if(typeof Account==='undefined' || !Account.available()){
       UI.modal('<h2>Account</h2><p>Online features are unavailable right now (no connection to the club server). Your progress still saves on this device.</p>');
       return;
     }
     if(Account.isMember()) return this.statusModal();
+    this._clearCaptchas();
     UI.modal('<h2>Member Account</h2>'+
       (note?('<p class="acct-note">'+note+'</p>'):'')+
       '<p>Optional - sign in to keep your progress <b>permanently</b> (it follows you across devices and survives cleared browsers) and add 2FA protection. '+
@@ -469,16 +474,22 @@ const AccountUI = {
       '<div id="acct-form"></div>');
     const form=()=>this.$('acct-form');
     const signInForm=()=>{
+      Captcha.remove('ac-captcha2');
       form().innerHTML=this._in('ac-email','email','Email','email')+this._in('ac-pass','password','Password','current-password')+
+        '<div id="ac-captcha" class="captcha-box"></div>'+
         this._msg('ac-msg')+
         '<button class="btn primary" id="ac-go" style="width:100%">Sign In</button>'+
         '<button class="linklike" id="ac-forgot" style="margin-top:10px">Forgot password?</button>';
+      Captcha.mount('ac-captcha');
       this.$('ac-go').addEventListener('click', async ()=>{
         const em=this.$('ac-email').value.trim(), pw=this.$('ac-pass').value;
         if(!/^\S+@\S+\.\S+$/.test(em)) return this._say('ac-msg','Enter a valid email address.');
         if(!pw) return this._say('ac-msg','Enter your password.');
+        const tok=Captcha.token('ac-captcha');
+        if(!tok) return this._say('ac-msg','Please complete the security check above.');
         this._say('ac-msg','Signing in…',true);
-        const r=await Account.signIn(em,pw);
+        const r=await Account.signIn(em,pw,tok);
+        Captcha.reset('ac-captcha');
         if(r.error) return this._say('ac-msg',r.error);
         /* success: _onSignedIn either opens the 2FA prompt or completes silently */
         if(!Account.aalPending){ UI.$('modal-overlay').classList.add('hidden'); UI.xpToast('Signed in ✓'); this.refreshBadge(); }
@@ -487,21 +498,30 @@ const AccountUI = {
       this.$('ac-forgot').addEventListener('click', async ()=>{
         const em=this.$('ac-email').value.trim();
         if(!/^\S+@\S+\.\S+$/.test(em)) return this._say('ac-msg','Type your email above first, then tap this again.');
-        const r=await Account.resetPassword(em);
+        const tok=Captcha.token('ac-captcha');
+        if(!tok) return this._say('ac-msg','Please complete the security check above.');
+        const r=await Account.resetPassword(em,tok);
+        Captcha.reset('ac-captcha');
         this._say('ac-msg', r.error?r.error:'Reset link sent - check your email.', !r.error);
       });
     };
     const signUpForm=()=>{
+      Captcha.remove('ac-captcha');
       form().innerHTML=this._in('ac-email2','email','Email','email')+this._in('ac-pass2','password','Password (8+ characters)','new-password')+
+        '<div id="ac-captcha2" class="captcha-box"></div>'+
         this._msg('ac-msg2')+
         '<button class="btn primary" id="ac-up" style="width:100%">Create Account</button>'+
         '<p class="acct-fine">You’ll get a verification email - click its link to activate the account. Passwords are hashed on the server; this game never stores them.</p>';
+      Captcha.mount('ac-captcha2');
       this.$('ac-up').addEventListener('click', async ()=>{
         const em=this.$('ac-email2').value.trim(), pw=this.$('ac-pass2').value;
         if(!/^\S+@\S+\.\S+$/.test(em)) return this._say('ac-msg2','Enter a valid email address.');
         if(pw.length<8) return this._say('ac-msg2','Use at least 8 characters.');
+        const tok=Captcha.token('ac-captcha2');
+        if(!tok) return this._say('ac-msg2','Please complete the security check above.');
         this._say('ac-msg2','Creating…',true);
-        const r=await Account.signUp(em,pw);
+        const r=await Account.signUp(em,pw,tok);
+        Captcha.reset('ac-captcha2');
         if(r.error) return this._say('ac-msg2',r.error);
         this._say('ac-msg2','Almost there - open the verification email we just sent and click the link.', true);
       });
@@ -644,16 +664,22 @@ const LobbyUI = {
      that follows you across devices. Both lead to the same room lobby below -
      a guest can host or join exactly like a signed-in member. */
   entryModal(){
+    if(typeof AccountUI!=='undefined') AccountUI._clearCaptchas();
     UI.modal('<h2>Multiplayer</h2>'+
       '<p>Play a friend head-to-head - 8-ball, real physics, one shared table. Create a private room and pass them the code, or join theirs. No account needed.</p>'+
-      '<button class="btn primary" id="mp-guest" style="width:100%;margin-top:4px">Play as Guest</button>'+
+      '<div id="mp-captcha" class="captcha-box"></div>'+
+      '<button class="btn primary" id="mp-guest" style="width:100%;margin-top:10px">Play as Guest</button>'+
       this._msg('mp-entry-msg')+
       '<p class="acct-fine" style="margin-top:14px">Prefer to keep your win streak and unlocks synced across devices? '+
       '<button class="linklike" id="mp-signin-instead" style="display:inline;padding:0">Sign in or create an account</button> instead.</p>');
+    Captcha.mount('mp-captcha');
     const go=this.$('mp-guest');
     go.addEventListener('click', async ()=>{
+      const tok=Captcha.token('mp-captcha');
+      if(!tok) return this._say('mp-entry-msg','Please complete the security check above.');
       go.disabled=true; go.textContent='Joining the club…';
-      const r=await Account.playAsGuest();
+      const r=await Account.playAsGuest(tok);
+      Captcha.reset('mp-captcha');
       if(r.error){ go.disabled=false; go.textContent='Play as Guest'; this._say('mp-entry-msg', r.error); return; }
       Sfx.play('ui'); this.view='idle'; this.render();
     });

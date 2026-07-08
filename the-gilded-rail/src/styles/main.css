@@ -947,3 +947,10 @@ body.touch #chat-feed{bottom:302px}
   .bento-ic{width:34px;height:34px;font-size:14px}
   .bento-top{top:8px;right:10px}
 }
+
+/* hCaptcha widget container: centered, breathing room above/below, and capped
+   so its default ~303px iframe can't force the modal to scroll horizontally
+   on narrow phones (the modal card itself already handles vertical overflow) */
+.captcha-box{display:flex;justify-content:center;align-items:center;
+  min-height:78px;margin:10px 0;max-width:100%;overflow:hidden}
+.captcha-box iframe{max-width:100%}

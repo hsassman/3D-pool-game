@@ -13,8 +13,73 @@
 const GR_NET = {
   URL: 'https://thoctsmffbrttdkuezjf.supabase.co',
   KEY: 'sb_publishable_y7s1HoqGyBRjrbBxakpfeg_ERHwqPZb',   // publishable key: safe to ship, RLS does the guarding
+  CAPTCHA_SITEKEY: 'd1668ce2-7f76-49f8-acfe-64ac053a5b0a',  // hCaptcha sitekey: a public value, safe to ship
   SAVE_PREFIX: 'gildedrail:',
   META_LASTWRITE: 'gildedrail-meta:lastWrite'              // outside SAVE_PREFIX: never synced itself
+};
+
+/* ---- CAPTCHA (hCaptcha) ----
+   The project now requires a valid captcha_token on every fresh-session auth
+   call (sign-up, sign-in, password reset, and anonymous/guest sign-in) - this
+   was enabled server-side, so all four break without a matching frontend
+   widget. One widget is rendered per visible form; each token is single-use,
+   so callers MUST reset() after every attempt (success or failure) to get a
+   fresh one for the next try. */
+const Captcha = {
+  _widgets: {},   // containerId -> hCaptcha widget id
+  _tokens: {},    // containerId -> current token ('' until solved)
+
+  /* the script tag loads async - poll briefly rather than assume it's ready */
+  ready(){
+    if(typeof hcaptcha!=='undefined' && hcaptcha.render) return Promise.resolve(true);
+    return new Promise(resolve=>{
+      let tries=0;
+      const t=setInterval(()=>{
+        if(typeof hcaptcha!=='undefined' && hcaptcha.render){ clearInterval(t); resolve(true); }
+        else if(++tries>150){ clearInterval(t); resolve(false); }   // ~15s: hCaptcha unreachable
+      }, 100);
+    });
+  },
+  available(){ return typeof hcaptcha!=='undefined'; },
+
+  /* mount (or remount) a widget into #containerId; safe to call again on the
+     same container (e.g. reopening a modal) - the old widget is torn down first */
+  async mount(containerId){
+    const el=document.getElementById(containerId);
+    if(!el) return false;
+    const ok=await this.ready();
+    if(!document.getElementById(containerId)) return false;   // modal closed while waiting
+    if(!ok){
+      el.innerHTML='<p class="acct-msg" style="color:var(--red,#e2685c)">Couldn’t load the security check (hCaptcha unreachable). Reload the page and try again.</p>';
+      return false;
+    }
+    this.remove(containerId);
+    this._tokens[containerId]='';
+    el.innerHTML='';
+    const id=hcaptcha.render(el, {
+      sitekey: GR_NET.CAPTCHA_SITEKEY,
+      callback: token=>{ this._tokens[containerId]=token||''; },
+      'expired-callback': ()=>{ this._tokens[containerId]=''; },
+      'error-callback': ()=>{ this._tokens[containerId]=''; }
+    });
+    this._widgets[containerId]=id;
+    return true;
+  },
+  token(containerId){ return this._tokens[containerId]||''; },
+  /* fresh challenge, same mounted widget - call after every submit attempt */
+  reset(containerId){
+    const id=this._widgets[containerId];
+    if(id==null) return;
+    try{ hcaptcha.reset(id); }catch(e){}
+    this._tokens[containerId]='';
+  },
+  /* fully tear down (modal closing / switching tabs) */
+  remove(containerId){
+    const id=this._widgets[containerId];
+    if(id!=null){ try{ hcaptcha.remove(id); }catch(e){} }
+    delete this._widgets[containerId];
+    delete this._tokens[containerId];
+  }
 };
 
 const Account = {
@@ -82,11 +147,12 @@ const Account = {
     const m=(error && error.message) || 'Something went wrong';
     if(/failed to fetch|network|load failed|fetch/i.test(m))
       return 'Can’t reach the club server. Reload the page (Ctrl+Shift+R) and try again — if it keeps happening, an ad-blocker, VPN or network filter is likely blocking supabase.co.';
+    if(/captcha/i.test(m)) return 'Please complete the security check below, then try again.';
     return m;
   },
-  async signUp(email, password){
+  async signUp(email, password, captchaToken){
     const { data, error } = await this.sb.auth.signUp({
-      email, password, options:{ emailRedirectTo: location.origin + location.pathname }
+      email, password, options:{ emailRedirectTo: location.origin + location.pathname, captchaToken }
     });
     if(error) return { error: this._nice(error) };
     /* Supabase answers "ok" for an already-registered email (anti-enumeration);
@@ -94,8 +160,8 @@ const Account = {
     if(data && data.user && !data.session) return { needsConfirm:true };
     return { ok:true };
   },
-  async signIn(email, password){
-    const { error } = await this.sb.auth.signInWithPassword({ email, password });
+  async signIn(email, password, captchaToken){
+    const { error } = await this.sb.auth.signInWithPassword({ email, password, options:{ captchaToken } });
     if(error) return { error: this._nice(error) };
     return { ok:true };   // _onSignedIn decides whether a 2FA code is still needed
   },
@@ -103,10 +169,10 @@ const Account = {
      cloud save. Real Supabase Auth session under the hood (not a local fake),
      so it satisfies the same 'authenticated' RLS check a permanent member's
      session does; the room's 6-character code is what actually guards entry. */
-  async playAsGuest(){
+  async playAsGuest(captchaToken){
     if(!this.sb) return { error:'Online features are unavailable right now.' };
     if(this.isMember()) return { ok:true };         // already a real account - nothing to do
-    const { error } = await this.sb.auth.signInAnonymously();
+    const { error } = await this.sb.auth.signInAnonymously({ options:{ captchaToken } });
     if(error) return { error: this._nice(error) };
     return { ok:true };
   },
@@ -114,9 +180,9 @@ const Account = {
     try{ await this.sb.auth.signOut(); }catch(e){}
     this.user=null; this.aalPending=false; this.syncState='idle';
   },
-  async resetPassword(email){
+  async resetPassword(email, captchaToken){
     const { error } = await this.sb.auth.resetPasswordForEmail(email, {
-      redirectTo: location.origin + location.pathname });
+      redirectTo: location.origin + location.pathname, captchaToken });
     return error ? { error: this._nice(error) } : { ok:true };
   },
   async setNewPassword(password){

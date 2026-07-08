@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <!-- Content Security Policy: scripts run only from our own origin (all libraries are
-     vendored); Google Fonts for type, the club's Supabase server for accounts/saves/
-     multiplayer. Blocks third-party script injection, framing, and base-tag hijack. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob: https://thoctsmffbrttdkuezjf.supabase.co wss://thoctsmffbrttdkuezjf.supabase.co; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+     vendored) plus hCaptcha's CDN (the bot-check on sign-up/sign-in/guest play -
+     it must load live from hCaptcha, not be vendored, since the whole point is a
+     fresh challenge each time); Google Fonts for type; the club's Supabase server
+     for accounts/saves/multiplayer. Blocks third-party script injection, framing
+     beyond our own site, and base-tag hijack. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.hcaptcha.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.hcaptcha.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob: https://thoctsmffbrttdkuezjf.supabase.co wss://thoctsmffbrttdkuezjf.supabase.co https://*.hcaptcha.com; frame-src https://*.hcaptcha.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>The Gilded Rail - 8-Ball Billiards</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/ui/favicon-32.png">
@@ -299,6 +302,11 @@
      and online multiplayer. The publishable key it uses is safe to ship; all data
      access is guarded by Row Level Security on the server. -->
 <script src="vendor/supabase.js"></script>
+<!-- hCaptcha: loaded live from hCaptcha's own CDN (never vendored - a bot check
+     that shipped a static, pre-baked copy would defeat the point of it). Guards
+     sign-up, sign-in, password reset and guest play against automated abuse;
+     the sitekey below is a public value, safe to ship. -->
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 
 <!-- Point the soundtrack at the bundled asset. _song() fetches & decodes it
      into WebAudio. (A data: URL also works here, which is how the single-file
