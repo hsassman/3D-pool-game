@@ -146,7 +146,9 @@ const Input = {
         if(e.pointerId!==lid) return;
         let x=(e.clientX-lcx)/44, y=(e.clientY-lcy)/44;
         const m=Math.hypot(x,y); if(m>1){ x/=m; y/=m; }
-        if(m<0.15){ this.lookStickVec.x=0; this.lookStickVec.y=0; } else { this.lookStickVec.x=x; this.lookStickVec.y=y; }
+        /* a wider deadzone than the move stick's - this one drives a continuous
+           turn rate, so a resting thumb drifting slightly must not spin the view */
+        if(m<0.30){ this.lookStickVec.x=0; this.lookStickVec.y=0; } else { this.lookStickVec.x=x; this.lookStickVec.y=y; }
         setLookKnob(x,y);
       });
       const releaseLook=e=>{ if(e.pointerId!==lid) return; lid=null; this.lookStickVec.x=0; this.lookStickVec.y=0; setLookKnob(0,0); };
@@ -282,8 +284,8 @@ const Input = {
       this.clampWalk();
       /* right-side look stick: rate-based turn (held deflection, not a drag delta) */
       if(this.lookStickVec.x||this.lookStickVec.y){
-        this.orbitYaw += this.lookStickVec.x*2.4*dt;
-        this.lookPitch = Math.max(-1.15, Math.min(1.15, this.lookPitch - this.lookStickVec.y*2.0*dt));
+        this.orbitYaw += this.lookStickVec.x*1.2*dt;   // 50% of the original 2.4 rate
+        this.lookPitch = Math.max(-1.15, Math.min(1.15, this.lookPitch - this.lookStickVec.y*1.0*dt));   // 50% of 2.0
       }
     }
     /* arrow keys fine-aim */
