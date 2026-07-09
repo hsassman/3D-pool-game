@@ -172,7 +172,12 @@ const UI = {
   sync(){
     const ph=Game.phase, m=Input.mode;
     this.$('hud').classList.toggle('on', ph!=='MENU');
-    this.$('btn-orbit').classList.toggle('active', m==='ORBIT'||m==='BIH'||ph==='SIM'||ph==='AI');
+    const orbitLook=m==='ORBIT'||m==='BIH'||ph==='SIM'||ph==='AI';
+    this.$('btn-orbit').classList.toggle('active', orbitLook);
+    /* right-side look stick: only while the free-cam view it turns is actually
+       active - exactly when the power meter / spin pad are hidden, so the two
+       can never occupy the same corner */
+    const lookStick=this.$('look-stick'); if(lookStick) lookStick.classList.toggle('on', orbitLook);
     this.$('btn-shoot').classList.toggle('active', m==='SHOOT'&&(ph==='AIM'||ph==='CHARGE'));
     this.$('btn-fine').classList.toggle('active',  m==='FINE'&&(ph==='AIM'||ph==='CHARGE'));
     const canShoot=(ph==='AIM'||ph==='CHARGE')&&(m==='SHOOT'||m==='FINE');

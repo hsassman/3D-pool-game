@@ -556,6 +556,16 @@ body.touch .cos-sw{min-height:var(--tap)}
   transform:translate(-50%,-50%);background:rgba(201,163,92,.35);border:1px solid rgba(201,163,92,.6)}
 body.touch #stick{display:block}
 
+/* right-side LOOK thumbstick: mirrors the move stick, but also gated to .on
+   (toggled by UI.sync whenever the free-cam view it turns is active) - not
+   touch alone - so it can never be visible at the same time as the power
+   meter / spin pad, which live in that same corner during aiming. */
+#look-stick{position:fixed;right:22px;bottom:96px;width:108px;height:108px;border-radius:50%;display:none;
+  background:rgba(13,14,18,.5);border:var(--hairline);touch-action:none;z-index:6}
+#look-stick-knob{position:absolute;left:50%;top:50%;width:44px;height:44px;border-radius:50%;
+  transform:translate(-50%,-50%);background:rgba(201,163,92,.35);border:1px solid rgba(201,163,92,.6)}
+body.touch #look-stick.on{display:block}
+
 /* hide-interface mode */
 body.ui-hidden #hud{display:none!important}
 #ui-restore{position:fixed;top:12px;right:14px;z-index:30;display:none;width:34px;height:34px;border-radius:8px;
@@ -616,6 +626,7 @@ body.touch #mode-controls{bottom:max(212px,calc(var(--safe-b) + 196px))}   /* si
 #mode-controls{left:max(14px,var(--safe-l));bottom:max(14px,var(--safe-b))}
 #power-wrap{right:max(24px,var(--safe-r));bottom:max(24px,var(--safe-b))}
 #stick{left:max(22px,var(--safe-l));bottom:max(96px,calc(var(--safe-b) + 80px))}
+#look-stick{right:max(22px,var(--safe-r));bottom:max(96px,calc(var(--safe-b) + 80px))}
 #ui-restore{top:max(12px,var(--safe-t));right:max(14px,var(--safe-r))}
 
 /* ---- narrow screens (phones, portrait tablets) ---- */
@@ -639,7 +650,10 @@ body.touch #mode-controls{bottom:max(212px,calc(var(--safe-b) + 196px))}   /* si
 @media (max-height:520px){
   #scoreboard{transform:translateX(-50%) scale(.8);transform-origin:top center}
   #profile{transform:scale(.78);transform-origin:top right}
-  #top-actions{top:max(52px,calc(var(--safe-t) + 44px));gap:6px}
+  /* the burger toggle sat just under the scaled level-ring badge (44px ring +
+     7px top/bottom panel padding ~= 58px tall from top:12px) - pushed down
+     clear of it */
+  #top-actions{top:max(68px,calc(var(--safe-t) + 60px));gap:6px}
   #pbar{height:108px}
   #pbar-fill{background-size:100% 104px}
   #power-pct{font-size:17px}
@@ -648,6 +662,7 @@ body.touch #mode-controls{bottom:max(212px,calc(var(--safe-b) + 196px))}   /* si
   #spin-ball{width:88px;height:88px}
   #spin-wrap{bottom:158px;padding:9px;gap:5px}
   #stick{bottom:max(14px,calc(var(--safe-b) + 8px));width:92px;height:92px}
+  #look-stick{bottom:max(14px,calc(var(--safe-b) + 8px));width:92px;height:92px}
   body.touch #mode-controls{bottom:120px}                  /* sits above the shorter corner stick */
   #bih-notice{bottom:70px;font-size:11px;padding:8px 16px}
   #call-pockets{bottom:96px}
@@ -772,6 +787,10 @@ body.touch .ta-item{min-height:var(--tap)}
   /* the walk thumbstick moves up to sit just ABOVE that corner cluster */
   body.touch #stick{left:max(14px,var(--safe-l));
     bottom:max(78px,calc(var(--safe-b) + 68px))}
+  /* its look-stick mirror, bottom-right - only ever visible while the power
+     meter/spin pad that would otherwise occupy this corner are hidden */
+  body.touch #look-stick{right:max(14px,var(--safe-r));
+    bottom:max(78px,calc(var(--safe-b) + 68px))}
 
   /* (2) the charge control becomes a compact round icon button; the
      "Hold Space / Release" helper text is dropped on touch. The power meter
@@ -790,6 +809,7 @@ body.touch .ta-item{min-height:var(--tap)}
   body.touch #charge-btn{width:54px;height:54px;min-height:54px;min-width:54px}
   body.touch #charge-btn::before{font-size:24px}
   body.touch #stick{bottom:max(62px,calc(var(--safe-b) + 54px));width:88px;height:88px}
+  body.touch #look-stick{bottom:max(62px,calc(var(--safe-b) + 54px));width:88px;height:88px}
   /* drop the spin pad down to the bottom row, just LEFT of the meter, so it clears
      the level ring + burger menu in the top-right corner (Fine-aim mode) */
   body.touch #spin-wrap{bottom:max(10px,var(--safe-b));

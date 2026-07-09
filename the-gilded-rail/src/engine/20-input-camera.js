@@ -8,6 +8,7 @@ const Input = {
   aimYaw: Math.PI,         // direction the SHOT travels (radians, world XZ)
   sDist:0.85, sH:0.42,     // shoot-mode camera distance / height (wheel + vertical drag)
   stickVec:{x:0,y:0},
+  lookStickVec:{x:0,y:0},  // right-side touch stick: turns the free-cam view (walk/orbit only)
   orbitYaw: -Math.PI/2, orbitPitch: 0.62, orbitDist: 2.9,
   /* first-person free-cam: eye walks the room (WASD / stick), mouse looks (yaw+pitch),
      wheel changes eye height. orbitYaw doubles as the look yaw. */
@@ -126,6 +127,30 @@ const Input = {
       });
       const release=e=>{ if(e.pointerId!==sid) return; sid=null; this.stickVec.x=0; this.stickVec.y=0; setKnob(0,0); };
       stick.addEventListener('pointerup', release); stick.addEventListener('pointercancel', release);
+    }
+
+    /* right-side look thumbstick (touch): turns the free-cam view during
+       walk/orbit, so a phone player doesn't have to drag a finger across the
+       table to look around. Only shown while that camera is actually active
+       (UI.sync toggles #look-stick.on) - the exact same condition that hides
+       the power meter / spin pad, so it can never land on top of them. */
+    const lookStick=document.getElementById('look-stick'), lookKnob=document.getElementById('look-stick-knob');
+    if(lookStick){
+      let lid=null, lcx=0, lcy=0;
+      const setLookKnob=(x,y)=>{ lookKnob.style.transform='translate(calc(-50% + '+(x*34)+'px), calc(-50% + '+(y*34)+'px))'; };
+      lookStick.addEventListener('pointerdown', e=>{
+        lid=e.pointerId; const r=lookStick.getBoundingClientRect(); lcx=r.left+r.width/2; lcy=r.top+r.height/2;
+        lookStick.setPointerCapture(lid); e.preventDefault();
+      });
+      lookStick.addEventListener('pointermove', e=>{
+        if(e.pointerId!==lid) return;
+        let x=(e.clientX-lcx)/44, y=(e.clientY-lcy)/44;
+        const m=Math.hypot(x,y); if(m>1){ x/=m; y/=m; }
+        if(m<0.15){ this.lookStickVec.x=0; this.lookStickVec.y=0; } else { this.lookStickVec.x=x; this.lookStickVec.y=y; }
+        setLookKnob(x,y);
+      });
+      const releaseLook=e=>{ if(e.pointerId!==lid) return; lid=null; this.lookStickVec.x=0; this.lookStickVec.y=0; setLookKnob(0,0); };
+      lookStick.addEventListener('pointerup', releaseLook); lookStick.addEventListener('pointercancel', releaseLook);
     }
 
     /* touch / mouse charge button.
@@ -255,6 +280,11 @@ const Input = {
         p.addScaledVector(rgt,  this.stickVec.x*sp*1.3);
       }
       this.clampWalk();
+      /* right-side look stick: rate-based turn (held deflection, not a drag delta) */
+      if(this.lookStickVec.x||this.lookStickVec.y){
+        this.orbitYaw += this.lookStickVec.x*2.4*dt;
+        this.lookPitch = Math.max(-1.15, Math.min(1.15, this.lookPitch - this.lookStickVec.y*2.0*dt));
+      }
     }
     /* arrow keys fine-aim */
     if((this.mode==='SHOOT'||this.mode==='FINE') && (Game.phase==='AIM'||Game.phase==='CHARGE')){
