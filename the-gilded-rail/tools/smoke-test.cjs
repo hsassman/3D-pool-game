@@ -306,22 +306,12 @@ ok(G.Input.aimYaw!==yaw0, 'stick steers aim in shoot mode');
 fire('stick','pointerup',{pointerId:7});
 ok(G.Input.stickVec.x===0&&G.Input.stickVec.y===0, 'stick recenters on release');
 
-console.log('--- flickering light ---');
+console.log('--- lighting (flicker disabled, stays constant) ---');
 ok(G.flickerLights.length>=6, 'light pool collected ('+G.flickerLights.length+' lights)');
-G.Flicker.next=0; G.Flicker.t=0;
-/* pin the episode-type roll: 20% of episodes are blackouts (active.l is undefined
-   there), which used to crash the single-lamp assertions below ~1 run in 5 */
-const _rnd=Math.random; Math.random=()=>0.5;
-G.Flicker.update(0.1);
-Math.random=_rnd;
-ok(!!G.Flicker.active && !!G.Flicker.active.l, 'flicker episode triggers (single-lamp)');
-const fl=G.Flicker.active.l, base=G.Flicker.active.base;
-let changed=false;
-for(let i=0;i<30;i++){ G.Flicker.update(0.1); if(Math.abs(fl.intensity-base)>1e-6) changed=true; }
-ok(changed, 'light intensity stutters during episode');
-for(let i=0;i<120;i++) G.Flicker.update(0.1);
-ok(!G.Flicker.active && Math.abs(fl.intensity-base)<1e-9, 'light restored after ~10s');
-ok(G.Flicker.next>G.Flicker.t+230, 'next episode scheduled 4-6 minutes out');
+const lvl0=G.flickerLights.map(l=>l.intensity);
+for(let i=0;i<300;i++) G.Flicker.update(0.1);   // ~30s simulated - would have triggered an episode before
+ok(!G.Flicker.active, 'no flicker episode ever starts');
+ok(G.flickerLights.every((l,i)=>l.intensity===lvl0[i]), 'lamp intensities never change');
 
 console.log('--- smoke + trough in render loop ---');
 try{ for(let i=0;i<20;i++){ G.Smoke.update(i*0.05); G.Trough.update(1/60); } ok(true,'smoke/trough update loop stable'); }
