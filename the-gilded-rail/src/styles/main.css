@@ -639,8 +639,9 @@ body.touch #mode-controls{bottom:max(212px,calc(var(--safe-b) + 196px))}   /* si
   #pbar-fill{background-size:100% 144px}
   body.touch #charge-btn{padding:16px 30px;font-size:13px}
   #spin-wrap{right:max(12px,var(--safe-r));bottom:280px;transform:scale(.92);transform-origin:bottom right}
-  #banner{top:88px;padding:11px 22px;width:min(90vw,420px)}
-  #banner .big{font-size:21px}
+  #banner{top:88px;padding:8px 18px;width:min(90vw,420px)}
+  #banner .big{font-size:17px}
+  #banner .sub{font-size:10px;letter-spacing:.16em}
   #menu-card{padding:38px 24px 30px}
   .menu-foot{gap:8px}
   .modal-card{padding:30px 22px}
@@ -666,6 +667,11 @@ body.touch #mode-controls{bottom:max(212px,calc(var(--safe-b) + 196px))}   /* si
   body.touch #mode-controls{bottom:120px}                  /* sits above the shorter corner stick */
   #bih-notice{bottom:70px;font-size:11px;padding:8px 16px}
   #call-pockets{bottom:96px}
+  /* the turn/foul banner sits over the middle of a short screen - keep it small
+     so it never obscures the table (desktop 26px was applying untouched here) */
+  #banner{padding:7px 16px;width:min(70vw,380px)}
+  #banner .big{font-size:16px}
+  #banner .sub{font-size:9px;letter-spacing:.14em}
   #menu-card{padding:24px 26px;max-height:96vh}
   .title-main{font-size:clamp(30px,8vh,46px)}
   .diff-row{margin-top:14px}
