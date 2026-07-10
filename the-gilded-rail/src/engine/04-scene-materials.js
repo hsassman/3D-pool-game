@@ -84,8 +84,8 @@ const Graphics = {
     high:   {pr:Math.min(devicePixelRatio,2),   shadows:true,  map:2048},
   },
   apply(q){
-    q=q||(Profile.data&&Profile.data.quality)||'high';
-    const L=this.levels[q]||this.levels.high;
+    q=q||(Profile.data&&Profile.data.quality)||'low';
+    const L=this.levels[q]||this.levels.low;
     renderer.setPixelRatio(L.pr);
     renderer.shadowMap.enabled=L.shadows;
     flickerLights.forEach(l=>{ if(l.shadow && l.castShadow){
@@ -99,7 +99,7 @@ const Graphics = {
   /* In HIGH quality lift the floor + rug base colour so the plank/mat textures
      actually read - still dark, just no longer near-black. Low/medium stay murky. */
   floorTone(q){
-    q=q||(Profile.data&&Profile.data.quality)||'high';
+    q=q||(Profile.data&&Profile.data.quality)||'low';
     const hi = q==='high';
     /* kept deep so the background falls smoothly into shadow (no bright floor halo) */
     if(typeof floorMat!=='undefined' && floorMat) floorMat.color.setHex(hi?0x1d160e:0x0c0906);

@@ -297,7 +297,7 @@ const UI = {
       '</div>'+
       '<div class="set-line"><label>Depth of field</label><div class="qual-row" id="dof-row">'+
       [['off','Off'],['normal','Normal'],['strong','Strong']].map(([k,n])=>'<button class="qual-btn'+
-        ((Profile.data.dof||'strong')===k?' sel':'')+'" data-dof="'+k+'">'+n+'</button>').join('')+
+        ((Profile.data.dof||'off')===k?' sel':'')+'" data-dof="'+k+'">'+n+'</button>').join('')+
       '</div></div>'+
       this._secretSection());
     ['sfx','music','amb'].forEach(b=>{

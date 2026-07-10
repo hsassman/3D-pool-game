@@ -38,9 +38,10 @@ const PostFX = {
   setSize(w,h){ if(this.composer) this.composer.setSize(w,h); if(this.bloom) this.bloom.setSize(w,h); },
   enabled(){ return this._on && !(typeof Profile!=='undefined' && Profile.data.quality==='low'); },
   /* depth-of-field level, controlled from Settings: 'off' | 'normal' | 'strong'
-     (default strong - keeps the table sharp and softly blurs only the room behind it).
+     (default off - the bokeh pass is the single heaviest effect, so new players
+     start without it; 'strong' keeps the table sharp and blurs only the room).
      'off' disables only the DoF pass; bloom and the rest of the look stay. */
-  dofLevel(){ return (typeof Profile!=='undefined' && Profile.data.dof) || 'strong'; },
+  dofLevel(){ return (typeof Profile!=='undefined' && Profile.data.dof) || 'off'; },
   render(){
     if(!this.enabled()){ renderer.render(scene, camera); return; }
     const dof=this.dofLevel();

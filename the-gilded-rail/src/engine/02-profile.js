@@ -11,8 +11,8 @@ const Profile = {
           calledShots:false,                           // house rule: must call the pocket for the 8-ball
           tutorialSeen:false,                          // first-time how-to-play overlay shown?
           haptics:true,                                // vibration feedback on touch devices
-          quality:'high',                              // graphics quality: 'low' | 'medium' | 'high'
-          dof:'strong',                                // depth-of-field strength: 'off' | 'normal' | 'strong'
+          quality:'low',                               // graphics quality: 'low' | 'medium' | 'high' - low by default; weaker devices choke on high
+          dof:'off',                                   // depth-of-field strength: 'off' | 'normal' | 'strong' - off by default (perf)
           codes:{},                                    // secret codes redeemed (e.g. {original:true})
           flashlightEnabled:false,                     // flashlight feature switched on (Settings); press F in game
           flashlight:false,                            // flashlight currently on (only if enabled)
@@ -33,7 +33,7 @@ const Profile = {
         if(!Array.isArray(this.data.campaign.cleared)) this.data.campaign.cleared=[];
         this.data.achievements = Array.isArray(d.achievements) ? d.achievements : [];
         this.data.challenges = (d.challenges && typeof d.challenges==='object') ? d.challenges : {};
-        if(['off','normal','strong'].indexOf(this.data.dof)<0) this.data.dof='strong';
+        if(['off','normal','strong'].indexOf(this.data.dof)<0) this.data.dof='off';
         this.data.codes = (d.codes && typeof d.codes==='object') ? d.codes : {};
         /* the flashlight used to be a secret code; it's a Settings feature now - keep it on
            for anyone who'd already unlocked it via the old code */
