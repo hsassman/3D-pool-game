@@ -50,6 +50,14 @@ const Profile = {
         this.data.prestige = Math.max(0, Math.floor(Number(this.data.prestige)||0));
       }
     }catch(e){ /* fresh profile */ }
+    /* one-time graphics reset: 'high'/'strong' used to be the DEFAULT, so nearly
+       every stored profile carries them without the player ever choosing them -
+       and weaker devices choke. Drop everyone to low/off ONCE; the flag then
+       sticks (and syncs), so anything picked in Settings afterwards is kept. */
+    if(!this.data.gfxReset1){
+      this.data.quality='low'; this.data.dof='off'; this.data.gfxReset1=true;
+      this.save();
+    }
     UI.refreshProfile();
   },
   async save(){
