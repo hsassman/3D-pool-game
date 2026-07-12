@@ -27,6 +27,14 @@
 <link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
+<!-- boot curtain: covers everything until every asset (models, audio, artwork, fonts)
+     has downloaded - progress + fade handled by Boot in src/engine/22b-preload.js -->
+<div id="boot-loader" role="status" aria-label="Loading The Gilded Rail">
+  <img class="bl-mark" src="/assets/ui/logo-mark.png" alt="" aria-hidden="true">
+  <div class="bl-word serif">The Gilded Rail</div>
+  <div class="bl-bar"><div id="bl-fill"></div></div>
+  <div id="bl-pct">0%</div>
+</div>
 <canvas id="gl" aria-label="3D pool table - drag to aim, hold to charge a shot" role="img"></canvas>
 <!-- flashlight beam framing (secret unlock): a soft radial vignette over the 3D view -->
 <div id="flashlight-overlay" aria-hidden="true"></div>
@@ -372,6 +380,7 @@
   <script src="src/engine/21b-postfx.js"></script>
   <script src="src/engine/21c-online.js"></script>
   <script src="src/engine/22-loop.js"></script>
+  <script src="src/engine/22b-preload.js"></script>
   <script src="src/engine/23-init.js"></script>
 </body>
 </html>

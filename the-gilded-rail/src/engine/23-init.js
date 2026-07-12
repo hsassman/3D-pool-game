@@ -4,6 +4,9 @@
 
 /* ================= INIT ================= */
 (async function init(){
+  /* kick every asset download off immediately - the boot curtain (index.html)
+     stays up until they all land; see Boot in 22b-preload.js */
+  const booted = Boot.run();
   buildTable();
   Trough.build();
   if(typeof matchMedia!=='undefined' && matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
@@ -30,10 +33,14 @@
     PostFX.setSize(innerWidth,innerHeight);
   });
   loop();
-  /* the room decor uses the external prop models - load them in the BACKGROUND so the
-     table and game are playable immediately. The lounge/bar/ashtray stream in once the
-     props THEY use are ready (not the whole batch - the big dartboard cabinet must not
-     hold them back); the chalk + cabinet wait for their own models in buildRoomDecor. */
+  /* hold the curtain until EVERY asset has downloaded, then reveal the menu.
+     The watchdog means a broken download can never trap the player here. */
+  await Promise.race([booted, new Promise(r=>setTimeout(r, 60000))]);
+  Boot.hide();
+  /* the room decor uses the external prop models - Boot already downloaded the
+     GLB bytes (blob: URLs), so this is just a parse. The lounge/bar/ashtray
+     stream in once the props THEY use are ready (not the whole batch);
+     the chalk + cabinet wait for their own models in buildRoomDecor. */
   Models.loadAll();
   const barProps=['jackdaniels','redcup','bottles','stool','ashtray'];
   Promise.all(barProps.map(n=>Models.ready(n))).then(()=>{

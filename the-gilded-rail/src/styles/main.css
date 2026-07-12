@@ -15,6 +15,24 @@ body{font-family:'Albert Sans',sans-serif;color:var(--cream);user-select:none;-w
 canvas#gl{position:fixed;inset:0;display:block;touch-action:none}
 .serif{font-family:'Fraunces',serif}
 
+/* boot curtain: first paint until every asset is downloaded (Boot, 22b-preload.js).
+   Static markup in index.html so it shows before any engine JS runs. */
+#boot-loader{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;background:var(--ink);
+  transition:opacity .7s ease;pointer-events:auto}
+#boot-loader.done{opacity:0;pointer-events:none}
+#boot-loader .bl-mark{width:72px;height:72px;object-fit:contain;opacity:.9;
+  filter:drop-shadow(0 0 18px rgba(201,163,92,.35));
+  animation:bl-breathe 2.6s ease-in-out infinite}
+#boot-loader .bl-word{font-size:19px;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gold-bright);opacity:.92}
+#boot-loader .bl-bar{width:min(240px,60vw);height:2px;border-radius:2px;
+  background:rgba(201,163,92,.18);overflow:hidden;margin-top:6px}
+#boot-loader #bl-fill{width:0%;height:100%;border-radius:2px;background:var(--gold-bright);
+  box-shadow:0 0 8px rgba(232,201,135,.6);transition:width .25s ease}
+#boot-loader #bl-pct{font-size:10px;letter-spacing:.3em;color:var(--muted)}
+@keyframes bl-breathe{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+
 /* flashlight beam framing: a soft radial vignette over the 3D view (sits above the
    canvas, below the HUD). Concentric gradient stops read as gentle rings; the centre
    stays clear so you see what the point-light is illuminating. Toggled via body class. */
