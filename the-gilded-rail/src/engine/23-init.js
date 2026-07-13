@@ -33,21 +33,22 @@
     PostFX.setSize(innerWidth,innerHeight);
   });
   loop();
-  /* hold the curtain until EVERY asset has downloaded, then reveal the menu.
-     The watchdog means a broken download can never trap the player here. */
-  await Promise.race([booted, new Promise(r=>setTimeout(r, 60000))]);
-  Boot.hide();
-  /* the room decor uses the external prop models - Boot already downloaded the
-     GLB bytes (blob: URLs), so this is just a parse. The lounge/bar/ashtray
-     stream in once the props THEY use are ready (not the whole batch);
-     the chalk + cabinet wait for their own models in buildRoomDecor. */
-  Models.loadAll();
+  /* hold the curtain until EVERY asset has downloaded AND the room decor built from
+     them has finished parsing/placing - otherwise the menu would appear "ready" while
+     GLTF parsing + scene-graph inserts for 7 models were still to come, causing the
+     exact stutter this loader exists to prevent. Bytes are already local (blob: URLs
+     from Boot), so parsing is fast; the watchdog still guarantees the curtain can
+     never trap the player on a broken network. */
   const barProps=['jackdaniels','redcup','bottles','stool','ashtray'];
-  Promise.all(barProps.map(n=>Models.ready(n))).then(()=>{
+  const decorReady = booted.then(()=>Models.loadAll()).then(()=>
+    Promise.all(barProps.map(n=>Models.ready(n)))
+  ).then(()=>{
     buildLounge();
     buildBar();
     const ash=makeCigSet(0.9);   /* ashtray + cigarette on the far rail corner */
     ash.position.set(W2*0.78, 0.061, -(H2+TABLE.CUSH_D+TABLE.RAIL/2));
     tableGroup.add(ash);
   });
+  await Promise.race([decorReady, new Promise(r=>setTimeout(r, 60000))]);
+  Boot.hide();
 })();
