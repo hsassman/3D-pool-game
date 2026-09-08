@@ -1,133 +1,119 @@
 # The Gilded Rail
 
-A 1920s private–billiards-club styled **3D 8-ball pool game** that runs in the
-browser on [Three.js](https://threejs.org/). Full WPA-style 8-ball rules,
-simulated physics (regulation 57.15 mm / 170 g balls, slide→roll friction,
-cushion compression, throw and english), orbit + WASD camera, a shoot mode with
-spin control and a power meter, XP/level progression with unlockable cloths and
-cues, three AI difficulties **and** local two-player on one device.
+A 1920s private–billiards-club **3D 8-ball pool game** that runs entirely in the
+browser on [Three.js](https://threejs.org/) — regulation physics, a career
+ladder, unlockable tables and cues, AI opponents, local two-player and online
+private rooms.
+
+![The cue view over a purple-cloth table in the club room](docs/screenshot-shoot.jpg)
 
 ---
 
-## Quick start
+## Features
+
+**Games** — 8-Ball, English (reds vs yellows), 9-Ball, and a no-rules Practice
+table. Full WPA-style rules, called pockets, ball-in-hand fouls.
+
+**Physics** — regulation 57.15 mm / 170 g balls, slide→roll friction, cushion
+compression, throw and english (side spin), jump shots, and a cue ball that can
+leave the table on a bad hit.
+
+**Modes**
+- **Career** — five leagues of five opponents (25 in all), climbing from the
+  Back Room to House Champion.
+- **Quick Match** — vs CPU at three difficulties (Regular / Hustler / Shark), or
+  local two-player on one device.
+- **Online** — private rooms over a shared 6-character code, with live match
+  chat. Play as a throwaway guest or a signed-in member.
+
+**Progression** — XP and levels (cap 50, then prestige), daily and weekly
+challenges, achievements, and unlockable cloth colours, cue woods and rail
+finishes.
+
+**Accounts** (optional) — email + password on [Supabase](https://supabase.com/)
+Auth, with email verification, TOTP two-factor, and hCaptcha on every auth step.
+A member's progress is mirrored to the cloud and **merged** across devices; guests
+keep playing straight from `localStorage`.
+
+**Presentation** — depth-of-field and bloom post-processing, glossy balls, soft
+shadows, a fully modelled club room (back bar, lounge, ball-return cabinet),
+recorded ball / cushion / pocket audio, and a configurable graphics-quality
+setting.
+
+|  |  |
+|---|---|
+| ![English (reds vs yellows) on the green cloth](docs/screenshot-english.jpg) | ![The career trophy on a blue-cloth table](docs/screenshot-career.jpg) |
+
+---
+
+## Run it locally
 
 ```bash
-npm install        # install three + vite (dev only)
-npm run dev        # serve at http://localhost:5173 with hot reload
+npm install        # three + vite (dev only)
+npm run dev        # http://localhost:5173 with hot reload
 ```
 
-> A static server is required (not `file://`) so the soundtrack asset can be
-> fetched and decoded by WebAudio. Any static server works - e.g.
-> `python3 -m http.server` then open `index.html`.
-
-### Other scripts
+A static server is required (not `file://`) so the audio assets can be fetched
+and decoded by WebAudio.
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Vite dev server (serves the multi-file source as-is). |
-| `npm run build` | Bundles everything - CSS, all engine files, and the soundtrack (base64) - into one portable `dist/the-gilded-rail.html`. |
-| `npm test` | Runs the headless smoke/feature suite (110 checks) against `src/engine/`. |
+| `npm run dev` | Vite dev server — serves the multi-file source as-is. |
+| `npm run build` | Inlines everything (CSS, all engine files, audio as `data:` URLs) into a single portable `dist/index.html`. |
+| `npm test` | Headless smoke / feature suite (137 checks) against `src/engine/`. |
 
 ---
 
-## Project structure
+## Deploy (Vercel)
+
+The shippable artifact is the single-file build.
+
+1. Import the repo in Vercel and set the project **Root Directory** to `the-gilded-rail`.
+2. `vercel.json` does the rest: it runs `npm run build` and serves `dist/`, and
+   ships a strict Content-Security-Policy plus HSTS / `nosniff` /
+   `X-Frame-Options` / `Referrer-Policy` / `Permissions-Policy` headers.
+
+Any static host works too — serve `dist/index.html`, or the multi-file source
+behind any static server.
+
+---
+
+## Project layout
 
 ```
 the-gilded-rail/
-├── index.html                  # page shell: fonts, CSS link, HUD markup, ordered <script> tags
-├── package.json
-├── vite.config.js
-├── public/
-│   └── assets/audio/
-│       └── put-your-head-on-my-shoulder.mp3   # in-game soundtrack
+├── index.html          # page shell + ordered <script> tags (the load order)
 ├── src/
-│   ├── styles/
-│   │   └── main.css            # all UI / HUD styling (extracted from the old inline <style>)
-│   └── engine/                 # the game engine, split into numbered load-order files
-│       ├── 01-config.js          CONFIG, DIFFS, TABLE, BALL, PHYS constants
-│       ├── 02-profile.js         Profile + localStorage-style persistence
-│       ├── 03-audio.js           Sfx: synthesized impacts, ambience, soundtrack chain
-│       ├── 04-scene-materials.js renderer, scene, lights, textures, materials, envMap
-│       ├── 05-table.js           buildTable(): bed, cushions, rails, pockets, nets, caps, floor
-│       ├── 06-balls.js           ball meshes + racking
-│       ├── 07-decor-smoke.js     looping smoke-wisp particle system
-│       ├── 08-decor-cigarette.js glass ashtray + smouldering cigarette
-│       ├── 09-decor-ball-return.js  the in-cabinet ball-return gallery
-│       ├── 10-decor-furniture.js stools, glasses, decanters, bottle archetypes
-│       ├── 11-decor-lounge.js    the lounge corner
-│       ├── 12-decor-bar.js       the back bar (mirror, shelves, bottles, lights)
-│       ├── 13-flicker.js         the random light-flicker system
-│       ├── 14-unlocks.js         FELTS / CUES definitions + apply logic
-│       ├── 15-physics.js         stepBall, collisions, cushions, pocket capture
-│       ├── 16-cue-stick.js       the cue mesh + placement
-│       ├── 17-aim-guide.js       aim line / ghost-ball guide
-│       ├── 18-game-rules.js      Game state machine + full 8-ball rules
-│       ├── 19-ai-opponent.js     AI: shot assessment, lookahead, banks, safeties
-│       ├── 20-input-camera.js    Input: pointer/keys/touch, camera, thumbstick
-│       ├── 21-ui.js              UI: HUD, scoreboard, menus, modals
-│       ├── 22-loop.js            the render/update loop
-│       └── 23-init.js            boot sequence (builds the world, wires it up)
+│   ├── styles/main.css
+│   └── engine/          # the game, split into numbered load-order files (01…23)
+├── public/assets/       # audio, glTF props, UI artwork
+├── vendor/              # Three.js r128, its post-processing passes, Supabase (all vendored)
 └── tools/
-    ├── build-single-file.mjs   produces the portable dist/ build
-    └── smoke-test.cjs          headless feature suite
+    ├── build-single-file.mjs   # the portable dist/ build
+    └── smoke-test.cjs          # the headless feature suite
 ```
 
-## How the engine is wired (important)
+The engine is **plain global-scope script**, not ES modules — every file shares
+one namespace and the numeric prefixes are the load order. Concatenating
+`src/engine/*.js` in order reproduces the original single-file engine exactly.
+A full, ready-to-run recipe for moving to ES modules lives in
+[`MIGRATION.md`](MIGRATION.md).
 
-The engine is **plain global-scope script**, not ES modules - every file shares
-one global namespace. The **numeric file prefixes are the load order**, declared
-by the `<script>` tags at the bottom of `index.html`. A later file freely uses
-symbols defined in an earlier one (e.g. `15-physics.js` uses `BALL`, `balls`,
-`Game`, `Trough` defined earlier). The decor files (07–14) load **after** the
-table/material setup (needs `BALL`, `chromeMat`, `woodMat`, `envMap`) and
-**before** physics/rules/loop (which reference `Trough`, `Unlocks`, `Smoke`).
-
-This was a deliberate, behaviour-preserving split of the original single file -
-concatenating `src/engine/*.js` in numeric order reproduces the original engine
-exactly (verified against the smoke suite).
-
-### Migrating to ES modules / a framework
-
-A full, ready-to-execute recipe lives in [`MIGRATION.md`](MIGRATION.md). In short:
-`export`/`import` per file, `import * as THREE from 'three'` (keep r128 pinned so
-it stays behaviour-preserving), a single `main.js` entry, switch the build to
-`vite build`, and rewrite the test harness to import the modules. Do it as its own
-reviewed step - it's a structural cutover, not an incremental edit.
-
-## Deploying online (Vercel)
-
-The shippable artifact is the **single-file build** - `npm run build` now emits
-`dist/index.html` (everything inlined: CSS, all engine files, and the soundtrack as
-a `data:` URL; Three.js still loads from its CDN). A `vercel.json` is included.
-
-1. Push this repo to GitHub and "Add New Project" in Vercel.
-2. Set the project's **Root Directory** to `the-gilded-rail`.
-3. Vercel reads `vercel.json`: it runs `npm run build` and serves `dist/`.
-
-Any other static host works too - serve `dist/index.html`, or the multi-file
-source as-is (a static server, not `file://`, so the soundtrack can be fetched).
-
-> ⚠ **Soundtrack licensing:** the bundled track is a well-known copyrighted
-> recording. Publishing it to public users is a legal risk - before going live,
-> swap `public/assets/audio/…` (and `window.__SONG` in `index.html`) for a
-> royalty-free / licensed / public-domain track.
+---
 
 ## Controls
 
 - **Drag / ← →** aim · **Space** hold to charge, release to strike · **E** fine-tune spin
-- **Tab** walk & orbit the room · **WASD + drag** look around · **scroll / pinch** zoom
-- **H** hide the interface · **⛶** fullscreen (**Esc** exits)
-- Touch: on-screen thumbstick + drag to aim
+- **G** cycle the aim guide · **Tab** walk & orbit the room · **WASD + drag** look · **scroll / pinch** zoom
+- **H** hide the interface · **⛶** fullscreen · **Esc** menu
+- Touch: on-screen move + look thumbsticks, drag to aim
 
-## Soundtrack
+---
 
-`03-audio.js` reads `window.__SONG` (set in `index.html`). It accepts either a
-fetchable URL (the repo default, pointing at the bundled MP3) **or** an inlined
-`data:` URL (what the single-file build uses). All other sound - ball impacts,
-cushions, ambience - is synthesized at runtime with the WebAudio API.
+## A note on the soundtrack
 
-## Roadmap
-
-- Online multiplayer rooms (host/guest via room code).
-- More unlockable cues, cloths and rail finishes.
-- A playable darts mini-game.
+`03-audio.js` reads `window.__SONG` (set in `index.html`). The bundled track is a
+well-known copyrighted recording — **swap it for a licensed / royalty-free /
+public-domain track before publishing to real users.** All other sound (ball
+impacts, cushions, ambience) is either a recorded sample or synthesized at
+runtime and is fine to ship.
