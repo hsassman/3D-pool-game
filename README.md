@@ -1,6 +1,6 @@
 # The Gilded Rail
 
-A 1920s private–billiards-club **3D 8-ball pool game** that runs entirely in the
+A 1960s private–billiards-club **3D 8-ball pool game** that runs entirely in the
 browser on [Three.js](https://threejs.org/) — regulation physics, a career
 ladder, unlockable tables and cues, AI opponents, local two-player and online
 private rooms.
@@ -112,11 +112,3 @@ A full, ready-to-run recipe for moving to ES modules lives in
 - Touch: on-screen move + look thumbsticks, drag to aim
 
 ---
-
-## A note on the soundtrack
-
-`03-audio.js` reads `window.__SONG` (set in `index.html`). The bundled track is a
-well-known copyrighted recording — **swap it for a licensed / royalty-free /
-public-domain track before publishing to real users.** All other sound (ball
-impacts, cushions, ambience) is either a recorded sample or synthesized at
-runtime and is fine to ship.
