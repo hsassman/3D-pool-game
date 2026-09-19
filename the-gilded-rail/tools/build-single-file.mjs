@@ -22,7 +22,7 @@ html = html.replace(/(?:\s*<script src="src\/engine\/[^"]+"><\/script>)+/, `\n<s
    GLTFLoader) in place, so the deployed file carries them itself and never depends on a CDN.
    Order is preserved - each must run after three.min.js and before the engine. */
 const vendorOrder = ['three.min','CopyShader','BokehShader','EffectComposer','RenderPass','ShaderPass',
-  'MaskPass','BokehPass','LuminosityHighPassShader','UnrealBloomPass','GLTFLoader','supabase'];
+  'MaskPass','BokehPass','LuminosityHighPassShader','UnrealBloomPass','FXAAShader','GLTFLoader','supabase'];
 for (const name of vendorOrder) {
   html = html.replace(`<script src="vendor/${name}.js"></script>`,
     `<script>\n/* vendored: ${name} */\n${r('vendor', name + '.js')}\n</script>`);

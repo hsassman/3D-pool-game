@@ -26,7 +26,7 @@ function ballTexture(num){
 }
 
 const balls=[]; let cueBall=null;
-const ballGeo=new THREE.SphereGeometry(BALL.R, 36, 26);
+const ballGeo=new THREE.SphereGeometry(BALL.R, 48, 36);   /* smoother silhouette + specular highlight on the glossy clearcoat */
 function makeBall(num){
   const mat=new THREE.MeshPhysicalMaterial({map:ballTexture(num), roughness:0.12, metalness:0,
     clearcoat:1, clearcoatRoughness:0.06, reflectivity:0.7, envMapIntensity:1.15});

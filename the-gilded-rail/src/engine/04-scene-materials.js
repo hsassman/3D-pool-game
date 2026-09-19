@@ -94,6 +94,7 @@ const Graphics = {
     }});
     renderer.shadowMap.needsUpdate=true;
     renderer.setSize(innerWidth, innerHeight);
+    if(typeof PostFX!=='undefined') PostFX.setSize(innerWidth, innerHeight);   // FXAA's resolution uniform tracks pixel ratio
     this.floorTone(q);
   },
   /* In HIGH quality lift the floor + rug base colour so the plank/mat textures
@@ -151,7 +152,7 @@ function makeFeltTexture(felt, markings){
    dark wood-toned walls around, a hint of green felt below. Higher res so the glints
    on the polished balls and chrome read crisply. */
 const envMap=(function(){
-  const S=256;
+  const S=512;   /* crisper reflections/glints on chrome + the balls' clearcoat */
   const face=(top,mid,bot)=>{
     const cv=document.createElement('canvas'); cv.width=cv.height=S; const x=cv.getContext('2d');
     const g=x.createLinearGradient(0,0,0,S);

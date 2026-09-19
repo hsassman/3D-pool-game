@@ -1,14 +1,20 @@
-/* The Gilded Rail - post-processing: depth of field + bloom.
+/* The Gilded Rail - post-processing: depth of field + bloom + edge AA.
    Global-scope engine file, loaded in numeric order (see index.html).
 
    A Bokeh depth-of-field pass focused on the cue ball, plus an Unreal bloom pass that
    makes the lamps, glowing bulbs, embers and glowing cues bleed light realistically.
    The blur deepens when you are down on a shot and eases off when orbiting.
 
+   The composer renders to a plain (non-multisampled) render target, so it silently
+   throws away the renderer's own MSAA (antialias:true on the WebGLRenderer only
+   antialiases the direct-to-screen path). An FXAA pass runs last to restore smooth
+   edges on the composer path - otherwise cushion rails and ball silhouettes look
+   noticeably more jagged whenever DoF/bloom is on than when it's off.
+
    Degrades gracefully: if the passes are missing (offline / headless) or quality is
    Low, it renders straight to screen. */
 const PostFX = {
-  composer:null, bokeh:null, bloom:null, _on:false,
+  composer:null, bokeh:null, bloom:null, fxaa:null, _on:false,
   available(){
     return typeof THREE!=='undefined'
       && typeof THREE.EffectComposer==='function'
@@ -32,10 +38,20 @@ const PostFX = {
         this.bloom=new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), 0.72, 0.55, 0.78);
         this.composer.addPass(this.bloom);
       }
+      if(typeof THREE.FXAAShader!=='undefined' && typeof THREE.ShaderPass==='function'){
+        this.fxaa=new THREE.ShaderPass(THREE.FXAAShader);
+        const pr=renderer.getPixelRatio();
+        this.fxaa.material.uniforms['resolution'].value.set(1/(innerWidth*pr), 1/(innerHeight*pr));
+        this.composer.addPass(this.fxaa);
+      }
       this._on=true;
     }catch(e){ this.composer=null; this._on=false; }
   },
-  setSize(w,h){ if(this.composer) this.composer.setSize(w,h); if(this.bloom) this.bloom.setSize(w,h); },
+  setSize(w,h){
+    if(this.composer) this.composer.setSize(w,h);
+    if(this.bloom) this.bloom.setSize(w,h);
+    if(this.fxaa){ const pr=renderer.getPixelRatio(); this.fxaa.material.uniforms['resolution'].value.set(1/(w*pr), 1/(h*pr)); }
+  },
   enabled(){ return this._on && !(typeof Profile!=='undefined' && Profile.data.quality==='low'); },
   /* depth-of-field level, controlled from Settings: 'off' | 'normal' | 'strong'
      (default off - the bokeh pass is the single heaviest effect, so new players
