@@ -16,21 +16,22 @@ DEST = ROOT / "public/assets/ui/collection"
 
 def optimize(entries):
     DEST.mkdir(parents=True, exist_ok=True)
-    report = []
+    manifest = DEST / "manifest.json"
+    report = {item["file"]: item for item in json.loads(manifest.read_text(encoding="utf-8"))} if manifest.exists() else {}
     for entry in entries:
         name = entry["name"]
         if not re.fullmatch(r"[a-z0-9_-]+", name):
             raise ValueError(f"Invalid asset name: {name}")
         portrait = name.startswith("portrait-")
-        size = (448, 448) if portrait else (768, 512)
+        size = (448, 448) if portrait else (384, 256) if "detail-v3" in name else (768, 512)
         with Image.open(entry["source"]) as original:
             image = ImageOps.exif_transpose(original).convert("RGB")
             image = ImageOps.fit(image, size, method=Image.Resampling.LANCZOS)
             output = DEST / f"{name}.webp"
             image.save(output, "WEBP", quality=79 if portrait else 80, method=6)
-        report.append({"file": output.name, "width": size[0], "height": size[1], "bytes": output.stat().st_size})
-    (DEST / "manifest.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(f"Optimized {len(report)} images: {sum(item['bytes'] for item in report) / 1024:.0f} KiB total")
+        report[output.name] = {"file": output.name, "width": size[0], "height": size[1], "bytes": output.stat().st_size}
+    manifest.write_text(json.dumps(list(report.values()), indent=2) + "\n", encoding="utf-8")
+    print(f"Collection: {len(report)} images, {sum(item['bytes'] for item in report.values()) / 1024:.0f} KiB total")
 
 
 if __name__ == "__main__":

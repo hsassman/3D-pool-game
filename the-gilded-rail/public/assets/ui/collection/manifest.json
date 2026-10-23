@@ -250,5 +250,65 @@
     "width": 448,
     "height": 448,
     "bytes": 21550
+  },
+  {
+    "file": "settings-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 33368
+  },
+  {
+    "file": "membership-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 41488
+  },
+  {
+    "file": "victory-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 28004
+  },
+  {
+    "file": "reflection-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 27006
+  },
+  {
+    "file": "atelier-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 22596
+  },
+  {
+    "file": "sound-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 37096
+  },
+  {
+    "file": "graphics-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 49828
+  },
+  {
+    "file": "tutorial-v3.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 24720
+  },
+  {
+    "file": "felt-detail-v3.webp",
+    "width": 384,
+    "height": 256,
+    "bytes": 26262
+  },
+  {
+    "file": "wood-detail-v3.webp",
+    "width": 384,
+    "height": 256,
+    "bytes": 11242
   }
 ]

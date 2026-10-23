@@ -24,7 +24,8 @@ const UI = {
     const s=TUTORIAL_STEPS[this._tutStep];
     this.$('tut-title').textContent=s.title.replace(/&amp;/g,'&');
     this.$('tut-body').innerHTML=s.body;
-    this.$('tut-dots').innerHTML=TUTORIAL_STEPS.map((_,i)=>'<span class="tut-dot'+(i===this._tutStep?' on':'')+'"></span>').join('');
+    this.$('tut-art').innerHTML=Interface.tutorial(this._tutStep);
+    this.$('tut-dots').innerHTML='<span class="tutorial-step">'+String(this._tutStep+1).padStart(2,'0')+' / '+String(TUTORIAL_STEPS.length).padStart(2,'0')+'</span>'+TUTORIAL_STEPS.map((_,i)=>'<span class="tut-dot'+(i===this._tutStep?' on':'')+'"></span>').join('');
     this.$('tut-next').textContent = this._tutStep>=TUTORIAL_STEPS.length-1 ? 'Got It' : 'Next';
   },
   tutorialNext(){
@@ -89,6 +90,8 @@ const UI = {
       const strip=this.$('pc'+i);
       strip.classList.toggle('active', Game.turn===i && Game.phase!=='OVER' && Game.phase!=='MENU');
       const gn=g?Game.colourName(g):'';
+      const detail=this.$('p'+i+'detail');
+      if(detail) detail.textContent=gn ? gn.charAt(0).toUpperCase()+gn.slice(1)+' · '+Game.remaining(g)+' left' : (Game.turn===i?'At the table':'Waiting for the shot');
       strip.title = Game.openTable ? 'Open table' : (gn ? gn.charAt(0).toUpperCase()+gn.slice(1) : '');
     }
     this.$('p0name').textContent=Game.playerName(0).toUpperCase();
@@ -171,6 +174,7 @@ const UI = {
 
   sync(){
     const ph=Game.phase, m=Input.mode;
+    document.body.classList.toggle('match-active',!!Game.match);
     this.$('hud').classList.toggle('on', ph!=='MENU');
     const orbitLook=m==='ORBIT'||m==='BIH'||ph==='SIM'||ph==='AI';
     this.$('btn-orbit').classList.toggle('active', orbitLook);
@@ -222,6 +226,8 @@ const UI = {
     if(this.$('modal-overlay').classList.contains('hidden')) this._modalOrigin=document.activeElement;
     card.className='modal-card panel'+(kind?' modal-'+kind:'');
     this.$('modal-content').innerHTML=html;
+    if(kind!=='profile') this._profileDraftName=null;
+    Interface.decorate(kind);
     this.$('modal-overlay').classList.remove('hidden');
     const title=card.querySelector?card.querySelector('h2'):null;
     if(title) card.setAttribute('aria-label',title.textContent);
@@ -234,6 +240,28 @@ const UI = {
     const ta=this.$('top-actions'); if(!ta) return;
     ta.classList.remove('ta-open'); ta.classList.add('ta-closed');
     const tog=this.$('ta-toggle'); if(tog) tog.setAttribute('aria-expanded','false');
+    const menu=this.$('ta-menu');if(menu){menu.inert=true;menu.setAttribute('aria-hidden','true');}
+  },
+
+  pauseMenu(){
+    if(Game.mode==='online') return Net.confirmLeave(false);
+    if(Game.phase==='MENU'||Game.phase==='OVER')return;
+    this.closeQuickbar();
+    if(Input.charging) Input.cancelCharge();
+    Input.keys={}; Game.paused=true;
+    this.modal(UIArt.header('YOUR TABLE IS WAITING','Take a moment.','The frame will be right here when you return.','reflection-v3')+
+      '<div class="pause-actions"><button class="btn primary" id="pause-resume">'+UIArt.icon('cue')+' Return to the table</button>'+
+      '<button class="btn ghost" id="pause-settings">'+UIArt.icon('settings')+' Settings</button>'+
+      '<button class="btn ghost" id="pause-equipment">'+UIArt.icon('sparkle')+' Your equipment</button>'+
+      '<button class="linklike" id="pause-leave">Leave this frame</button></div>','pause');
+    const resume=()=>{Game.paused=false;this.$('modal-overlay').classList.add('hidden');this.sync();};
+    this.$('pause-resume').addEventListener('click',resume);
+    this.$('pause-settings').addEventListener('click',()=>this.settingsModal());
+    this.$('pause-equipment').addEventListener('click',()=>this.customizeModal());
+    this.$('pause-leave').addEventListener('click',()=>{
+      Game.paused=false;simActive=false;Game.abandonMatch();Game.phase='MENU';
+      this.$('modal-overlay').classList.add('hidden');this.$('menu-overlay').classList.remove('hidden');this.sync();
+    });
   },
 
   gameOver(won, why, xp, shots, pots, ctx){
@@ -272,6 +300,8 @@ const UI = {
       '<div><b>'+shots+'</b><span>shots taken</span></div>'+
       '<div><b>'+acc+'%</b><span>pot rate</span></div></div>';
     const card=this.$('gameover-card');
+    this.$('result-art').innerHTML=UIArt.image(won?'victory-v3':'reflection-v3','result-cover');
+    this.$('result-medallion').innerHTML=UIArt.icon(won?'trophy':'cue');
     if(card){ card.classList.toggle('result-win', !!won); card.classList.toggle('result-loss', !won); }
     this.$('gameover-overlay').classList.remove('hidden');
     /* result-screen audio: a crowd roar on a win, a brass sting on a loss */
@@ -280,36 +310,33 @@ const UI = {
 
   settingsModal(){
     const v=Profile.data.vol;
-    const row=(id,label,val)=>'<div class="vol-row"><label>'+label+'</label>'+
-      '<input type="range" id="vol-'+id+'" min="0" max="100" value="'+Math.round(val*100)+'">'+
-      '<span class="vval" id="vv-'+id+'">'+Math.round(val*100)+'%</span></div>';
-    this.modal('<h2>Settings</h2><h3>Sound</h3>'+
-      row('sfx','Effects',v.sfx)+row('music','Music',v.music)+row('amb','Ambience',v.amb)+
-      '<div class="mute-row"><input type="checkbox" id="mute-all"'+(Profile.data.sound?'':' checked')+'>'+
-      '<label for="mute-all">Mute everything</label></div>'+
-      '<h3>Accessibility</h3>'+
-      '<div class="mute-row"><input type="checkbox" id="a11y-balls"'+(Profile.data.a11y?' checked':'')+'>'+
-      '<label for="a11y-balls">High-contrast ball markers</label></div>'+
-      '<div class="mute-row"><input type="checkbox" id="haptics-on"'+(Profile.data.haptics!==false?' checked':'')+'>'+
-      '<label for="haptics-on">Vibration feedback (mobile)</label></div>'+
-      '<h3>Gameplay</h3>'+
-      '<div class="set-line"><label>Aim guide</label><div class="qual-row" id="aim-row">'+
-      [['full','Full'],['cue','Cue Line'],['off','Off']].map(([k,n])=>'<button class="qual-btn'+
-        ((Profile.data.aimGuide||'full')===k?' sel':'')+'" data-ag="'+k+'">'+n+'</button>').join('')+
-      '</div></div>'+
-      '<div class="mute-row"><input type="checkbox" id="flash-enable"'+(Profile.data.flashlightEnabled?' checked':'')+'>'+
-      '<label for="flash-enable">Flashlight · press <b>F</b> in game to toggle on/off</label></div>'+
-      '<h3>House Rules</h3>'+
-      '<div class="mute-row"><input type="checkbox" id="called-shots"'+(Profile.data.calledShots?' checked':'')+'>'+
-      '<label for="called-shots">Call your pocket on the 8-ball</label></div>'+
-      '<h3>Graphics</h3><div class="qual-row">'+
-      ['low','medium','high'].map(q=>'<button class="qual-btn'+(Profile.data.quality===q?' sel':'')+'" data-q="'+q+'">'+q+'</button>').join('')+
-      '</div>'+
-      '<div class="set-line"><label>Depth of field</label><div class="qual-row" id="dof-row">'+
-      [['off','Off'],['normal','Normal'],['strong','Strong']].map(([k,n])=>'<button class="qual-btn'+
-        ((Profile.data.dof||'off')===k?' sel':'')+'" data-dof="'+k+'">'+n+'</button>').join('')+
-      '</div></div>'+
-      this._secretSection());
+    const row=(id,label,val,icon,desc)=>'<div class="volume-control"><div class="volume-heading">'+UIArt.icon(icon)+'<label for="vol-'+id+'">'+label+'<small>'+desc+'</small></label>'+
+      '<span class="vval" id="vv-'+id+'">'+Math.round(val*100)+'%</span></div>'+
+      '<input type="range" id="vol-'+id+'" min="0" max="100" value="'+Math.round(val*100)+'" aria-label="'+label+' volume"></div>';
+    const panel=(id,html)=>'<div class="settings-pane" id="setting-panel-'+id+'" role="tabpanel" aria-labelledby="setting-tab-'+id+'" data-settings-panel="'+id+'">'+html+'</div>';
+    const audio=Interface.section('sound','The sound of the club',
+      UIArt.image('sound-v3','settings-scene')+
+      row('sfx','Sound effects',v.sfx,'cue','Every strike, cushion and pocket')+
+      row('music','Music',v.music,'music','The club soundtrack')+
+      row('amb','Ambience',v.amb,'ambience','Rain, room tone and atmosphere')+
+      Interface.toggle('mute-all','Mute all audio','Keep the club quiet.',!Profile.data.sound));
+    const play=Interface.section('target','Make every shot your own',
+      '<div class="preference-label"><strong>Aim guide</strong><p>Choose how much of the shot you can see.</p></div>'+Interface.choices('ag',[['full','Full guide','Path + contact point'],['cue','Cue line','Your initial direction'],['off','No guide','Trust your eye']],Profile.data.aimGuide||'full')+
+      Interface.toggle('flash-enable','Pocket flashlight','Enable the room flashlight. Press F to switch it.',Profile.data.flashlightEnabled)+
+      Interface.toggle('called-shots','Call the eight','Choose a pocket before your final 8-ball shot.',Profile.data.calledShots));
+    const access=Interface.section('eye','A clearer view of the game',
+      Interface.toggle('a11y-balls','High-contrast ball markers','Clear numbers and markings, beyond color alone.',Profile.data.a11y)+
+      Interface.toggle('haptics-on','Vibration feedback','A subtle response to strikes and pots on supported devices.',Profile.data.haptics!==false)+
+      '<div class="comfort-note">'+UIArt.icon('keyboard')+'<p>All menus support keyboard navigation. Use Tab to move, Enter to choose, and Esc to close. Motion follows your device’s reduced-motion preference.</p></div>');
+    const graphics=Interface.section('display','Set the atmosphere',
+      UIArt.image('graphics-v3','settings-scene')+
+      '<div class="preference-label"><strong>Graphics quality</strong><p>Balance visual detail with a smooth game.</p></div>'+Interface.choices('q',[['low','Low','Fastest · no shadows'],['medium','Balanced','Detail meets performance'],['high','High','Full lighting & shadows']],Profile.data.quality)+
+      '<div class="preference-label"><strong>Depth of field</strong><p>Bring your shot into focus with cinematic lens blur.</p></div>'+Interface.choices('dof',[['off','Off'],['normal','Subtle'],['strong','Cinematic']],Profile.data.dof||'off'));
+    const club=Interface.section('shield','A few club secrets',this._secretSection(), 'An invitation, a discovery, a little history.');
+    this.modal(UIArt.header('CLUB PREFERENCES','Settings','A few details make all the difference.','settings-v3')+
+      '<div class="settings-layout">'+Interface.settingsNav()+'<div class="settings-content">'+panel('sound',audio)+panel('play',play)+panel('access',access)+panel('graphics',graphics)+panel('club',club)+'</div></div>'+
+      '<div class="settings-save-note" role="status">'+UIArt.icon('check')+' Preferences save automatically <span>Changes apply immediately</span></div>','settings');
+    Interface.wireSettings();
     ['sfx','music','amb'].forEach(b=>{
       const sl=this.$('vol-'+b);
       sl.addEventListener('input',()=>{
@@ -457,36 +484,35 @@ const UI = {
     const bdef=BORDERS[Profile.data.avatarBorder]||BORDERS.gold;
     const bandef=BANNERS[Profile.data.banner]||BANNERS.felt;
     const ringStyle='border-color:'+bdef.col+';box-shadow:0 0 14px '+bdef.glow;
+    if(this._profileDraftName==null) this._profileDraftName=Profile.data.name;
     /* border + banner swatch rows (level-gated, like Customize) */
     const borderSw=Object.entries(BORDERS).map(([k,d])=>{
       const open=lvl>=d.lvl, sel=Profile.data.avatarBorder===k;
-      return '<button class="cos-sw'+(sel?' sel':'')+(open?'':' locked')+'" data-bd="'+k+'" title="'+d.name+(open?'':' · Level '+d.lvl)+'">'+
+      return '<button class="cos-sw'+(sel?' sel':'')+(open?'':' locked')+'" data-bd="'+k+'" aria-pressed="'+sel+'" aria-disabled="'+!open+'" title="'+d.name+(open?'':' · Level '+d.lvl)+'">'+
         '<span class="cos-ring" style="border-color:'+d.col+';box-shadow:0 0 8px '+d.glow+'"></span>'+
-        '<span class="cos-nm">'+(open?d.name:'Lvl '+d.lvl)+'</span></button>';
+        '<span class="cos-nm">'+d.name+'<small>'+(sel?'Equipped':open?'Available':'Level '+d.lvl)+'</small></span></button>';
     }).join('');
     const bannerSw=Object.entries(BANNERS).map(([k,d])=>{
       const open=lvl>=d.lvl, sel=Profile.data.banner===k;
-      return '<button class="cos-sw ban'+(sel?' sel':'')+(open?'':' locked')+'" data-ban="'+k+'" title="'+d.name+(open?'':' · Level '+d.lvl)+'">'+
+      return '<button class="cos-sw ban'+(sel?' sel':'')+(open?'':' locked')+'" data-ban="'+k+'" aria-pressed="'+sel+'" aria-disabled="'+!open+'" title="'+d.name+(open?'':' · Level '+d.lvl)+'">'+
         '<span class="cos-ban" style="background:'+d.css+'"></span>'+
-        '<span class="cos-nm">'+(open?d.name:'Lvl '+d.lvl)+'</span></button>';
+        '<span class="cos-nm">'+d.name+'<small>'+(sel?'Equipped':open?'Available':'Level '+d.lvl)+'</small></span></button>';
     }).join('');
     this.modal(
-      '<div class="prof-banner" style="background:'+bandef.css+'"></div>'+
+      '<h2 class="sr-only">Player profile</h2><div class="member-card" style="--member-tint:'+bandef.css+'">'+UIArt.image('membership-v3','member-art')+'<div class="member-card-top"><span class="deco-eyebrow">THE GILDED RAIL · PLAYER CARD</span>'+UIArt.icon('crown')+'</div>'+
       '<div class="prof-head">'+
         '<button class="prof-avatar'+(a?' has-pic':'')+'" id="prof-pic" title="Change picture" '+
           'style="'+(a?('background-image:url('+a+');'):'')+ringStyle+'"><span class="prof-av-ini">'+this._initials()+'</span>'+
-          '<span class="prof-av-edit" aria-hidden="true">✎</span></button>'+
+          '<span class="prof-av-edit" aria-hidden="true">'+UIArt.icon('edit')+'</span></button>'+
         '<div class="prof-id">'+
-          '<input id="prof-name" class="prof-name-in" maxlength="18" aria-label="Member name" value="'+Profile.data.name.replace(/"/g,'&quot;')+'">'+
+          '<label class="profile-name-label" for="prof-name">Your name at the table</label><input id="prof-name" class="prof-name-in" maxlength="18" aria-label="Member name" value="'+this._profileDraftName.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')+'">'+
           '<div class="prof-sub">Level '+lvl+star+' · '+(Profile.data.rating||1000)+(rk?(' · '+rk):'')+'</div>'+
           '<div class="prof-actions"><button class="linklike" id="prof-change">Change picture</button>'+
             (a?'<button class="linklike" id="prof-rm">Remove</button>':'')+'</div>'+
         '</div>'+
-      '</div>'+
+      '</div></div>'+
       '<input type="file" id="prof-file" accept="image/*" style="display:none">'+
-      '<h3>Avatar Ring</h3><div class="cos-row" id="border-row">'+borderSw+'</div>'+
-      '<h3>Profile Banner</h3><div class="cos-row" id="banner-row">'+bannerSw+'</div>'+
-      '<h3>Career</h3>'+
+      '<div class="profile-progress"><span class="section-icon">'+UIArt.icon('trophy')+'</span><div><strong>'+rk+' · '+(Profile.data.rating||1000)+' rating</strong><small>'+(L.max?'The top of the ladder. Prestige awaits.':(L.need-L.into)+' XP to Level '+(lvl+1))+'</small><div class="member-xp"><span style="width:'+Math.round(100*L.into/L.need)+'%"></span></div></div><span class="profile-level">'+lvl+'<small>LEVEL</small></span></div>'+
       '<div class="go-grid prof-stats">'+
         '<div><b>'+Profile.data.xp+'</b><span>lifetime XP</span></div>'+
         '<div><b>'+s.wins+' / '+s.games+'</b><span>frames won</span></div>'+
@@ -494,14 +520,19 @@ const UI = {
         '<div><b>'+acc+'%</b><span>pot rate</span></div>'+
         '<div><b>'+(s.bestFrameStreak||0)+'</b><span>best win streak</span></div>'+
         '<div><b>'+s.eights+'</b><span>8-balls sunk</span></div></div>'+
-      '<button class="btn primary" id="prof-save" style="width:100%;margin-top:14px">Save</button>'
+      '<div id="profile-account"></div>'+
+      '<div class="profile-cosmetics">'+Interface.section('crown','Avatar ring','<div class="cos-row" id="border-row">'+borderSw+'</div>','A signature around your portrait.')+
+      Interface.section('cloth','Profile banner','<div class="cos-row" id="banner-row">'+bannerSw+'</div>','Set the tone of your player card.')+'</div>'+
+      '<div class="profile-save-bar"><span>'+UIArt.icon('shield')+' Your reputation, your style.</span><button class="btn primary" id="prof-save">Save profile</button></div>', 'profile'
     );
     const save=()=>{
       const v=this.$('prof-name').value.trim()||'Guest';
       Profile.data.name=v; Profile.save(); this.refreshProfile(); this.refreshScoreboard();
+      this._profileDraftName=null;
       this.$('modal-overlay').classList.add('hidden'); Sfx.play('ui');
     };
     this.$('prof-save').addEventListener('click',save);
+    this.$('prof-name').addEventListener('input',e=>this._profileDraftName=e.target.value);
     this.$('prof-name').addEventListener('keydown',e=>{ if(e.key==='Enter') save(); });
     const file=this.$('prof-file');
     const pick=()=>file.click();
@@ -663,7 +694,7 @@ const UI = {
     this._atelierTab=tab;
     const lvl=Profile.level().lvl;
     /* one renderer for any catalog (felt/cue/rail) keeps the three sections in sync */
-    const tags=d=>(d.smoke?' ⟡':'')+(d.glow?' ✦':'')+(d.flame?' ☄':'');
+    const tags=d=>(d.smoke||d.glow||d.flame)?'<span class="item-effect" title="'+[d.smoke?'Smoke':null,d.glow?'Glow':null,d.flame?'Flame':null].filter(Boolean).join(' · ')+'">'+UIArt.icon(d.flame?'light':'sparkle')+'</span>':'';
     const swatches=(catalog, current, attr)=>Object.entries(catalog).map(([k,d])=>{
       const open=lvl>=d.lvl, sel=current===k;
       return '<button type="button" class="swatch'+(sel?' sel':'')+(open?'':' locked')+'" data-'+attr+'="'+k+'" aria-pressed="'+sel+'" aria-disabled="'+!open+'"'+(!open?' title="Unlocks at Level '+d.lvl+'"':'')+'>'+
@@ -676,12 +707,24 @@ const UI = {
     const count=Object.values(cats[tab]).filter(d=>lvl>=d.lvl).length;
     const tabs=[['felt','Table cloth','target'],['cue','Cues','cue'],['rail','Wood finishes','sparkle']].map(([key,label,icon])=>
       '<button type="button" class="atelier-tab'+(tab===key?' active':'')+'" data-atelier="'+key+'" aria-pressed="'+(tab===key)+'">'+UIArt.icon(icon)+label+'</button>').join('');
-    this.modal(UIArt.header('THE EQUIPMENT ATELIER','Make it yours.','An expression of your game, down to the last detail.','customize-v2')+
-      '<div class="atelier-summary"><span>Level '+lvl+'</span><span>'+FELTS[Profile.data.felt].name+'</span><span>'+CUES[Profile.data.cue].name+'</span></div>'+
+    this.modal(UIArt.header('THE EQUIPMENT ATELIER','Make it yours.','An expression of your game, down to the last detail.','atelier-v3')+
+      Interface.equipment()+
       '<div class="atelier-tabs" aria-label="Equipment category">'+tabs+'</div>'+
+      '<div class="atelier-tools"><label class="equipment-search">'+UIArt.icon('search')+'<input id="equipment-search" type="search" placeholder="Find your next signature…" aria-label="Search equipment"></label><button class="qual-btn" id="equipment-available" aria-pressed="false">Unlocked only</button></div>'+
       '<div class="equipment-count">'+count+' of '+Object.keys(cats[tab]).length+' unlocked · Select an item to equip</div>'+
       '<div class="swatch-grid">'+previews+'</div>'+
       '<p class="atelier-note">Earn XP by potting balls, winning frames and clearing the career ladder. Every level brings something new.</p>', 'customize');
+    if(document.querySelector){
+      let available=false;
+      const filter=()=>{
+        const q=this.$('equipment-search').value.trim().toLowerCase();let shown=0;
+        document.querySelectorAll('.swatch').forEach(el=>{const match=el.textContent.toLowerCase().includes(q)&&(!available||!el.classList.contains('locked'));el.hidden=!match;if(match)shown++;});
+        this.$('equipment-available').setAttribute('aria-pressed',available);
+        const countEl=document.querySelector('.equipment-count');if(countEl)countEl.textContent=shown+' items · '+count+' unlocked';
+      };
+      this.$('equipment-search').addEventListener('input',filter);
+      this.$('equipment-available').addEventListener('click',()=>{available=!available;filter();});
+    }
     document.querySelectorAll('[data-atelier]').forEach(b=>b.addEventListener('click',()=>this.customizeModal(b.dataset.atelier)));
     /* generic picker wiring for each catalog */
     const pick=(attr,catalog,apply)=>document.querySelectorAll('['+'data-'+attr+']').forEach(el=>el.addEventListener('click',()=>{
@@ -769,8 +812,7 @@ const UI = {
     this.$('quick-close').addEventListener('click',()=>this.$('quick-overlay').classList.add('hidden'));
     this.$('quick-overlay').addEventListener('click',e=>{ if(e.target===this.$('quick-overlay')) this.$('quick-overlay').classList.add('hidden'); });
     this.$('btn-menu').addEventListener('click',()=>{
-      this.closeQuickbar();
-      this.$('menu-overlay').classList.remove('hidden'); Game.phase='MENU'; this.sync();
+      this.pauseMenu();
     });
     this.$('go-rematch').addEventListener('click',()=>{
       Sfx.stopCheer();                 // applause fades out the moment you leave the screen
@@ -851,6 +893,8 @@ const UI = {
       e.stopPropagation();
       const open=ta.classList.toggle('ta-open'); ta.classList.toggle('ta-closed',!open);
       tog.setAttribute('aria-expanded', open?'true':'false');
+      const actions=this.$('ta-menu');actions.inert=!open;actions.setAttribute('aria-hidden',!open);
+      if(open&&e.detail===0&&actions.querySelector) actions.querySelector('button').focus();
     });
     document.querySelectorAll('#ta-menu .ta-item').forEach(it=>it.addEventListener('click',()=>this.closeQuickbar()));
     document.addEventListener('click',e=>{ if(ta.contains && !ta.contains(e.target)) this.closeQuickbar(); });

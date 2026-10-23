@@ -26,6 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Albert+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/styles/main.css">
 <link rel="stylesheet" href="src/styles/collection.css">
+<link rel="stylesheet" href="src/styles/interface.css">
 </head>
 <body>
 <!-- boot curtain: covers everything until every asset (models, audio, artwork, fonts)
@@ -47,9 +48,9 @@
 <button id="ui-restore" title="Show interface (H)" aria-label="Show interface">◫</button>
 <div id="hud">
   <div id="scoreboard">
-    <div class="pstrip" id="pc0"><span class="turn-dot"></span><span class="p-av" id="p0av"><span class="p-av-ini">G</span></span><span class="pname-s" id="p0name">GUEST</span><span class="mini-balls" id="p0balls"></span></div>
+    <div class="pstrip" id="pc0"><span class="turn-dot"></span><span class="p-av" id="p0av"><span class="p-av-ini">G</span></span><span class="player-stack"><span class="pname-s" id="p0name">GUEST</span><span class="player-detail" id="p0detail">At the table</span></span><span class="mini-balls" id="p0balls"></span></div>
     <div id="vs-sep">vs</div>
-    <div class="pstrip" id="pc1"><span class="mini-balls" id="p1balls"></span><span class="pname-s" id="p1name">HOUSE</span><span class="p-av" id="p1av"><span class="p-av-ini">H</span></span><span class="turn-dot"></span></div>
+    <div class="pstrip" id="pc1"><span class="mini-balls" id="p1balls"></span><span class="player-stack"><span class="pname-s" id="p1name">HOUSE</span><span class="player-detail" id="p1detail">Your opponent</span></span><span class="p-av" id="p1av"><span class="p-av-ini">H</span></span><span class="turn-dot"></span></div>
   </div>
 
   <div id="match-strip" class="panel"></div>
@@ -74,7 +75,7 @@
   <div id="top-actions" class="ta-closed">
     <button class="icon-btn" id="ta-toggle" data-tip="Menu &amp; options" aria-label="Open quick menu" aria-haspopup="true" aria-expanded="false" aria-controls="ta-menu">≡</button>
     <div id="ta-menu" role="menu" aria-label="Quick menu">
-      <button class="ta-item" id="btn-menu" role="menuitem"><span class="ta-ic">⌂</span><span class="ta-lbl">Main Menu</span></button>
+      <button class="ta-item" id="btn-menu" role="menuitem"><span class="ta-ic">⌂</span><span class="ta-lbl">Match menu</span></button>
       <button class="ta-item" id="btn-settings" role="menuitem"><span class="ta-ic">⚙</span><span class="ta-lbl">Settings</span></button>
       <button class="ta-item" id="btn-custom2" role="menuitem"><span class="ta-ic">✦</span><span class="ta-lbl">Customize</span></button>
       <button class="ta-item" id="btn-fullscreen" role="menuitem"><span class="ta-ic">⛶</span><span class="ta-lbl">Fullscreen</span></button>
@@ -112,7 +113,7 @@
       <div id="pbar"><div id="pbar-fill"></div><div id="pbar-marks"></div></div>
       <span id="power-pct">0%</span>
     </div>
-    <div id="power-label">Hold Space · Release to strike</div>
+    <div id="power-label"><kbd>Space</kbd> Hold · Release to strike</div>
     <button class="btn primary" id="charge-btn" aria-label="Hold to charge a shot"><span class="cb-txt">Hold to Charge</span></button>
   </div>
 </div>
@@ -258,6 +259,7 @@
 <!-- ===================== TUTORIAL ===================== -->
 <div class="overlay hidden" id="tutorial-overlay">
   <div id="tutorial-card" class="panel">
+    <div id="tut-art"></div>
     <div class="deco-eyebrow">HOW TO PLAY</div>
     <div id="tut-title"></div>
     <div id="tut-body"></div>
@@ -279,12 +281,14 @@
 
 <div class="overlay hidden" id="gameover-overlay">
   <div id="gameover-card" class="panel">
+    <div id="result-art" aria-hidden="true"></div>
+    <div id="result-medallion" aria-hidden="true"></div>
     <div class="deco-eyebrow" id="go-eyebrow">FRAME COMPLETE</div>
     <div id="go-title">Victory</div>
     <div id="go-sub"></div>
     <div id="go-stats"></div>
     <div class="goldline"></div>
-    <div style="display:flex;gap:12px;justify-content:center;margin-top:26px">
+    <div class="result-actions" style="display:flex;gap:12px;justify-content:center;margin-top:26px">
       <button class="btn primary" id="go-rematch">Rematch</button>
       <button class="btn ghost" id="go-menu">Back to Club</button>
     </div>
@@ -374,6 +378,7 @@
   <script src="src/engine/13-flicker.js"></script>
   <script src="src/engine/14-unlocks.js"></script>
   <script src="src/engine/14a-ui-art.js"></script>
+  <script src="src/engine/14b-interface.js"></script>
   <script src="src/engine/15-physics.js"></script>
   <script src="src/engine/16-cue-stick.js"></script>
   <script src="src/engine/17-aim-guide.js"></script>

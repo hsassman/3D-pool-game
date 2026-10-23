@@ -199,6 +199,7 @@ function collideBalls(){
 
 let simActive=false, simTime=0;
 function physicsFrame(elapsed){
+  if(typeof Game!=='undefined' && Game.paused) return;
   let t=Math.min(elapsed, 1/20);
   while(t>0){
     const dt=Math.min(PHYS.dt, t); t-=dt;

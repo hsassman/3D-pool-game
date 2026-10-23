@@ -184,11 +184,13 @@ const AI = {
     cueBall.vel.set(0,0,0); cueBall.ang.set(0,0,0);
   },
   takeTurn(){
+    const ticket=this._turnTicket=(this._turnTicket||0)+1;
     const cfg=this.cfg();
     UI.banner('','');
     const wait=cfg.think[0]+Math.random()*(cfg.think[1]-cfg.think[0]);
     setTimeout(()=>{
-      if(Game.phase!=='AI') return;
+      if(Game.phase!=='AI'||ticket!==this._turnTicket) return;
+      if(Game.paused){setTimeout(()=>{if(Game.phase==='AI'&&ticket===this._turnTicket)this.takeTurn();},150);return;}
       let dir, power, sx=0, sy=0;
       if(Game.isBreak){
         const apex=balls.filter(b=>b.active&&b.num>0).sort((a,b)=>a.pos.x-b.pos.x)[0];
@@ -214,6 +216,8 @@ const AI = {
       cueStick.visible=true;
       const start=performance.now(), lineup=650;
       const animate=()=>{
+        if(Game.phase!=='AI'||ticket!==this._turnTicket)return;
+        if(Game.paused){requestAnimationFrame(animate);return;}
         const k=Math.min(1,(performance.now()-start)/lineup);
         placeCueStick(dir, 0.05+0.22*power*(k<0.85?k/0.85:(1-(k-0.85)/0.15)), sx, sy);
         if(k<1 && Game.phase==='AI') requestAnimationFrame(animate);

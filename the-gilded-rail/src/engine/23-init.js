@@ -15,6 +15,7 @@
   Input.init();
   UI.wire();
   if(typeof UIArt!=='undefined' && document.querySelector) UIArt.init();
+  if(typeof Interface!=='undefined' && document.querySelector) Interface.init();
   await Profile.load();
   /* optional member accounts + cloud saves + online rooms (no-ops offline) */
   if(typeof Account!=='undefined') Account.init();

@@ -4,6 +4,7 @@
 
 /* ================= GAME / RULES ================= */
 const Game = {
+  paused:false,           // offline match menu; never pauses an online opponent
   phase:'MENU',           // MENU | AIM | CHARGE | SIM | BIH | AI | OVER
   turn:0,                 // 0 = player 1, 1 = player 2 / CPU
   mode:'cpu',             // 'cpu' = vs computer, 'local' = two players on one device
@@ -71,6 +72,7 @@ const Game = {
   },
 
   newGame(){
+    this.paused=false;
     if(this.ruleset==='9ball')     return this.newGame9();
     if(this.ruleset==='blackball') return this.newGameBlackball();
     if(this.ruleset==='practice')  return this.newGamePractice(this._practiceLayout);

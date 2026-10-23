@@ -378,22 +378,23 @@ const Net = {
     const mc=this.$('modal-content'), saveBtn=this.$('prof-save');
     if(!mc) return;
     const wrap=document.createElement('div');
+    wrap.className='profile-account-card';
     if(Account.isMember()){
       wrap.innerHTML='<h3>Account</h3>'+
         '<div class="acct-row"><span class="acct-k">Signed in as</span><b></b></div>'+
         '<button class="qual-btn" id="prof-acct" style="width:100%">Manage account · 2FA · cloud save</button>';
       wrap.querySelector('.acct-row b').textContent=(Account.user&&Account.user.email)||'';
     } else {
-      wrap.innerHTML='<h3>Account</h3>'+
-        '<p class="acct-fine">Playing as a guest - progress lives only on this device. '+
-        'Sign in to keep it <b>permanently</b> (across devices) and add 2FA protection. '+
-        '<i>Online multiplayer doesn’t need an account - find it under Multiplayer on the main menu.</i></p>'+
-        '<button class="btn primary" id="prof-acct" style="width:100%">Sign In / Create Account</button>';
+      wrap.innerHTML='<span class="section-icon">'+UIArt.icon('cloud')+'</span><div><h3>A place in the club</h3>'+
+        '<p class="acct-fine">Your progress is saved on this device. Join to carry it across devices.</p></div>'+
+        '<button class="btn ghost" id="prof-acct">Member account</button>';
     }
     /* right under the name/avatar header, ABOVE the cosmetics - a guest should
        see the sign-in offer without scrolling */
     const firstH3=mc.querySelector('h3');
-    if(firstH3) mc.insertBefore(wrap, firstH3);
+    const slot=mc.querySelector('#profile-account');
+    if(slot) slot.appendChild(wrap);
+    else if(firstH3) mc.insertBefore(wrap, firstH3);
     else if(saveBtn) mc.insertBefore(wrap, saveBtn);
     else mc.appendChild(wrap);
     wrap.querySelector('#prof-acct').addEventListener('click',()=>AccountUI.accountModal());
@@ -446,9 +447,9 @@ const AccountUI = {
   },
 
   _in(id, type, ph, ac){
-    return '<input id="'+id+'" type="'+type+'" class="acct-in" placeholder="'+ph+'" autocomplete="'+(ac||'off')+'" spellcheck="false">';
+    return '<label class="account-field" for="'+id+'"><span>'+ph+'</span><input id="'+id+'" type="'+type+'" class="acct-in" placeholder="'+(type==='password'?'Enter your password':type==='email'?'you@example.com':ph)+'" autocomplete="'+(ac||'off')+'" spellcheck="false"></label>';
   },
-  _msg(id){ return '<div id="'+id+'" class="acct-msg"></div>'; },
+  _msg(id){ return '<div id="'+id+'" class="acct-msg" role="status" aria-live="polite"></div>'; },
   _say(id, text, good){
     const el=this.$(id); if(!el) return;
     el.textContent=text||'';
@@ -693,20 +694,26 @@ const LobbyUI = {
       UI.modal('<h2>Private Room</h2>'+
         '<p>Share this code with your opponent - same room, same table, whether they’re on your Wi-Fi or across town.</p>'+
         '<div class="room-code" id="room-code">'+(Net.code||'------')+'</div>'+
+        '<button class="btn ghost room-copy" id="room-copy">'+UIArt.icon('copy')+' Copy room code</button>'+
         '<div class="acct-msg" id="room-status" style="min-height:18px"></div>'+
         '<button class="btn primary" id="room-start" style="width:100%" disabled>Start Match</button>'+
         '<button class="linklike" id="room-cancel" style="margin-top:12px">Cancel room</button>');
       this.$('room-start').addEventListener('click',()=>Net.startMatch());
+      this.$('room-copy').addEventListener('click',async()=>{
+        try{await navigator.clipboard.writeText(Net.code||'');this.$('room-copy').innerHTML=UIArt.icon('check')+' Code copied';}
+        catch(_){this.$('room-status').textContent='Select the code above to copy it.';}
+      });
       this.$('room-cancel').addEventListener('click',()=>{ Net.leave(false); this.view='idle'; this.render(); });
       this.refresh();
     } else if(this.view==='joining'){
       UI.modal('<h2>Join a Room</h2>'+
         '<p>Type the 6-character code from your opponent.</p>'+
-        '<input id="join-code" class="acct-in room-in" maxlength="6" placeholder="ABC123" autocomplete="off" spellcheck="false">'+
+        '<label class="account-field" for="join-code"><span>Invitation code</span><input id="join-code" class="acct-in room-in" maxlength="6" placeholder="ABC123" autocomplete="off" spellcheck="false"></label>'+
         '<div class="acct-msg" id="join-msg"></div>'+
         '<button class="btn primary" id="join-go" style="width:100%">Join</button>'+
         '<button class="linklike" id="join-back" style="margin-top:12px">‹ Back</button>');
       const inp=this.$('join-code');
+      inp.addEventListener('input',()=>inp.value=inp.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
       inp.addEventListener('input',()=>{ inp.value=inp.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
       const go=async ()=>{
         const code=inp.value.trim();
@@ -732,10 +739,10 @@ const LobbyUI = {
     } else {
       UI.modal('<h2>Multiplayer</h2>'+
         '<p>Play a friend head-to-head - 8-ball, real physics, one shared table. Create a private room and pass them the code, or join theirs.</p>'+
-        '<div style="display:flex;gap:12px;margin-top:14px">'+
-        '<button class="btn primary" id="mp-host" style="flex:1">Create Room</button>'+
-        '<button class="btn ghost" id="mp-join" style="flex:1">Join Room</button></div>'+
-        '<p class="acct-fine" style="margin-top:12px">Same Wi-Fi or worlds apart - a room code is all it takes. (Browsers don’t allow Bluetooth play.)</p>');
+        '<div class="room-options">'+
+        '<button class="room-option" id="mp-host">'+UIArt.icon('people')+'<strong>Host a table</strong><small>Create a private room and invite a friend.</small></button>'+
+        '<button class="room-option" id="mp-join">'+UIArt.icon('arrow')+'<strong>Take a seat</strong><small>Join a friend with their six-character code.</small></button></div>'+
+        '<p class="acct-fine">A private room. One opponent. The same table, wherever you are.</p>');
       this.$('mp-host').addEventListener('click', async ()=>{
         const r=await Net.host();
         if(r.error){ UI.modal('<h2>Multiplayer</h2><p>'+r.error+'</p>'); return; }
@@ -829,10 +836,11 @@ const ChatUI = {
     const bar=document.createElement('div');
     bar.id='chat-bar';
     const btn=document.createElement('button');
-    btn.id='chat-btn'; btn.textContent='💬';
+    btn.id='chat-btn'; btn.innerHTML=UIArt.icon('chat');
     btn.setAttribute('data-tip','Chat (Enter)'); btn.setAttribute('aria-label','Open chat');
     const inp=document.createElement('input');
     inp.id='chat-in'; inp.maxLength=120; inp.placeholder='Message… (Enter to send)';
+    inp.setAttribute('aria-label','Message your opponent');
     inp.autocomplete='off'; inp.spellcheck=false;
     bar.appendChild(btn); bar.appendChild(inp);
     document.body.appendChild(feed);

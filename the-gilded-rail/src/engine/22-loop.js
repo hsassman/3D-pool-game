@@ -7,7 +7,7 @@ const clock=new THREE.Clock();
 function loop(){
   requestAnimationFrame(loop);
   const dt=Math.min(clock.getDelta(), 0.05);
-  Input.update(dt);
+  if(!Game.paused) Input.update(dt);
   physicsFrame(dt);
 
   /* aim & cue presentation */

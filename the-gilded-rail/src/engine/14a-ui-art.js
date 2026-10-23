@@ -50,7 +50,8 @@ const UIArt = {
         [0,1,2,3,4,5].map(i=>'<path d="m'+(35+i*22)+' '+(48-i*2)+'q24 5 38-2m-14 14 35-5" fill="none" stroke="#140e08" stroke-width="1" opacity=".28"/>').join('')+
         '<path d="m63 76 150-19" stroke="#f2dab0" opacity=".35"/><path d="m99 59 7-4 7 3-7 4Zm60-7 7-4 7 3-7 4Z" fill="#e7ce98"/>';
     }
-    return '<svg class="item-preview" viewBox="0 0 240 140" role="img" aria-label="'+d.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+' preview"><defs><radialGradient id="'+id+'"><stop stop-color="#304339"/><stop offset="1" stop-color="#121c18"/></radialGradient></defs><rect width="240" height="140" rx="10" fill="url(#'+id+')"/>'+shapes+'</svg>';
+    const grain=kind==='felt'?'<image href="assets/ui/collection/felt-detail-v3.webp" x="34" y="29" width="172" height="82" opacity=".1" preserveAspectRatio="xMidYMid slice"/>':kind==='rail'?'<image href="assets/ui/collection/wood-detail-v3.webp" x="25" y="35" width="191" height="70" opacity=".16" clip-path="url(#'+id+'-clip)" preserveAspectRatio="xMidYMid slice"/>':'';
+    return '<svg class="item-preview" viewBox="0 0 240 140" role="img" aria-label="'+d.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+' preview"><defs><radialGradient id="'+id+'"><stop stop-color="#304339"/><stop offset="1" stop-color="#121c18"/></radialGradient><clipPath id="'+id+'-clip"><path d="m25 49 155-14 36 20v32L62 105 25 83Z"/></clipPath></defs><rect width="240" height="140" rx="10" fill="url(#'+id+')"/>'+shapes+grain+'</svg>';
   },
   layout(t){
     const pt=p=>[20+(p.x+1.12)/2.24*260,20+(p.z+0.56)/1.12*130];
@@ -58,7 +59,7 @@ const UIArt = {
     return '<svg class="layout-preview" viewBox="0 0 300 170" role="img" aria-label="'+t.name+' ball layout"><rect x="5" y="5" width="290" height="160" rx="13" fill="#4d3825"/><rect x="15" y="15" width="270" height="140" rx="8" fill="#17503b"/>'+[[17,17],[150,16],[283,17],[17,153],[150,154],[283,153]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="7" fill="#091710"/>').join('')+mark(t.cue,0)+t.balls.map(b=>mark(b,b.num)).join('')+'</svg>';
   },
   init(){
-    const icons={'btn-settings3':'settings','ta-toggle':'menu','btn-orbit':'people','btn-shoot':'cue','btn-fine':'target'};
+    const icons={'btn-settings3':'settings','ta-toggle':'menu','btn-orbit':'eye','btn-shoot':'cue','btn-fine':'target'};
     Object.keys(icons).forEach(id=>{const el=document.getElementById(id);if(el) el.innerHTML=this.icon(icons[id]);});
     const tiles=[['btn-campaign','trophy'],['btn-quick','cue'],['btn-online','people'],['btn-challenges','target'],['btn-trickshots','sparkle'],['btn-custom','settings']];
     tiles.forEach(([id,icon])=>{

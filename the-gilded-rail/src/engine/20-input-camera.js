@@ -46,7 +46,7 @@ const Input = {
         if(ta && ta.classList.contains('ta-open')){ UI.closeQuickbar(); return; }
         const mo=document.getElementById('menu-overlay');
         if(mo && mo.classList.contains('hidden') && Game.phase!=='MENU' && Game.phase!=='OVER'){
-          mo.classList.remove('hidden'); Game.phase='MENU'; UI.sync(); Sfx.play('ui',0.4);
+          UI.pauseMenu(); Sfx.play('ui',0.4);
         }
         return;
       }

@@ -1,0 +1,46 @@
+{
+  "generator": "Built-in image_gen tool",
+  "assets": "public/assets/ui/collection/",
+  "prompts": [
+    {
+      "name": "settings-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a beautifully ordered billiards club steward's desk, brass desk lamp, vintage analog radio, leather-bound notebook and mechanical adjustment knobs, dark emerald room, no readable text. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "reflection-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a quiet empty billiards table under a warm brass pendant after closing time, a single ivory cue ball on deep blue-green felt, reflective dignified atmosphere, no rack, no extra balls. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "membership-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a close-up of a blank dark green leather membership wallet, brushed brass eight-ball club pin and elegant fountain pen on polished walnut, beautifully embossed ornamental lines without text, refined private club identity. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "victory-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a single beautiful antique gold billiards championship cup gleaming beneath a brass pendant in a dark green club, celebratory restrained cinematic atmosphere, no billiard balls, no text. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "atelier-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a FULL LENGTH 145 cm slender regulation billiard cue lying diagonally on a 224 cm pool table with leather cue case and carefully folded emerald and burgundy cloths, brass joints and polished walnut inlay, entire cue from butt to tip visible, realistic long proportions. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "sound-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a vintage walnut and brass turntable with black vinyl record beside a shaded amber desk lamp in a dark emerald private billiards lounge, tactile analog audio still life. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "graphics-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. an empty elegant green felt billiards table with polished brass rails and a glowing brass overhead lamp, cinematic reflections, crisp felt fibers visible, atmospheric private club, no balls. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "wood-detail-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. extreme close-up of polished walnut timber grain, perfectly neutral GRAYSCALE silvery grey and charcoal, subtle fine linear grain with occasional burl, flat evenly lit seamless material swatch filling frame, no objects, no perspective, no writing. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "tutorial-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. a single white regulation billiard cue ball on emerald felt, long slender wooden cue receding far into softly blurred background, gentle warm lamp, precise deliberate calm instructional billiards photography. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    },
+    {
+      "name": "felt-detail-v3",
+      "prompt": "Use case: stylized-concept. Asset type: landscape 3:2 premium billiards game interface artwork. extreme macro of fine woven billiard wool cloth fibers, perfectly neutral GRAYSCALE light grey and charcoal, evenly lit, flat seamless material texture swatch filling frame, no objects, no perspective, no writing. Consistent sophisticated 1960s private club visual language, cinematic realistic editorial photography, rich tactile materials, warm amber light and deep green shadows unless explicitly grayscale. Main subject in upper right half with dark negative space on left for interface heading. No lettering, logos or watermark."
+    }
+  ]
+}
