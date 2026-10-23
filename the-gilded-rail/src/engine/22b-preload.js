@@ -24,7 +24,8 @@ const Boot = {
     [w.__SFX, w.__AUDIO].forEach(m=>{ if(m) Object.keys(m).forEach(k=>(m[k]||[]).forEach(push)); });
     push(w.__SONG);
     /* menu artwork referenced from the stylesheet (build rewrites this path too) */
-    ['logo-mark.png','career.jpg','8ball.jpg','english.jpg','practice.jpg','trickshot.jpg']
+    ['logo-mark.png','collection/career-v2.webp','collection/8ball-v2.webp','collection/online-v2.webp',
+      'collection/challenges-v2.webp','collection/trickshot-v2.webp','collection/customize-v2.webp']
       .forEach(f=>push('/assets/ui/'+f));
     return list;
   },

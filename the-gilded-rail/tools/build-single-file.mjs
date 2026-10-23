@@ -16,6 +16,7 @@ const engine = engineFiles.map(f => r('src', 'engine', f)).join('\n\n');
 
 let html = r('index.html');
 html = html.replace('<link rel="stylesheet" href="src/styles/main.css">', `<style>\n${css}\n</style>`);
+html = html.replace('<link rel="stylesheet" href="src/styles/collection.css">', `<style>\n${r('src', 'styles', 'collection.css')}\n</style>`);
 html = html.replace(/(?:\s*<script src="src\/engine\/[^"]+"><\/script>)+/, `\n<script>\n${engine}\n</script>`);
 
 /* inline the locally-vendored three.js example scripts (post-processing for DoF + bloom,

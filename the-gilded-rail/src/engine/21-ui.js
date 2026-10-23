@@ -96,7 +96,7 @@ const UI = {
     /* the human (player 0) wears their profile picture; the opponent shows their
        initial. The active player's avatar gets the same gold glow as the turn dot. */
     this._scoreAvatar('p0av', Game.playerName(0), Profile.data.avatar);
-    this._scoreAvatar('p1av', Game.playerName(1), null);
+    this._scoreAvatar('p1av', Game.playerName(1), UIArt.cpuPortrait());
     this.$('vs-sep').textContent = Game.openTable && Game.phase!=='MENU' ? 'open' : 'vs';
     this.refreshMatch();
   },
@@ -104,7 +104,7 @@ const UI = {
   /* paint a scoreboard avatar chip: a picture if supplied, else the name's initial */
   _scoreAvatar(id, name, img){
     const el=this.$(id); if(!el) return;
-    img=this._safeAvatar(img);
+    img=/^assets\/ui\/collection\/portrait-[a-z0-9_-]+\.webp$/.test(img||'') ? img : this._safeAvatar(img);
     const ini=(name||'?').trim().charAt(0).toUpperCase()||'?';
     el.style.backgroundImage = img ? ('url('+img+')') : 'none';
     el.classList.toggle('has-pic', !!img);
@@ -217,7 +217,17 @@ const UI = {
     clearTimeout(this._statusT); this._statusT=setTimeout(()=>el.classList.remove('show'), 2800);
   },
 
-  modal(html){ this.$('modal-content').innerHTML=html; this.$('modal-overlay').classList.remove('hidden'); },
+  modal(html, kind=''){
+    const card=this.$('modal-card');
+    if(this.$('modal-overlay').classList.contains('hidden')) this._modalOrigin=document.activeElement;
+    card.className='modal-card panel'+(kind?' modal-'+kind:'');
+    this.$('modal-content').innerHTML=html;
+    this.$('modal-overlay').classList.remove('hidden');
+    const title=card.querySelector?card.querySelector('h2'):null;
+    if(title) card.setAttribute('aria-label',title.textContent);
+    card.scrollTop=0;
+    const close=this.$('modal-close'); if(close && close.focus) close.focus({preventScroll:true});
+  },
 
   /* collapse the in-match actions dropdown */
   closeQuickbar(){
@@ -562,10 +572,10 @@ const UI = {
       ? '<button class="btn primary" id="do-prestige" style="width:100%;margin:6px 0 14px">★ Prestige '+(Profile.prestige()+1)+
         ' - reset to Level 1, keep every unlock</button>'
       : (Profile.prestige()>0?'<p style="text-align:center;color:var(--gold-bright)">★ Prestige '+Profile.prestige()+'</p>':'');
-    this.modal('<h2>The Career Ladder</h2>'+
+    this.modal(UIArt.header('THE ROAD TO HOUSE CHAMPION','The Career Ladder','Every table has its legends. Earn your place among them.','career-v2')+
       '<p>Five leagues, each with five players - the fifth is the boss. Pick a league to see its roster. '+
       '<b>'+done+' of '+total+'</b> opponents cleared.</p>'+ prestige +
-      '<div class="lg-cover-grid">'+covers+'</div>');
+      '<div class="lg-cover-grid">'+covers+'</div>', 'career');
     document.querySelectorAll('.lg-card').forEach(b=>b.addEventListener('click',()=>this.leagueModal(b.dataset.lg)));
     const pb=this.$('do-prestige');
     if(pb) pb.addEventListener('click',()=>{ if(Profile.doPrestige()){ Sfx.play('win'); this.campaignModal(); } });
@@ -582,16 +592,17 @@ const UI = {
       const action = unlocked
         ? '<button class="btn '+(cleared?'ghost':'primary')+' camp-play" data-opp="'+opp.id+'">'+(cleared?'Replay':'Play')+'</button>'
         : '<span class="camp-lock">'+(open?'Win the previous match':'Reach Level '+l.minLevel)+'</span>';
-      return '<div class="camp-card'+(cleared?' cleared':'')+(unlocked?'':' locked')+(opp.boss?' boss':'')+'">'+
+      return '<div class="camp-card opponent-card'+(cleared?' cleared':'')+(unlocked?'':' locked')+(opp.boss?' boss':'')+'">'+
+        '<div class="opponent-portrait"><img src="'+UIArt.portrait(opp.id)+'" alt="Portrait of '+opp.name.replace(/"/g,'&quot;')+'" width="256" height="256" loading="lazy" decoding="async">'+(opp.boss?'<span class="boss-seal">'+UIArt.icon('trophy')+'League boss</span>':'')+'</div><div class="opponent-copy">'+
         '<div class="camp-head"><div class="camp-name">'+(opp.boss?'★ ':'')+opp.name+(cleared?' ✓':'')+'</div>'+
         '<span class="camp-state">'+state+'</span></div>'+
         '<div class="camp-meta">'+opp.title+' · Best of '+opp.frames+' · '+DIFFS[opp.diff].name+'</div>'+
-        '<p class="camp-blurb">'+opp.blurb+'</p>'+action+'</div>';
+        '<p class="camp-blurb">'+opp.blurb+'</p><div class="opponent-reward">'+UIArt.icon('sparkle')+' '+opp.xp+' XP first clear</div>'+action+'</div></div>';
     }).join('');
     this.modal('<button class="linklike lg-back" id="lg-back">‹ All leagues</button>'+
-      '<h2>'+l.name+'</h2>'+
+      UIArt.header('LEAGUE '+(i+1),l.name,l.blurb,'league-'+l.id)+
       '<p class="lg-detail-sub">League '+(i+1)+' · '+(open?(done+' / '+l.opps.length+' cleared'):'Unlocks at Level '+l.minLevel)+'</p>'+
-      '<p>'+l.blurb+'</p><div class="camp-list">'+cards+'</div>');
+      '<div class="camp-list opponent-grid">'+cards+'</div>', 'roster');
     this.$('lg-back').addEventListener('click',()=>this.campaignModal());
     document.querySelectorAll('.camp-play').forEach(b=>b.addEventListener('click',()=>{
       const opp=Campaign.oppById(b.dataset.opp);
@@ -606,12 +617,12 @@ const UI = {
   /* preset trick-shot layouts, played in Practice mode */
   trickshotModal(){
     const cards=TRICKSHOTS.map(t=>
-      '<div class="camp-card"><div class="camp-head"><div class="camp-name">'+t.name+'</div></div>'+
+      '<div class="camp-card trick-card">'+UIArt.layout(t)+'<div class="camp-head"><div class="camp-name">'+t.name+'</div></div>'+
       '<p class="camp-blurb">'+t.desc+'</p>'+
       '<button class="btn primary camp-play trick-play" data-t="'+t.id+'">Set Up</button></div>').join('');
-    this.modal('<h2>Trick Shots</h2>'+
+    this.modal(UIArt.header('THE PRACTICE ROOM','Trick Shots','Read the angles. Learn the table. Make the impossible feel routine.','trickshot-v2')+
       '<p>Preset layouts to sharpen your aim and position. Ball in hand - clear the table to reset.</p>'+
-      '<div class="camp-list">'+cards+'</div>');
+      '<div class="camp-list trick-grid">'+cards+'</div>', 'tricks');
     document.querySelectorAll('.trick-play').forEach(b=>b.addEventListener('click',()=>{
       const t=TRICKSHOTS.find(x=>x.id===b.dataset.t); if(!t) return;
       this.$('modal-overlay').classList.add('hidden');
@@ -635,43 +646,51 @@ const UI = {
     };
     const d=Progression.daily(), w=Progression.weekly();
     const ach=Progression.achList().map(a=>{ const got=Progression.unlocked(a.id);
-      return '<div class="ach'+(got?' got':'')+'"><div class="ach-badge">'+(got?'🏅':'🔒')+'</div>'+
+      return '<div class="ach'+(got?' got':'')+'"><div class="ach-badge">'+UIArt.icon(got?'trophy':'lock')+'</div>'+
         '<div class="ach-body"><div class="ach-name">'+a.name+'</div><div class="ach-desc">'+a.desc+'</div></div>'+
         '<div class="ach-xp">'+a.xp+'</div></div>';
     }).join('');
     const got=Progression.achList().filter(a=>Progression.unlocked(a.id)).length;
-    this.modal('<h2>Challenges</h2>'+
+    this.modal(UIArt.header('A LITTLE BETTER, EVERY FRAME','Challenges','Small victories. Lasting reputation.','challenges-v2')+
       '<h3>Today</h3>'+bar(d.st,d.def)+
       '<h3>This Week</h3>'+bar(w.st,w.def)+
       '<h3>Achievements - '+got+' / '+Progression.achList().length+'</h3>'+
-      '<div class="ach-list">'+ach+'</div>');
+      '<div class="ach-list">'+ach+'</div>', 'challenges');
   },
 
-  customizeModal(){
+  customizeModal(tab){
+    tab=['felt','cue','rail'].includes(tab)?tab:(this._atelierTab||'felt');
+    this._atelierTab=tab;
     const lvl=Profile.level().lvl;
-    const hex=n=>'#'+n.toString(16).padStart(6,'0');
     /* one renderer for any catalog (felt/cue/rail) keeps the three sections in sync */
     const tags=d=>(d.smoke?' ⟡':'')+(d.glow?' ✦':'')+(d.flame?' ☄':'');
-    const swatches=(catalog, current, attr, dotCss)=>Object.entries(catalog).map(([k,d])=>{
+    const swatches=(catalog, current, attr)=>Object.entries(catalog).map(([k,d])=>{
       const open=lvl>=d.lvl, sel=current===k;
-      return '<div class="swatch'+(sel?' sel':'')+(open?'':' locked')+'" data-'+attr+'="'+k+'">'+
-        '<div class="dot" style="'+dotCss(d)+'"></div>'+
-        '<div><div class="sw-name">'+d.name+tags(d)+'</div>'+
-        '<div class="sw-sub">'+(open?(sel?'In play':'Unlocked'):'Level '+d.lvl)+'</div></div></div>';
+      return '<button type="button" class="swatch'+(sel?' sel':'')+(open?'':' locked')+'" data-'+attr+'="'+k+'" aria-pressed="'+sel+'" aria-disabled="'+!open+'"'+(!open?' title="Unlocks at Level '+d.lvl+'"':'')+'>'+
+        UIArt.item(attr,d,k)+(sel||!open?'<span class="sw-status">'+UIArt.icon(sel?'check':'lock')+'</span>':'')+
+        '<div class="sw-info"><div class="sw-name">'+d.name+tags(d)+'</div>'+
+        '<div class="sw-sub">'+(open?(sel?'Equipped':'Ready to equip'):'Unlocks at Level '+d.lvl)+'</div></div></button>';
     }).join('');
-    const feltSw=swatches(FELTS, Profile.data.felt, 'felt', f=>'background:'+f.bed);
-    const cueSw =swatches(CUES,  Profile.data.cue,  'cue',  c=>'background:'+hex(c.shaft)+';border-radius:4px'+
-      (c.glow?(';box-shadow:0 0 9px '+hex(c.glow)+',inset 0 0 4px '+hex(c.glow)):'')+
-      (c.flame?';background:linear-gradient(180deg,'+hex(c.flameColor||0xff7a18)+','+hex(c.shaft)+')':''));
-    const railSw=swatches(RAILS, Profile.data.rail, 'rail', r=>'background:'+hex(r.wood)+';border-radius:4px');
-    const sect=(label,sw)=>'<p style="font-size:12px;color:rgba(239,231,214,.6);letter-spacing:.06em">'+label+'</p><div class="swatch-grid">'+sw+'</div>';
-    this.modal('<h2>Customize</h2>'+
-      sect('CLOTH',feltSw)+sect('CUE',cueSw)+sect('WOOD FINISH',railSw)+
-      '<p style="font-size:12px;color:rgba(239,231,214,.55)">Level up by potting balls, winning frames and clearing the career ladder to unlock more cloths, cues and finishes.</p>');
+    const cats={felt:FELTS,cue:CUES,rail:RAILS};
+    const previews=swatches(cats[tab],Profile.data[tab],tab);
+    const count=Object.values(cats[tab]).filter(d=>lvl>=d.lvl).length;
+    const tabs=[['felt','Table cloth','target'],['cue','Cues','cue'],['rail','Wood finishes','sparkle']].map(([key,label,icon])=>
+      '<button type="button" class="atelier-tab'+(tab===key?' active':'')+'" data-atelier="'+key+'" aria-pressed="'+(tab===key)+'">'+UIArt.icon(icon)+label+'</button>').join('');
+    this.modal(UIArt.header('THE EQUIPMENT ATELIER','Make it yours.','An expression of your game, down to the last detail.','customize-v2')+
+      '<div class="atelier-summary"><span>Level '+lvl+'</span><span>'+FELTS[Profile.data.felt].name+'</span><span>'+CUES[Profile.data.cue].name+'</span></div>'+
+      '<div class="atelier-tabs" aria-label="Equipment category">'+tabs+'</div>'+
+      '<div class="equipment-count">'+count+' of '+Object.keys(cats[tab]).length+' unlocked · Select an item to equip</div>'+
+      '<div class="swatch-grid">'+previews+'</div>'+
+      '<p class="atelier-note">Earn XP by potting balls, winning frames and clearing the career ladder. Every level brings something new.</p>', 'customize');
+    document.querySelectorAll('[data-atelier]').forEach(b=>b.addEventListener('click',()=>this.customizeModal(b.dataset.atelier)));
     /* generic picker wiring for each catalog */
     const pick=(attr,catalog,apply)=>document.querySelectorAll('['+'data-'+attr+']').forEach(el=>el.addEventListener('click',()=>{
       const k=el.dataset[attr]; if(lvl<catalog[k].lvl){ return; }
-      Profile.data[attr]=k; Profile.save(); apply(); this.customizeModal();
+      const scroll=this.$('modal-card').scrollTop;
+      Profile.data[attr]=k; Profile.save(); apply(); this.customizeModal(attr);
+      this.$('modal-card').scrollTop=scroll;
+      const selected=document.querySelector?document.querySelector('[data-'+attr+'="'+k+'"]'):null;
+      if(selected) selected.focus({preventScroll:true});
     }));
     pick('felt', FELTS, ()=>Unlocks.applyFelt());
     pick('cue',  CUES,  ()=>Unlocks.applyCue());
@@ -736,6 +755,7 @@ const UI = {
         const dg=this.$('diff-group');
         dg.style.opacity = Game.mode==='cpu' ? '1' : '0.32';
         dg.style.pointerEvents = Game.mode==='cpu' ? 'auto' : 'none';
+        document.querySelectorAll('#diff-row .chip').forEach(x=>x.disabled=Game.mode!=='cpu');
       });
     });
     this.$('btn-newgame').addEventListener('click',()=>{

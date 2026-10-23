@@ -25,6 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Albert+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/styles/main.css">
+<link rel="stylesheet" href="src/styles/collection.css">
 </head>
 <body>
 <!-- boot curtain: covers everything until every asset (models, audio, artwork, fonts)
@@ -128,13 +129,14 @@
         <span class="acct-dot" id="acct-dot" aria-hidden="true"></span>
       </button>
     </div>
+    <div class="club-status"><span></span> THE CLUB IS OPEN <span class="club-status-rule"></span> YOUR NEXT FRAME AWAITS</div>
     <header class="bento-head">
       <div class="deco-eyebrow">EST. 2026 · MEMBERS ONLY</div>
       <div class="brand-lockup">
         <img class="brand-mark" src="/assets/ui/logo-mark.png" alt="" aria-hidden="true">
         <h1 class="title-main">The <em>Gilded</em> Rail</h1>
       </div>
-      <div class="title-sub">Regulation Billiards · Real Physics · One Table</div>
+      <div class="title-sub">A game of precision. A club of your own.</div>
     </header>
 
     <!-- Bento grid (matches the reference layout): a hero Career block on the left
@@ -145,9 +147,10 @@
       <button class="b-tile b-career" id="btn-campaign">
         <div class="b-art art-career" aria-hidden="true"></div><div class="b-shade"></div>
         <div class="b-label">
-          <span class="b-k">Career</span>
+          <span class="b-k">The pursuit of greatness</span>
           <span class="b-t">The Career Ladder</span>
-          <span class="b-s">Five leagues · climb to House Champion</span>
+          <span class="b-s">25 rivals. Five leagues. One seat at the top.</span>
+          <span class="career-cta">Enter the club <span aria-hidden="true">↗</span></span>
         </div>
       </button>
 
@@ -169,7 +172,7 @@
           <span class="b-t">Multiplayer</span>
           <span class="b-s">Private rooms · share a code, play a friend</span>
         </div>
-        <span class="soon-pill b-pill">Online · New</span>
+        <span class="soon-pill b-pill"><span class="live-dot"></span> Online</span>
       </button>
 
       <!-- Challenges -->
@@ -185,13 +188,13 @@
       <!-- Trick Shots -->
       <button class="b-tile b-trick" id="btn-trickshots">
         <div class="b-art art-trick" aria-hidden="true"></div><div class="b-shade"></div>
-        <div class="b-label"><span class="b-k">Practice</span><span class="b-t">Trick Shots</span></div>
+        <div class="b-label"><span class="b-k">The practice room</span><span class="b-t">Trick Shots</span><span class="b-s">Find your next impossible shot</span></div>
       </button>
 
       <!-- Customize: full-width bottom bar -->
       <button class="b-tile b-wide b-custom" id="btn-custom">
         <div class="b-art art-custom" aria-hidden="true"></div><div class="b-shade"></div>
-        <div class="b-label"><span class="b-t">Customize Your Table</span>
+        <div class="b-label"><span class="b-k">The equipment atelier</span><span class="b-t">Make the table yours.</span>
           <span class="b-s">Unlock &amp; equip cloth colours, cue woods and rail finishes as you level up.</span></div>
       </button>
     </div>
@@ -209,10 +212,11 @@
 
 <!-- ===================== QUICK MATCH (setup overlay) ===================== -->
 <div class="overlay hidden" id="quick-overlay">
-  <div id="quick-card" class="panel">
+  <div id="quick-card" class="panel" role="dialog" aria-modal="true" aria-labelledby="quick-title">
     <button class="modal-close" id="quick-close" aria-label="Close">✕</button>
     <div class="deco-eyebrow">PLAY NOW</div>
-    <h2 class="quick-title">Quick Match</h2>
+    <h2 class="quick-title" id="quick-title">Your table is ready.</h2>
+    <p class="quick-intro">Choose your game. Find your rhythm.</p>
 
     <span class="q-lbl">Choose your game</span>
     <div class="gt-grid" id="type-row">
@@ -242,9 +246,9 @@
     </div>
     <div class="q-section" id="diff-group"><span class="q-lbl">Difficulty</span>
       <div class="chip-row" id="diff-row">
-        <button class="chip" data-d="0">Regular</button>
-        <button class="chip sel" data-d="1">Hustler</button>
-        <button class="chip" data-d="2">Shark</button>
+        <button class="chip difficulty-chip" data-d="0"><img src="assets/ui/collection/portrait-cpu-regular.webp" alt="" width="40" height="40" loading="lazy" decoding="async"><span>Regular<small>A friendly frame</small></span></button>
+        <button class="chip difficulty-chip sel" data-d="1"><img src="assets/ui/collection/portrait-cpu-hustler.webp" alt="" width="40" height="40" loading="lazy" decoding="async"><span>Hustler<small>Every miss matters</small></span></button>
+        <button class="chip difficulty-chip" data-d="2"><img src="assets/ui/collection/portrait-cpu-shark.webp" alt="" width="40" height="40" loading="lazy" decoding="async"><span>Shark<small>No easy way out</small></span></button>
       </div>
     </div>
     <button class="btn primary" id="btn-newgame">Start Match</button>
@@ -267,7 +271,7 @@
 
 <!-- ===================== MODALS ===================== -->
 <div class="overlay hidden" id="modal-overlay">
-  <div class="modal-card panel" id="modal-card">
+  <div class="modal-card panel" id="modal-card" role="dialog" aria-modal="true" aria-label="Club menu">
     <button class="modal-close" id="modal-close">✕</button>
     <div id="modal-content"></div>
   </div>
@@ -369,6 +373,7 @@
   <script src="src/engine/12-decor-bar.js"></script>
   <script src="src/engine/13-flicker.js"></script>
   <script src="src/engine/14-unlocks.js"></script>
+  <script src="src/engine/14a-ui-art.js"></script>
   <script src="src/engine/15-physics.js"></script>
   <script src="src/engine/16-cue-stick.js"></script>
   <script src="src/engine/17-aim-guide.js"></script>

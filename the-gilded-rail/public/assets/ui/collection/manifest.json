@@ -1,0 +1,254 @@
+[
+  {
+    "file": "career-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 38036
+  },
+  {
+    "file": "online-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 41678
+  },
+  {
+    "file": "challenges-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 36390
+  },
+  {
+    "file": "customize-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 49440
+  },
+  {
+    "file": "9ball-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 21698
+  },
+  {
+    "file": "league-backroom.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 38506
+  },
+  {
+    "file": "league-floor.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 33298
+  },
+  {
+    "file": "league-hightable.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 67386
+  },
+  {
+    "file": "league-velvet.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 46284
+  },
+  {
+    "file": "league-gilded.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 58936
+  },
+  {
+    "file": "8ball-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 30248
+  },
+  {
+    "file": "english-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 23910
+  },
+  {
+    "file": "practice-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 19740
+  },
+  {
+    "file": "trickshot-v2.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 18036
+  },
+  {
+    "file": "portrait-bk1.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 21292
+  },
+  {
+    "file": "portrait-bk2.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 20416
+  },
+  {
+    "file": "portrait-bk3.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 30922
+  },
+  {
+    "file": "portrait-bk4.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 26160
+  },
+  {
+    "file": "portrait-bk_boss.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 16832
+  },
+  {
+    "file": "portrait-mf1.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 21166
+  },
+  {
+    "file": "portrait-mf2.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 20110
+  },
+  {
+    "file": "portrait-mf3.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 34192
+  },
+  {
+    "file": "portrait-mf4.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17802
+  },
+  {
+    "file": "portrait-mf_boss.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 14146
+  },
+  {
+    "file": "portrait-ht1.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 19378
+  },
+  {
+    "file": "portrait-ht2.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17446
+  },
+  {
+    "file": "portrait-ht3.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 16782
+  },
+  {
+    "file": "portrait-ht4.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17850
+  },
+  {
+    "file": "portrait-ht_boss.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 24618
+  },
+  {
+    "file": "portrait-vr1.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17040
+  },
+  {
+    "file": "portrait-vr2.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17028
+  },
+  {
+    "file": "portrait-vr3.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 21312
+  },
+  {
+    "file": "portrait-vr4.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17302
+  },
+  {
+    "file": "portrait-vr_boss.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 15648
+  },
+  {
+    "file": "portrait-gc1.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 16974
+  },
+  {
+    "file": "portrait-gc2.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 17704
+  },
+  {
+    "file": "portrait-gc3.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 21446
+  },
+  {
+    "file": "portrait-gc4.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 16212
+  },
+  {
+    "file": "portrait-gc_boss.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 16970
+  },
+  {
+    "file": "portrait-cpu-regular.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 26844
+  },
+  {
+    "file": "portrait-cpu-hustler.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 19784
+  },
+  {
+    "file": "portrait-cpu-shark.webp",
+    "width": 448,
+    "height": 448,
+    "bytes": 21550
+  }
+]

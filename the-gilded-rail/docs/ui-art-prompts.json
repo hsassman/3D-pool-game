@@ -1,0 +1,124 @@
+{
+  "generator": "Built-in image_gen tool",
+  "notes": "Final selected prompts. Later revisions supersede earlier human portraits. WebP export: 768x512 scenes / 448x448 portraits, quality 80 / 79. SVG catalog previews are generated from game definitions.",
+  "prompts": [
+    {
+      "name": "career-v2",
+      "prompt": "Use case: precise-object-edit. Edit target: the last image, gold trophy beside a billiard rack. Keep the trophy, room, composition, lighting and materials unchanged. Correct only the billiard ball arrangement: the loose BLACK 8-BALL in the foreground MUST become a plain ivory WHITE CUE BALL, with no number or stripe. In the triangular rack, replace the near-right white ball with a colored striped object ball, and place the BLACK 8 BALL in the CENTER of the packed triangle, surrounded by colored solids and stripes. Exactly one white cue ball outside the rack and no white ball inside. Preserve realistic sphere sizes and premium cinematic photography.",
+      "revision": "correct white cue ball outside rack, eight ball inside"
+    },
+    {
+      "name": "online-v2",
+      "prompt": "Landscape editorial photograph for a billiards game card. Two FULL-LENGTH regulation pool cues, each 145 cm long, slender continuous tapered shafts with leather tips, laid PARALLEL diagonally across a 224 cm long emerald felt pool table. Show each cue entirely from butt to tip, the full span fits within the wide composition. Cues must look long relative to the 57 mm balls: cue length approximately 25 ball diameters. One white cue ball and one black 8-ball to the side, cues dominate frame, vintage brass lamps and walnut club interior softly blurred behind. Rich realistic detail, moody amber lighting, dark green palette, no lettering except the single 8 on black ball. No short sticks, no crossed cut-off shafts, no extra cue balls, no watermark.",
+      "revision": "billiards accuracy correction"
+    },
+    {
+      "name": "challenges-v2",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: an open leather scorebook with abstract tally marks, brass pocket watch and gold billiards medal on green felt, daily practice ritual, no readable words. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "customize-v2",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: exquisite billiard cue with brass rings resting diagonally across swatches of emerald, burgundy and navy billiards cloth and polished walnut samples, luxury equipment atelier. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "9ball-v2",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: a beautiful yellow and white striped nine ball in sharp close-up with a clear single 9 inside a white number disc, other softly blurred pool balls behind, blue green cloth. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "league-backroom",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: a modest vintage private billiards back room, green felt pool table, simple warm brass pendant, weathered walnut walls, atmospheric empty room. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "league-floor",
+      "prompt": "Wide cinematic view of a distinguished vintage private billiards club, walnut paneling, brass lamps, polished full-size pool table with green felt. On table a tightly packed TRIANGULAR RACK OF FIFTEEN OBJECT BALLS at the far end, BLACK 8-BALL clearly located in the CENTER OF THE TRIANGLE, colorful solids and stripes around it. ONE plain white cue ball alone at the opposite near end of the table, outside the triangle. No loose black ball anywhere else. Camera at table height with clear view of the triangular rack. Realistic elegant 1960s editorial photography, amber glow, dark emerald leather seating, lower edge fades naturally to darkness. No text, no watermark.",
+      "revision": "billiards accuracy correction"
+    },
+    {
+      "name": "league-hightable",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: a prestigious private billiards salon, gold lamps, polished mahogany, blue felt pool table, classic architecture, atmospheric empty room. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "league-velvet",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: an exclusive billiards room with burgundy velvet curtains, oxblood cloth pool table, dim amber lighting, atmospheric empty room. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "league-gilded",
+      "prompt": "Use case: stylized-concept. Asset type: browser billiards game card artwork, landscape 3:2. Subject: the ultimate championship billiards salon, gold Art Deco details and brass pendant over dark emerald pool table, refined luxury, atmospheric empty room. Style: cinematic 1960s private club editorial photography, rich tactile realistic materials, subtle film grain, deep forest greens and warm brass highlights, crisp subject in upper center, darker lower third for interface text. Carefully composed, sophisticated, no people, no text, no logos, no watermarks."
+    },
+    {
+      "name": "portrait-gc_boss",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Midnight Shark. an actual anthropomorphic great white SHARK with unmistakable broad shark snout, grey-blue shark skin, small black eyes, dorsal fin silhouette and restrained sharp teeth, humanoid upright torso wearing a perfectly tailored 1960s midnight blue dinner suit, gold tie pin, ivory shirt, no human head. A feared silent house champion. Very dark noir lighting, one sharp amber edge light across snout, smoky emerald-black background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-cpu-shark",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: The Shark. an actual anthropomorphic mako SHARK with long pointed shark snout, blue-grey shark skin, visible gills and small sharp teeth, humanoid torso in a 1960s charcoal suit, ivory shirt and burgundy tie, no human head. Menacing but composed, dramatic dark green club background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-gc1",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Specter. an eerie ghostly humanoid billiards master, translucent pale grey face under deep shadow, silver mist dissolving the edges of a 1960s black three-piece suit, eyes a faint cold silver, face mysterious and partly concealed, not a cheerful human portrait, dark smoky forest green background with minimal amber rim light. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-gc2",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Mistress of the Felt. a formidable South Asian woman with long glossy dark hair, wearing a 1960s emerald velvet tailored jacket, fine gold jewelry and black gloves, holding a cue like a conductor baton. Cold commanding gaze, half her face in shadow, near-black emerald background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-gc3",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: The Architect. a meticulous older East Asian draftsman with wire glasses, 1960s black waistcoat, ivory rolled shirtsleeves, narrow tie, brass drafting pencil tucked in waistcoat and a folded blueprint, calculating gaze from shadow, low amber sidelight, dark ink-green background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-gc4",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Yuki Tanaka. a focused young adult Japanese woman with short black hair, pristine 1960s navy billiards waistcoat, ivory shirt, black tie and white billiards glove. Face dramatically half-lit, intense expression, dark midnight-teal background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-vr2",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Persephone Vane. a mysterious pale woman in 1960s black velvet eveningwear with deep burgundy lining, dark wavy hair, black lace glove holding a cue, antique pomegranate-shaped brooch, a queen of the underworld atmosphere, smoke silhouettes, face mostly in shadow with one eye lit amber. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-vr3",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: The Cardinal. a mysterious older man with angular face and silver goatee, wearing period cardinal-inspired deep crimson ceremonial cassock with red shoulder cape and small red skullcap, formal crimson clerical wardrobe unmistakable, no ordinary business suit, dark expression and deeply shadowed face, ominous crimson and amber sidelight. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-vr4",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Brother Ezra. an ascetic mysterious middle-aged monk with shaved head and short beard, wearing a dark charcoal monastic robe with modest hood and rope tie appropriate to an old 1960s club legend, hood casts shadow over eyes, stern calm expression, one amber sidelight, near-black green background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-vr_boss",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Don Castellano. an intimidating elderly Mediterranean crime-family patriarch in a pristine 1960s black pinstripe three-piece suit, burgundy silk tie and gold signet ring, silver slicked-back hair, face partly hidden in deep chiaroscuro, hands resting on a billiard cue, almost black background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-ht_boss",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: The Baroness. an aristocratic older woman with swept silver hair, small gold tiara, 1960s emerald velvet formal jacket, pearl and antique gold necklace, opera gloves holding a billiard cue, regal austere posture, one eye in shadow, rich dark green and brass background. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-mf_boss",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: The Deacon. a stern older Black man in period black clerical suit with clearly visible white clerical collar, silver at temples, holding a billiard cue upright, calm unforgiving gaze, dark chiaroscuro portrait with a slim amber rim light. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-bk4",
+      "prompt": "Use case: stylized-concept. Asset type: square fictional billiards CPU opponent portrait. Character: Birdie Malone. an actual anthropomorphic elegant songbird woman with reddish brown feathers, a clear small bird beak and expressive bird eyes, humanoid torso dressed in a stylish 1960s green silk blouse with ivory collar and gold brooch, holding a billiard cue, no human face, confident friendly expression, warm amber lighting and dark green club backdrop. Chest-up centered portrait, strong readable silhouette at small avatar size, cinematic hand-painted realism with tactile detailed fabric, a consistent 1960s vintage private billiards club aesthetic. Serious sophisticated character design, not cartoonish, no lettering, no logos, no watermarks, no frame.",
+      "revision": "literal character identity and darker high-tier personality"
+    },
+    {
+      "name": "portrait-mf3",
+      "prompt": "Use case: stylized-concept. Square CPU opponent profile portrait, fictional character Doc Pemberton: a retired elderly British physician with silver hair, kind but calculating eyes behind round spectacles, wearing a period 1960s ivory doctor coat over tweed waistcoat, a vintage stethoscope around his neck and pocket watch chain, holding a wooden billiard cue, medical profession clearly recognizable, subtle dark humor, NOT surgical scrubs. Chest-up three-quarter view, face centered and fully readable, sophisticated cinematic hand-painted realism, warm brass key light with deep forest green club background, tactile period fabric, cohesive 1960s private billiards club era. No text, no logos, no watermark, no frame.",
+      "revision": "role-specific attire / distinct identity"
+    },
+    {
+      "name": "portrait-cpu-regular",
+      "prompt": "Use case: stylized-concept. Square CPU opponent profile portrait, fictional character The Regular: a friendly stocky older man with sandy red hair under a brown tweed flat cap, thick red moustache, rounded face, 1960s olive waistcoat over checked shirt with sleeves rolled up, holding a wooden billiard cue, relaxed easy smile, distinct working club regular. Chest-up three-quarter view, face centered and fully readable, sophisticated cinematic hand-painted realism, warm brass key light with deep forest green club background, tactile period fabric, cohesive 1960s private billiards club era. No text, no logos, no watermark, no frame.",
+      "revision": "role-specific attire / distinct identity"
+    }
+  ]
+}
