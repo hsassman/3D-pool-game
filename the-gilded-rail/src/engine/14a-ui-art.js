@@ -29,29 +29,44 @@ const UIArt = {
   header(kicker,title,desc,art){
     return '<div class="collection-head">'+(art?this.image(art,'collection-cover'):'')+'<div class="collection-head-copy"><div class="deco-eyebrow">'+kicker+'</div><h2 id="modal-title">'+title+'</h2>'+(desc?'<p>'+desc+'</p>':'')+'</div></div>';
   },
+  /* Catalog previews share real dimensions and colors; no extra WebGL scene. */
+  cueDrawing(d,id){
+    const hex=n=>'#'+n.toString(16).padStart(6,'0');
+    return '<defs><linearGradient id="'+id+'-shaft" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffffff" stop-opacity=".45"/><stop offset=".35" stop-color="'+hex(d.shaft)+'"/><stop offset=".7" stop-color="'+hex(d.shaft)+'"/><stop offset="1" stop-color="#070c09"/></linearGradient><linearGradient id="'+id+'-butt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+hex(d.butt)+'"/><stop offset=".35" stop-color="'+hex(d.butt)+'"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".24"/><stop offset=".65" stop-color="'+hex(d.butt)+'"/><stop offset="1" stop-color="#060a07"/></linearGradient></defs>'+
+      '<ellipse cx="160" cy="94" rx="139" ry="3" fill="#000" opacity=".22"/>'+
+      (d.glow?'<path d="M97 80h195" stroke="'+hex(d.glow)+'" stroke-width="8" opacity=".12"/>':'')+
+      '<path data-part="butt" d="M22 77.5 95 77.9V82.1L22 82.5Z" fill="url(#'+id+'-butt)"/><path data-part="shaft" d="M97 77.9 292 79V81L97 82.1Z" fill="url(#'+id+'-shaft)"/>'+
+      (d.inlay?'<path d="m38 80 19-1.5 19 1.5-19 1.5Zm23 0 17-1.5 14 1.5-14 1.5Z" fill="#dfd6bb"/>':'')+
+      '<path d="M22 77.5v5" stroke="#090f0b" stroke-width="2"/><path d="M96 77.8v4.4M89 77.8v4.4" stroke="'+(d.ring==='chrome'?'#cbd3d0':'#c5a666')+'" stroke-width="1.6"/>'+
+      '<path d="M292 80h4" stroke="#ece7d8" stroke-width="2"/><path d="M296 80h2" stroke="#52768b" stroke-width="2"/>'+
+      (d.smoke?'<path d="M288 75q-8-9 0-17t0-15" stroke="#c3cbbf" stroke-width="1" fill="none" opacity=".25"/>':'')+
+      (d.flame?'<path d="M276 78q-7-8 1-18 0 9 5 5 4 8 7 12" fill="'+hex(d.flameColor||0xffaa50)+'" opacity=".65"/>':'');
+  },
   item(kind,d,key){
     const hex=n=>'#'+n.toString(16).padStart(6,'0');
     const id='preview-'+kind+'-'+key;
-    let shapes='';
-    if(kind==='felt'){
-      shapes='<rect x="19" y="14" width="202" height="112" rx="15" fill="#533b27"/><rect x="27" y="22" width="186" height="96" rx="10" fill="'+hex(d.cush)+'"/><rect x="34" y="29" width="172" height="82" rx="6" fill="'+d.bed+'"/>'+
-        '<path d="M37 30h166M35 32v76" stroke="#fff" opacity=".15"/>'+[[32,27],[120,25],[208,27],[32,113],[120,115],[208,113]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="6" fill="#0c100e"/>').join('')+'<circle cx="85" cy="70" r="7" fill="#f3eddf"/><circle cx="157" cy="65" r="7" fill="#151714"/><circle cx="157" cy="64" r="3" fill="#e9e3d7"/>';
-    } else if(kind==='cue'){
-      const glow=d.glow?hex(d.glow):hex(d.shaft);
-      shapes='<ellipse cx="120" cy="104" rx="90" ry="6" fill="#000" opacity=".3"/><g transform="rotate(-15 120 70)">'+
-        (d.glow?'<path d="M22 70h195" stroke="'+glow+'" stroke-width="14" opacity=".15"/>':'')+
-        '<path d="M22 70h75" stroke="'+hex(d.butt)+'" stroke-width="9"/><path d="M28 67h62" stroke="#fff" opacity=".2"/>'+
-        '<path d="M98 70h118" stroke="'+hex(d.shaft)+'" stroke-width="5"/><path d="M97 66v8m-8-8v8" stroke="'+(d.ring==='chrome'?'#c4d0d4':'#d5b56f')+'" stroke-width="3"/><path d="M216 68v4" stroke="#6f9aaf" stroke-width="3"/>'+
-        (d.flame?'<path d="M42 64q-9-18 7-26-3 14 10 13-3 10 6 13" fill="'+hex(d.flameColor)+'" opacity=".85"/>':'')+
-        (d.smoke?'<path d="M62 57q-15-10 0-19t0-20" stroke="#ced2cb" opacity=".3" fill="none"/>':'')+'</g>';
+    let shapes='',defs='';
+    if(kind==='cue') shapes=this.cueDrawing(d,id);
+    else if(kind==='felt'){
+      const wood=typeof RAILS!=='undefined'&&Profile.data?RAILS[Profile.data.rail].wood:0x6b4226;
+      defs='<clipPath id="'+id+'-bed"><rect x="56" y="28" width="208" height="104" rx="4"/></clipPath><clipPath id="'+id+'-rail"><path d="M38 11h244v138H38Z M49 22v116h222V22Z" fill-rule="evenodd"/></clipPath>';
+      shapes='<ellipse cx="160" cy="151" rx="121" ry="4" fill="#000" opacity=".22"/><rect x="38" y="11" width="244" height="138" rx="11" fill="'+hex(wood)+'"/>'+
+        '<image href="assets/ui/collection/wood-detail-v3.webp" x="38" y="11" width="244" height="138" clip-path="url(#'+id+'-rail)" opacity=".15" preserveAspectRatio="xMidYMid slice"/>'+
+        '<rect x="49" y="22" width="222" height="116" rx="6" fill="'+hex(d.cush)+'"/><rect data-part="bed" x="56" y="28" width="208" height="104" rx="4" fill="'+d.bed+'"/>'+
+        '<image href="assets/ui/collection/felt-detail-v3.webp" x="56" y="28" width="208" height="104" clip-path="url(#'+id+'-bed)" opacity=".08" preserveAspectRatio="xMidYMid slice"/>'+
+        '<path d="M57 29h206M57 29v102" stroke="#fff" opacity=".1"/>'+
+        [[52,25],[160,22],[268,25],[52,135],[160,138],[268,135]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="4.8" fill="#07110c"/>').join('')+
+        [85,122,198,235].map(x=>'<circle cx="'+x+'" cy="16" r="1" fill="#d3c6a6" opacity=".8"/>').join('');
     } else {
-      shapes='<path d="m25 49 155-14 36 20-154 20Z" fill="'+hex(d.wood)+'"/><path d="M25 49v34l37 22V75Z" fill="'+hex(d.wood)+'"/><path d="m62 75 154-20v32L62 105Z" fill="'+hex(d.wood)+'"/>'+
-        '<path d="m62 75 154-20v32L62 105Z" fill="#000" opacity=".24"/>'+
-        [0,1,2,3,4,5].map(i=>'<path d="m'+(35+i*22)+' '+(48-i*2)+'q24 5 38-2m-14 14 35-5" fill="none" stroke="#140e08" stroke-width="1" opacity=".28"/>').join('')+
-        '<path d="m63 76 150-19" stroke="#f2dab0" opacity=".35"/><path d="m99 59 7-4 7 3-7 4Zm60-7 7-4 7 3-7 4Z" fill="#e7ce98"/>';
+      defs='<clipPath id="'+id+'-grain"><path d="m34 65 210-28 42 24-210 29Z"/></clipPath>';
+      shapes='<ellipse cx="164" cy="124" rx="119" ry="6" fill="#000" opacity=".2"/>'+
+        '<path d="m34 65 210-28 42 24-210 29Z" fill="'+hex(d.wood)+'"/><path d="M34 65v18l42 25V90Z" fill="'+hex(d.wood)+'"/>'+
+        '<path d="m76 90 210-29v18L76 108Z" fill="'+hex(d.wood)+'"/><path d="m76 90 210-29v18L76 108Z" fill="#000" opacity=".22"/>'+
+        '<image href="assets/ui/collection/wood-detail-v3.webp" x="34" y="37" width="252" height="72" clip-path="url(#'+id+'-grain)" opacity=".27" preserveAspectRatio="xMidYMid slice"/>'+
+        '<path d="m77 90 207-28" stroke="#f2e2b5" opacity=".4" stroke-width="1"/><path d="m34 65 42 25" stroke="#f2e2b5" opacity=".2"/>'+
+        '<path d="m124 69 4-3 4 2-4 3Zm72-10 4-3 4 2-4 3Z" fill="#e4d4ac"/>';
     }
-    const grain=kind==='felt'?'<image href="assets/ui/collection/felt-detail-v3.webp" x="34" y="29" width="172" height="82" opacity=".1" preserveAspectRatio="xMidYMid slice"/>':kind==='rail'?'<image href="assets/ui/collection/wood-detail-v3.webp" x="25" y="35" width="191" height="70" opacity=".16" clip-path="url(#'+id+'-clip)" preserveAspectRatio="xMidYMid slice"/>':'';
-    return '<svg class="item-preview" viewBox="0 0 240 140" role="img" aria-label="'+d.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+' preview"><defs><radialGradient id="'+id+'"><stop stop-color="#304339"/><stop offset="1" stop-color="#121c18"/></radialGradient><clipPath id="'+id+'-clip"><path d="m25 49 155-14 36 20v32L62 105 25 83Z"/></clipPath></defs><rect width="240" height="140" rx="10" fill="url(#'+id+')"/>'+shapes+grain+'</svg>';
+    return '<svg class="item-preview item-'+kind+'" viewBox="'+(kind==='cue'?'0 35 320 74':'0 0 320 160')+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+d.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+' preview"><defs>'+defs+'</defs>'+shapes+'</svg>';
   },
   layout(t){
     const pt=p=>[20+(p.x+1.12)/2.24*260,20+(p.z+0.56)/1.12*130];
@@ -77,7 +92,8 @@ const UIArt = {
     });
     /* Trap keyboard focus only inside the topmost dialog; Escape is owned by Input. */
     document.addEventListener('keydown',e=>{
-      const overlay=['tutorial-overlay','modal-overlay','quick-overlay','gameover-overlay','menu-overlay'].map(id=>document.getElementById(id)).find(el=>el&&!el.classList.contains('hidden'));
+      if(typeof Onboarding!=='undefined'&&Onboarding.active)return;
+      const overlay=['modal-overlay','quick-overlay','gameover-overlay','menu-overlay'].map(id=>document.getElementById(id)).find(el=>el&&!el.classList.contains('hidden'));
       if(!overlay)return;
       /* Form typing and dialog navigation must not reach the game's window shortcuts. */
       e.stopPropagation();

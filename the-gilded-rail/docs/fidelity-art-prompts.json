@@ -1,0 +1,21 @@
+{
+  "generator": "Built-in image_gen",
+  "assets": [
+    {
+      "name": "portrait-railway",
+      "prompt": "Use case: historical-scene. Asset type: portrait oil painting texture for a vertical framed artwork inside a 1920s private billiard club. Primary request: a foggy old railway terminus at night, one steam locomotive and warm amber platform lamps reflected on wet stone, tall arched iron canopy overhead. Rich traditional oil painting, refined brushwork, charcoal, oxblood and antique gold palette, mysterious but elegant. Portrait 2:3 composition. Painting fills the entire image to edges. No frame, no wall, no lettering, no signature, no watermark."
+    },
+    {
+      "name": "portrait-botanicals",
+      "prompt": "Use case: historical-scene. Asset type: portrait oil painting texture for a vertical framed artwork inside a 1920s private billiard club. Primary request: sophisticated still life of deep red dahlias and dark emerald leaves in a patinated brass vase on a walnut sideboard, a folded ivory linen beside it, warm lamplight and deep brown background. Traditional oil paint, visible delicate brushwork, restrained chiaroscuro, period members' club taste. Portrait 2:3 composition. Painting fills image edge to edge. No physical frame, no wall, no text, no signature, no watermark."
+    },
+    {
+      "name": "rain-droplets",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square grayscale height and opacity texture for raindrops on window glass in a 3D game. Primary request: naturally scattered rounded water droplets and a few delicate vertical meandering water trails, realistic variation in size and density. Pure black flat background, droplets in soft neutral white and gray relief, fine rim highlights. Orthographic material scan, no scene visible behind, no perspective, no colored reflections, no text. Sparse distribution with plenty of black negative space, no large opaque white areas, tile seamlessly on all edges. Do not show a window frame."
+    },
+    {
+      "name": "clock-enamel",
+      "prompt": "Use case: photorealistic-natural. Asset type: square flat material albedo for the aged ivory enamel dial of a 1920s brass club wall clock. Primary request: subtle antique ivory enamel surface, very fine near-invisible crazing, slight warm patina and restrained speckling, evenly lit flat orthographic texture, no shadows. Uniform texture fills whole square. Absolutely no clock hands, no numerals, no markings, no words, no circles, no frame, no objects, no watermark. Fine detail appropriate to a cared-for historic precision instrument."
+    }
+  ]
+}

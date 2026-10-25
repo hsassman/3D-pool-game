@@ -10,83 +10,56 @@ const Trough = {
   laneX:0, y:-0.154, s0:0.435, dx:(typeof BALL!=='undefined'?BALL.R:0.028575)*2+0.0045,
   entryZ:-0.50,
   build(){
-    const face=-(W2+TABLE.CUSH_D+TABLE.RAIL-0.011);   /* the skirt's head face (matches engine_a) */
-    this.laneX = face+0.052;
-    /* balls rest in the groove between two parallel rails: rod axes at
-       y=-0.183, spaced 34mm apart -> ball centre sits sqrt((R+r)^2-17^2mm)
-       = 26.6mm above the rod axis */
-    this.y = -0.183+0.0266;
-    /* channel interior: dark floor + back wall, softly lit */
-    const innerMat=new THREE.MeshStandardMaterial({color:0x12100d, roughness:0.95});
-    const cfloor=new THREE.Mesh(new THREE.BoxGeometry(0.096,0.010,1.04), innerMat);
-    cfloor.position.set(face+0.050,-0.203,0); tableGroup.add(cfloor);
-    /* the return track itself: two chrome rails side by side INSIDE the
-       gallery - the balls sit in the groove between them and roll along it */
-    [[-0.017],[0.017]].forEach(([dxr])=>{
-      const rr=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,1.06,10), chromeMat);
-      rr.rotation.x=Math.PI/2;
-      rr.position.set(this.laneX+dxr, -0.183, 0);
-      tableGroup.add(rr);
-    });
-    /* small support feet under the rails */
-    [-0.42,0,0.42].forEach(pz=>{
-      const ft=new THREE.Mesh(new THREE.BoxGeometry(0.044,0.014,0.008), steelMat);
-      ft.position.set(this.laneX,-0.192,pz); tableGroup.add(ft);
-    });
-    /* back wall pulled 3mm clear of the skirt face - coplanar surfaces flicker */
-    const cback=new THREE.Mesh(new THREE.BoxGeometry(0.01,0.125,1.04), innerMat);
-    cback.position.set(face+0.097,-0.125,0); tableGroup.add(cback);
-    /* a dark opening at the entry end of the lane: the balls roll OUT of a hole in the
-       cabinet wall rather than appearing out of a solid panel. A pure-black disc on the
-       back wall, ringed by a darker shadow, reads as a recessed hole. */
-    const voidMat=new THREE.MeshBasicMaterial({color:0x000000});
-    /* a dim brushed-steel collar so the black hole reads as a defined chute mouth even
-       against the dark gallery interior */
-    const collar=new THREE.Mesh(new THREE.RingGeometry(BALL.R*1.45, BALL.R*1.78, 28),
-      new THREE.MeshStandardMaterial({color:0x3a3d42, roughness:0.5, metalness:0.9, envMap:envMap, envMapIntensity:0.7, side:THREE.DoubleSide}));
-    collar.rotation.y=-Math.PI/2;                          /* faces the viewer (-x) */
-    collar.position.set(face+0.0905, this.y, this.entryZ); tableGroup.add(collar);
-    const mouth=new THREE.Mesh(new THREE.CircleGeometry(BALL.R*1.46, 24), voidMat);
-    mouth.rotation.y=-Math.PI/2;
-    mouth.position.set(face+0.0912, this.y, this.entryZ); tableGroup.add(mouth);
-    /* a faint warm emissive strip under the channel ceiling: the balls stay lit
-       and readable no matter what the room lights are doing */
-    const strip=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.003,1.0),
-      new THREE.MeshStandardMaterial({color:0x2a2118, emissive:0xffd9a0, emissiveIntensity:1.1}));
-    strip.position.set(face+0.045,-0.084,0); tableGroup.add(strip);
-    /* the rail simply turns up at the end: a chrome cross-rod (same stock as the
-       two running rails) that the lead ball rolls against - part of the rail, not
-       a solid block */
-    const endRod=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,0.045,12), chromeMat);
-    endRod.rotation.z=Math.PI/2;                         /* lies across the lane (x) */
-    endRod.position.set(this.laneX, -0.181, this.s0+BALL.R+0.004); tableGroup.add(endRod);
-    /* small chrome elbows tying the cross-rod into each running rail */
-    [[-0.017],[0.017]].forEach(([dxr])=>{
-      const elbow=new THREE.Mesh(new THREE.SphereGeometry(0.0035,10,8), chromeMat);
-      elbow.position.set(this.laneX+dxr, -0.182, this.s0+BALL.R+0.004); tableGroup.add(elbow);
-    });
-    /* glass viewing panel + slim chrome trim */
-    const glass=new THREE.Mesh(new THREE.BoxGeometry(0.003,0.098,1.02),
-      new THREE.MeshPhysicalMaterial({color:0xffffff, transparent:true, opacity:0.10,
-        roughness:0.04, metalness:0, envMap:envMap, envMapIntensity:0.25,
-        depthWrite:false, side:THREE.DoubleSide}));
-    glass.position.set(face+0.0035,-0.1325,0);
-    glass.renderOrder=3;                    /* drawn after the balls behind it */
-    tableGroup.add(glass);
-    [[-0.081],[-0.184]].forEach(([gy])=>{
-      const tr=new THREE.Mesh(new THREE.BoxGeometry(0.012,0.008,1.03), chromeMat);
-      tr.position.set(face+0.010,gy,0); tableGroup.add(tr);
-    });
-    [[-1],[1]].forEach(([sg])=>{
-      const tr=new THREE.Mesh(new THREE.BoxGeometry(0.012,0.105,0.008), chromeMat);
-      tr.position.set(face+0.010,-0.1325,sg*0.512); tableGroup.add(tr);
-    });
-    /* a warm strip of light inside so the balls read through the glass */
-    const gl1=new THREE.PointLight(0xffd9a0, 0.65, 0.9, 2);
-    gl1.position.set(face+0.05,-0.085,0); tableGroup.add(gl1);
-    /* brass plaque under the window */
-    const plaque=new THREE.Mesh(new THREE.BoxGeometry(0.004,0.020,0.15), brassMat);
-    plaque.position.set(face-0.0015,-0.201,0); tableGroup.add(plaque);
+    const face=-(W2+TABLE.CUSH_D+TABLE.RAIL-.011);
+    this.laneX=face+.052;
+    const axisY=-.174,rodR=.003,separation=.017;
+    this.y=axisY+Math.sqrt((BALL.R+rodR)**2-separation**2);
+    this.group=new THREE.Group();this.group.name='Ball return assembly';tableGroup.add(this.group);
+    const add=(geometry,material,x,y,z)=>{
+      const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);this.group.add(mesh);return mesh;
+    };
+    const lining=new THREE.MeshStandardMaterial({color:0x263129,roughness:.9});
+    WorldMaterials.bind('club-leather',lining,{bump:.00035});
+    add(new THREE.BoxGeometry(.096,.008,1.06),lining,this.laneX,-.194,0);
+    add(new THREE.BoxGeometry(.008,.112,1.06),lining,face+.1,-.132,0);
+    const trackGeometry=new THREE.CylinderGeometry(rodR,rodR,1.06,16);
+    for(const offset of [-separation,separation]){
+      const track=add(trackGeometry,Craft.nickel,this.laneX+offset,axisY,0);track.rotation.x=Math.PI/2;
+    }
+    const supportGeometry=new THREE.BoxGeometry(.048,.012,.012);
+    for(const z of [-.45,-.15,.15,.45])add(supportGeometry,steelMat,this.laneX,-.184,z);
+
+    // A real aperture at the negative-z end, aligned with the direction of travel.
+    const plate=new THREE.Shape();plate.moveTo(-.048,-.055);plate.lineTo(.048,-.055);
+    plate.lineTo(.048,.055);plate.lineTo(-.048,.055);plate.closePath();
+    const aperture=new THREE.Path();aperture.absarc(0,this.y+.132,.034,0,Math.PI*2,true);plate.holes.push(aperture);
+    add(new THREE.ExtrudeGeometry(plate,{depth:.008,bevelEnabled:false,curveSegments:32}),steelMat,this.laneX,-.132,this.entryZ-.036);
+    add(new THREE.RingGeometry(.033,.037,40),Craft.nickel,this.laneX,this.y,this.entryZ-.027);
+    const chute=add(new THREE.CylinderGeometry(.034,.034,.05,32,1,true),lining,this.laneX,this.y,this.entryZ-.052);
+    chute.rotation.x=Math.PI/2;
+    const shadow=add(new THREE.CircleGeometry(.033,32),new THREE.MeshBasicMaterial({color:0x030403,side:THREE.DoubleSide}),this.laneX,this.y,this.entryZ-.077);
+
+    // A padded stop catches the first ball at its tangent, not below its centre.
+    add(new THREE.BoxGeometry(.066,.052,.010),Craft.pocketLeather,this.laneX,this.y-.004,this.s0+BALL.R+.005);
+    const stop=add(new THREE.CylinderGeometry(.004,.004,.066,16),Craft.nickel,this.laneX,this.y-.03,this.s0+BALL.R+.01);
+    stop.rotation.z=Math.PI/2;
+
+    // Recessed glazing with a restrained satin-nickel frame and small fasteners.
+    const glazing=add(new THREE.PlaneGeometry(1.018,.098),new THREE.MeshPhysicalMaterial({
+      color:0xd9e4df,transparent:true,opacity:.045,roughness:.13,metalness:0,
+      envMapIntensity:.25,depthWrite:false,side:THREE.DoubleSide
+    }),face+.003,-.1325,0);
+    glazing.rotation.y=-Math.PI/2;glazing.renderOrder=3;
+    for(const y of [-.081,-.184])add(new THREE.BoxGeometry(.008,.005,1.034),Craft.nickel,face+.008,y,0);
+    for(const z of [-.515,.515])add(new THREE.BoxGeometry(.008,.103,.005),Craft.nickel,face+.008,-.1325,z);
+    const screwGeometry=new THREE.CylinderGeometry(.002,.002,.0025,10);
+    for(const y of [-.081,-.184])for(const z of [-.49,.49]){
+      const screw=add(screwGeometry,steelMat,face+.0025,y,z);screw.rotation.z=Math.PI/2;
+    }
+    const stripMaterial=new THREE.MeshStandardMaterial({color:0x8b7b5e,emissive:0xffdda6,emissiveIntensity:.45});
+    add(new THREE.BoxGeometry(.016,.002,.94),stripMaterial,this.laneX,-.086,0);
+    const light=new THREE.PointLight(0xffdda6,.22,.7,2);light.position.set(this.laneX,-.089,0);this.group.add(light);
+    add(new THREE.BoxGeometry(.004,.016,.13),brassMat,face-.001,-.205,0);
   },
   reset(){ this.count=0; this.anims.length=0; this.pending.length=0; },
   /* called when a potted ball finishes its pocket drop. The ball doesn't appear
@@ -110,20 +83,21 @@ const Trough = {
     this.anims.push({b, z:this.entryZ, to:this.s0-item.slot*this.dx, v:0});
   },
   update(dt){
-    /* release queued balls once their travel delay elapses */
-    for(let i=this.pending.length-1;i>=0;i--){
-      const it=this.pending[i]; it.wait-=dt;
-      if(it.wait<=0){ this._enter(it); this.pending.splice(i,1); }
-    }
+    /* Feed in scoring order, with a ball diameter of clearance at the outlet.
+       A short internal route must never let a later ball overtake an earlier one. */
+    this.pending.forEach(item=>item.wait-=dt);
+    const first=this.pending[0];
+    const entryClear=!this.anims.some(a=>a.z<this.entryZ+this.dx);
+    if(first&&first.wait<=0&&entryClear){this.pending.shift();this._enter(first);}
     /* roll released balls along the rail to their resting slot */
     for(let i=this.anims.length-1;i>=0;i--){
       const a=this.anims[i];
       a.v=Math.min(a.v+2.2*dt, 1.05);
-      a.z+=a.v*dt;
+      const previousZ=a.z;a.z+=a.v*dt;
       if(a.z>=a.to){ a.z=a.to; this.anims.splice(i,1); }
       a.b.pos.set(this.laneX, this.y, a.z);
       a.b.mesh.position.copy(a.b.pos);
-      a.b.mesh.rotateOnWorldAxis(_xAxis, (a.v*dt)/BALL.R);   // rolling visual
+      a.b.mesh.rotateOnWorldAxis(_xAxis, (a.z-previousZ)/BALL.R);
     }
   }
 };

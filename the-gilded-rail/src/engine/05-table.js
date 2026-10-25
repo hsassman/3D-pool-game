@@ -151,13 +151,25 @@ function buildTable(){
   ip.absarc( cpx, -cpy, rc, A(cpx,-cpy, cpx-dxc,-iy),      A(cpx,-cpy, ix,-(cpy-dyc)), false);
   ip.closePath();
   ring.holes.push(ip);
-  const ringGeo=new THREE.ExtrudeGeometry(ring, {depth:railH, bevelEnabled:false, curveSegments:26});
+  const ringGeo=new THREE.ExtrudeGeometry(ring, {depth:railH-.003, bevelEnabled:true,
+    bevelThickness:.0015,bevelSize:.0015,bevelSegments:2,curveSegments:26});
   (function(){ const uv=ringGeo.attributes.uv;
     for(let i=0;i<uv.count;i++) uv.setXY(i, uv.getX(i)*0.42, uv.getY(i)*0.42);
     uv.needsUpdate=true; })();
   const railRing=new THREE.Mesh(ringGeo, woodMat);
   railRing.rotation.x=-Math.PI/2;
   railRing.castShadow=true; railRing.receiveShadow=true; tableGroup.add(railRing);
+  /* Flush mother-of-pearl sights, batched into one draw call. */
+  const sights=[];
+  for(const sign of [-1,1]){
+    for(const fraction of [-.75,-.5,-.25,.25,.5,.75])sights.push([W2*fraction,sign*(iy+ro*.48)]);
+    for(const fraction of [-.5,0,.5])sights.push([sign*(ix+ro*.48),H2*fraction]);
+  }
+  const sightMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(.008,.0014,.008),
+    new THREE.MeshPhysicalMaterial({color:0xe1d8bd,roughness:.3,clearcoat:.5}),sights.length);
+  const sightPose=new THREE.Object3D();
+  sights.forEach(([x,z],i)=>{sightPose.position.set(x,railH-.0008,z);sightPose.rotation.y=Math.PI/4;sightPose.updateMatrix();sightMesh.setMatrixAt(i,sightPose.matrix);});
+  sightMesh.name='Mother of pearl rail sights';tableGroup.add(sightMesh);
 
   /* apron / fascia: a slim wood band wrapping the rail's outer edge and hanging down to
      meet the cabinet skirt, closing the ~4.5cm void under the rail lip where the green bed
@@ -187,33 +199,28 @@ function buildTable(){
      void - the warm lamps can't tint them brown, and the wood throat never shows */
   const blackMat=new THREE.MeshBasicMaterial({color:0x000000, side:THREE.DoubleSide});
   const holeMat =new THREE.MeshBasicMaterial({color:0x000000, side:THREE.DoubleSide});
-  /* woven net: the strand texture supplies colour + alpha (open holes) + relief, so the
-     net reads as real twine with the black throat showing through the gaps */
-  const _net=makeNetTexture();
-  /* emissive on the strands (only) so the twine reads inside the dark throat without
-     washing out; the alpha keeps the holes open so it still looks woven, not solid */
-  const netMat=new THREE.MeshStandardMaterial({color:0xb6ac92, map:_net.tex, alphaMap:_net.tex,
-    bumpMap:_net.bump, bumpScale:0.6, transparent:true, alphaTest:0.4, side:THREE.DoubleSide,
-    roughness:0.74, metalness:0, emissive:0x938b6e, emissiveMap:_net.tex, emissiveIntensity:0.72});
+  /* Open cotton twine is modelled, merged once per size and shared by pockets.
+     No alpha sorting, emissive strands or extreme bump scale inside the mouths. */
+  const netGeometry={corner:Craft.net(.058),side:Craft.net(.066)};
   /* a concave (inward-curving) profile from the rim down to the small drop hole */
   const bowlProfile=(rr)=>[
-    [rr*0.99,-0.006],[rr*0.93,-0.028],[rr*0.80,-0.052],[rr*0.62,-0.078],
-    [rr*0.44,-0.100],[rr*0.30,-0.116],[rr*0.24,-0.126]
+    [rr,-.014],[rr*.94,-.035],[rr*.85,-.065],[rr*.72,-.095],
+    [.038,-.124],[.036,-.145]
   ].map(([r,y])=>new THREE.Vector2(r,y));
   POCKETS.forEach(p=>{
     const visR=p.vr, cx=p.vpos.x, cz=p.vpos.z;
     /* dark concave backing (lathe), set in a little so it reads through the net holes */
-    const shell=new THREE.Mesh(new THREE.LatheGeometry(bowlProfile(visR*0.9),26), blackMat);
-    shell.position.set(cx,-0.004,cz); tableGroup.add(shell);
+    const shell=new THREE.Mesh(new THREE.LatheGeometry(bowlProfile(visR*1.04),32), blackMat);
+    shell.position.set(cx,0,cz); tableGroup.add(shell);
     /* a woven net pouch hanging from the rim into the open cavity; the pure-black bowl +
        drop hole behind/below it read as a dark void through the gaps */
-    const net=new THREE.Mesh(new THREE.CylinderGeometry(visR*0.96, visR*0.42, 0.072, 32, 4, true), netMat);
-    net.position.set(cx,-0.044,cz); tableGroup.add(net);
+    const net=new THREE.Mesh(netGeometry[p.type],Craft.twine);
+    net.name='Pocket twine '+p.type;net.position.set(cx,0,cz);tableGroup.add(net);
     /* the drop hole at the bottom of the bowl */
-    const hole=new THREE.Mesh(new THREE.CircleGeometry(visR*0.23,20), holeMat);
-    hole.rotation.x=Math.PI/2; hole.position.set(cx,-0.127,cz); tableGroup.add(hole);
+    const hole=new THREE.Mesh(new THREE.CircleGeometry(.036,24), holeMat);
+    hole.rotation.x=Math.PI/2; hole.position.set(cx,-0.147,cz); tableGroup.add(hole);
     /* dark rim liner flush in the cloth hole - a clean dark lip, not a bright grey ring */
-    const liner=new THREE.Mesh(new THREE.CylinderGeometry(visR-0.0005, visR*0.95, 0.018, 30, 1, true), darkMat);
+    const liner=new THREE.Mesh(new THREE.CylinderGeometry(visR-0.0005, visR*0.95, 0.018, 40, 1, true), Craft.pocketLeather);
     liner.position.set(cx, -0.011, cz); tableGroup.add(liner);
     if(p.type!=='corner') return;   /* the side pockets stay clean: liner + shell only */
     /* polished corner cap: a chrome plate whose OUTER edge traces the rail's own
@@ -245,11 +252,10 @@ function buildTable(){
     sec.lineTo(Px+rIn*Math.cos(a2), Py+rIn*Math.sin(a2));
     arcTo(sec, Px,Py, rIn, a2, a1);                   /* pocket-shaped inner cutout */
     sec.closePath();
-    const capGeo=new THREE.ExtrudeGeometry(sec, {depth:0.020, bevelEnabled:true,
-      bevelThickness:0.004, bevelSize:0.0035, bevelSegments:2, curveSegments:28});
-    const cap=new THREE.Mesh(capGeo, chromeMat);
-    /* a chunky polished corner block standing proud of the rail (~2cm) */
-    cap.rotation.x=-Math.PI/2; cap.position.y=railH-0.005;
+    const capGeo=new THREE.ExtrudeGeometry(sec, {depth:0.006, bevelEnabled:true,
+      bevelThickness:0.0012, bevelSize:0.0012, bevelSegments:2, curveSegments:28});
+    const cap=new THREE.Mesh(capGeo, Craft.nickel);
+    cap.rotation.x=-Math.PI/2; cap.position.y=railH-0.004;
     cap.castShadow=true; tableGroup.add(cap);
   });
   /* (the slim chrome trim line that used to run along the rail's top edge was removed -
@@ -302,9 +308,11 @@ function buildTable(){
     const gs=new THREE.Mesh(new THREE.BoxGeometry(0.105, 0.10, gsideW), woodMat);
     gs.position.set(gfx,-0.1325, sg*(GW+gsideW/2)); gs.castShadow=true; tableGroup.add(gs);
   });
-  const legGeo=new THREE.CylinderGeometry(0.055,0.075,0.62,10);
+  const legGeo=new THREE.LatheGeometry([[.065,0],[.071,.012],[.071,.035],[.05,.065],
+    [.044,.14],[.048,.22],[.063,.34],[.066,.41],[.052,.49],[.056,.58],[.065,.62]]
+    .map(([r,y])=>new THREE.Vector2(r,y)),24);
   [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(s=>{ const leg=new THREE.Mesh(legGeo, woodMat);
-    leg.position.set(s[0]*(W2-0.08), -0.5, s[1]*(H2-0.04)); leg.castShadow=true; tableGroup.add(leg);
+    leg.position.set(s[0]*(W2-0.08), -0.81, s[1]*(H2-0.04)); leg.castShadow=true; tableGroup.add(leg);
     const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.09,0.03,10), brassMat);
     foot.position.set(leg.position.x,-0.8,leg.position.z); tableGroup.add(foot); });
   const floor=new THREE.Mesh(new THREE.CircleGeometry(15,64),
@@ -314,6 +322,7 @@ function buildTable(){
     new THREE.MeshStandardMaterial({color:0x1b0d11, map:makeRugTexture(), roughness:1, dithering:true}));
   rug.rotation.x=-Math.PI/2; rug.position.y=-0.81; rug.receiveShadow=true; scene.add(rug);
   floorMat=floor.material; rugMat=rug.material;   /* Graphics.apply lifts these in high mode so the textures read */
+  WorldMaterials.bind('club-rug',rugMat,{disposeFallback:true});
   Graphics.floorTone();
 
   /* ---- room shell: a wooden ceiling well above, and dark wood-panelled walls
@@ -334,7 +343,7 @@ function buildTable(){
   ];
   const ceilTex=makePlankTexture(); ceilTex.repeat.set(8,7);
   const ceil=new THREE.Mesh(new THREE.PlaneGeometry(2*RX,roomDepth),
-    new THREE.MeshStandardMaterial({color:0x281c14, map:ceilTex, roughness:0.92, metalness:0.03, side:THREE.DoubleSide, dithering:true}));
+    new THREE.MeshStandardMaterial({color:0x796550, map:ceilTex, roughness:0.92, metalness:0.03, side:THREE.DoubleSide, dithering:true}));
   ceil.rotation.x=Math.PI/2; ceil.position.set(0,ceilY,roomCz); ceil.receiveShadow=true; scene.add(ceil);
   /* a couple of plain beams across the ceiling for a bit of structure */
   const beamMat=new THREE.MeshStandardMaterial({color:0x1c130d, roughness:0.9, map:woodMat.map});
@@ -347,7 +356,7 @@ function buildTable(){
      plane. Base tone lifted a little so the grain is actually visible in the gloom. */
   const wallTex=makePlankTexture(); wallTex.repeat.set(9,5);
   const wallBump=makePlankTexture(); wallBump.repeat.set(9,5);
-  const wallMat=new THREE.MeshStandardMaterial({color:0x33200f, map:wallTex,
+  const wallMat=new THREE.MeshStandardMaterial({color:0x9a8063, map:wallTex,
     bumpMap:wallBump, bumpScale:0.022, roughness:0.6, metalness:0.22,
     envMap:envMap, envMapIntensity:0.45, side:THREE.DoubleSide, dithering:true});
   /* [x, z, width, yaw] - back wall (behind the bar) and the two side walls. The FRONT
@@ -365,8 +374,7 @@ function buildTable(){
   lampPositions.forEach(x=>{
     /* green enamel shade, double-sided so the interior reads green with the bulb
        glowing inside - matching the bar's hanging lamp (no warm-white liner cone) */
-    const shade=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.16,0.13,20,1,true),
-      new THREE.MeshStandardMaterial({color:0x1c5038, roughness:0.5, metalness:0.3, side:THREE.DoubleSide}));
+    const shade=new THREE.Mesh(Craft.shade(.16,.17),[Craft.enamel,Craft.lampLiner]);
     shade.position.set(x,-0.085,0); lamp.add(shade);
     /* a proper incandescent bulb: warm glass envelope that glows (emissive →
        catches bloom) with a little brass cap, hung just inside the shade mouth */
@@ -440,7 +448,7 @@ function buildWindowWall(wz, RX, baseY, ceilY, wallMat){
   /* faint glass */
   const glass=new THREE.Mesh(new THREE.PlaneGeometry(2*hw,2*hh),
     new THREE.MeshPhysicalMaterial({color:0xbcd4ec, transparent:true, opacity:0.07,
-      roughness:0.05, metalness:0, side:THREE.DoubleSide, depthWrite:false}));
+      roughness:0.12, metalness:0, envMapIntensity:.35, side:THREE.DoubleSide, depthWrite:false}));
   glass.position.set(xc,yc,wz-0.005); glass.renderOrder=2; scene.add(glass);
 
   /* rain streaks running down the GLASS: a streak texture coplanar with the glass,
@@ -457,9 +465,11 @@ function buildWindowWall(wz, RX, baseY, ceilY, wallMat){
   })();
   const grTex=new THREE.CanvasTexture(grCv); grTex.wrapS=grTex.wrapT=THREE.RepeatWrapping; grTex.repeat.set(1.4,1.4);
   glassRain=new THREE.Mesh(new THREE.PlaneGeometry(2*hw-0.02,2*hh-0.02),
-    new THREE.MeshBasicMaterial({map:grTex, transparent:true, opacity:0.45, fog:false,
-      depthWrite:false, blending:THREE.AdditiveBlending}));
+    new THREE.MeshPhysicalMaterial({color:0xc9d9e0,alphaMap:grTex,bumpMap:grTex,bumpScale:.0008,
+      transparent:true,opacity:.22,roughness:.16,envMapIntensity:.65,
+      side:THREE.DoubleSide,depthWrite:false}));
   glassRain.position.set(xc,yc,wz-0.012); glassRain.renderOrder=4; glassRain.userData.tex=grTex; scene.add(glassRain);
+  WorldMaterials.bind('rain-droplets',glassRain.material,{slot:'alphaMap',bump:.0012,disposeFallback:true});
 
   /* ---- exterior layers (unfogged), stacked deep for a layered, distant cityscape ---- */
   const faceRoom=Math.PI;   /* planes outside (+z) face back into the room (-z) */
@@ -563,11 +573,12 @@ function buildRoomDecor(RX, BZ, FZ, baseY, ceilY){
       const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.011,0.011, Math.max(0.04,Math.abs(wall-z)), 8), brassMat);
       arm.rotation.x=Math.PI/2; arm.position.set(x, y-0.012, (z+wall)/2); scene.add(arm);
     }
-    const cup=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.026,0.10,16,1,true), brassSconceMat);
+    const cup=new THREE.Mesh(new THREE.LatheGeometry([[.015,-.032],[.025,-.026],[.027,-.012],[.032,-.006],[.032,0]]
+      .map(([r,y])=>new THREE.Vector2(r,y)),24),brassSconceMat);
     cup.position.set(x,y,z); scene.add(cup);
-    const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.032,12,10),
-      new THREE.MeshStandardMaterial({color:0x3a2a14, emissive:0xffcf8a, emissiveIntensity:1.35, roughness:0.4}));
-    bulb.position.set(x,y+0.03,z); scene.add(bulb);
+    const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.042,24,18),
+      new THREE.MeshPhysicalMaterial({color:0xe8d8b5,emissive:0xffcf8a,emissiveIntensity:.65,roughness:.3,clearcoat:.3}));
+    bulb.position.set(x,y+0.032,z); scene.add(bulb);
     const pl=new THREE.PointLight(0xffcf94, intensity, 5.3, 2); pl.position.set(x,y+0.03,z); scene.add(pl);
   };
 
@@ -685,16 +696,16 @@ function buildRoomDecor(RX, BZ, FZ, baseY, ceilY){
     const art=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshStandardMaterial({map:tex, roughness:0.7}));
     g.add(art);
     const fr=new THREE.Mesh(new THREE.BoxGeometry(w+0.06,h+0.06,0.03), brassMat); fr.position.z=-0.02; g.add(fr);
-    g.position.set(x,y,z); g.rotation.y=ry; g.traverse(o=>o.castShadow=false); scene.add(g); };
+    g.position.set(x,y,z); g.rotation.y=ry; g.traverse(o=>o.castShadow=false); scene.add(g); return art.material; };
   /* +x wall: a poster either side of the cue rack/clock, each aligned under its sconce */
-  poster(RX-0.045, 1.5, -1.7, -Math.PI/2, 0.6, 0.8, sunburst());
-  poster(RX-0.045, 1.5,  1.7, -Math.PI/2, 0.6, 0.8, chevrons());
+  WorldMaterials.bind('portrait-railway',poster(RX-.045,1.5,-1.7,-Math.PI/2,.6,.9,sunburst()),{disposeFallback:true});
+  WorldMaterials.bind('portrait-botanicals',poster(RX-.045,1.5,1.7,-Math.PI/2,.6,.9,chevrons()),{disposeFallback:true});
   sconce(RX-0.20, 1.96, -1.7, RX, 0.9);
   sconce(RX-0.20, 1.62,  0.0, RX, 1.5);     /* brightest - lights the cue rack + clock */
   sconce(RX-0.20, 1.96,  1.7, RX, 0.9);
   /* -x (door) wall: two improved framed artworks, each aligned under its sconce */
-  poster(-RX+0.045, 1.46,  1.75, Math.PI/2, 0.66, 0.92, decoSun());
-  poster(-RX+0.045, 1.46, -1.65, Math.PI/2, 0.66, 0.92, decoFan());
+  WorldMaterials.bind('harbor-nocturne',poster(-RX+0.045,1.46,1.75,Math.PI/2,1.02,.68,decoSun()),{disposeFallback:true});
+  WorldMaterials.bind('champions-study',poster(-RX+0.045,1.46,-1.65,Math.PI/2,1.02,.68,decoFan()),{disposeFallback:true});
   sconce(-RX+0.20, 1.98,  1.75, -RX, 0.9);
   sconce(-RX+0.20, 1.98, -1.65, -RX, 0.9);
 
@@ -725,21 +736,20 @@ function buildRoomDecor(RX, BZ, FZ, baseY, ceilY){
   /* ---- a working wall clock (real time) on the +x wall, aligned over the cue rack;
      dark patinated face + muted brass markings so it blends into the room ---- */
   const cg=new THREE.Group(); cg.position.set(RX-0.05, 2.05, 0.0); cg.rotation.y=-Math.PI/2;
-  const faceCv=document.createElement('canvas'); faceCv.width=256; faceCv.height=256;
-  (function(){ const x=faceCv.getContext('2d'); x.fillStyle='#211a12'; x.beginPath(); x.arc(128,128,124,0,7); x.fill();
-    x.strokeStyle='#8a7038'; x.fillStyle='#9a7d3e'; x.textAlign='center'; x.textBaseline='middle';
-    for(let i=0;i<12;i++){ const a=(i/12)*Math.PI*2 - Math.PI/2; const big=i%3===0;
-      x.lineWidth=big?4:2; x.beginPath(); x.moveTo(128+Math.cos(a)*112,128+Math.sin(a)*112); x.lineTo(128+Math.cos(a)*(big?96:104),128+Math.sin(a)*(big?96:104)); x.stroke(); }
-    x.font='bold 28px Georgia'; ['XII','III','VI','IX'].forEach((n,k)=>{ const a=(k/4)*Math.PI*2 - Math.PI/2; x.fillText(n,128+Math.cos(a)*80,128+Math.sin(a)*80); });
-  })();
-  const faceTex=new THREE.CanvasTexture(faceCv); faceTex.encoding=THREE.sRGBEncoding;
-  const face=new THREE.Mesh(new THREE.CircleGeometry(0.24,48), new THREE.MeshStandardMaterial({map:faceTex, roughness:0.7})); face.position.z=0.005; cg.add(face);
+  const face=new THREE.Mesh(new THREE.CircleGeometry(.24,64),new THREE.MeshStandardMaterial({map:Craft.clockDial(),roughness:.48,envMapIntensity:.25}));
+  face.position.z=.005;cg.add(face);
+  WorldMaterials.bind('clock-enamel',face.material,{paint:(texture,material)=>{
+    const previous=material.map;material.map=Craft.clockDial(texture.image);material.needsUpdate=true;previous.dispose();
+  }});
   const rim=new THREE.Mesh(new THREE.TorusGeometry(0.245,0.022,14,44), brassMat); cg.add(rim);
   const cback=new THREE.Mesh(new THREE.CylinderGeometry(0.246,0.246,0.05,44), woodB); cback.rotation.x=Math.PI/2; cback.position.z=-0.03; cg.add(cback);
   const mkHand=(len,w,col,zo)=>{ const h=new THREE.Group();
-    const m=new THREE.Mesh(new THREE.BoxGeometry(w,len,0.006), new THREE.MeshStandardMaterial({color:col, roughness:0.5, metalness:0.4}));
-    m.position.y=len*0.42; h.add(m); h.position.z=0.012+zo; cg.add(h); return h; };
-  const hourH=mkHand(0.135,0.014,0x9a7d3e,0), minH=mkHand(0.195,0.010,0x9a7d3e,0.004), secH=mkHand(0.205,0.004,0x7a3a2a,0.008);
+    const sh=new THREE.Shape();sh.moveTo(0,-len*.12);sh.lineTo(w*.3,-len*.03);
+    sh.lineTo(w*.34,len*.56);sh.lineTo(w*.52,len*.68);sh.lineTo(0,len*.96);
+    sh.lineTo(-w*.52,len*.68);sh.lineTo(-w*.34,len*.56);sh.lineTo(-w*.3,-len*.03);sh.closePath();
+    const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.002,bevelEnabled:false}),new THREE.MeshStandardMaterial({color:col,roughness:.36,metalness:.5}));
+    h.add(m);h.position.z=.012+zo;cg.add(h);return h; };
+  const hourH=mkHand(0.135,0.012,0x24372f,0), minH=mkHand(0.195,0.007,0x24372f,0.004), secH=mkHand(0.205,0.002,0x743e31,0.008);
   const ccap=new THREE.Mesh(new THREE.CylinderGeometry(0.013,0.013,0.03,12), brassMat); ccap.rotation.x=Math.PI/2; ccap.position.z=0.026; cg.add(ccap);
   scene.add(cg);
   clockHands={hour:hourH, minute:minH, second:secH};

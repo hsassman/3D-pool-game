@@ -66,23 +66,10 @@ const Interface = {
     }
     content.querySelectorAll('.qual-row .qual-btn,.acct-tabs .qual-btn').forEach(b=>b.setAttribute('aria-pressed',b.classList.contains('sel')));
   },
-  /* Accurate assembled preview using the equipped catalog materials. */
-  equipment(){
-    const felt=FELTS[Profile.data.felt],rail=RAILS[Profile.data.rail],cue=CUES[Profile.data.cue];
-    const hex=n=>'#'+n.toString(16).padStart(6,'0');
-    return '<div class="equipment-stage"><div class="equipment-stage-label"><span class="deco-eyebrow">YOUR SIGNATURE SETUP</span><strong>'+felt.name+'</strong><small>'+cue.name+' · '+rail.name+'</small></div><svg viewBox="0 0 640 230" class="equipment-table" role="img" aria-label="Your equipped table and cue"><defs><pattern id="stage-grain" width="640" height="230" patternUnits="userSpaceOnUse"><image href="assets/ui/collection/wood-detail-v3.webp" width="640" height="230" opacity=".23" preserveAspectRatio="xMidYMid slice"/></pattern></defs><ellipse cx="330" cy="199" rx="230" ry="12" fill="#000" opacity=".35"/><rect x="60" y="15" width="520" height="176" rx="22" fill="'+hex(rail.wood)+'"/><rect x="60" y="15" width="520" height="176" rx="22" fill="url(#stage-grain)"/><rect x="78" y="31" width="484" height="144" rx="13" fill="'+hex(felt.cush)+'"/><rect x="91" y="43" width="458" height="120" rx="9" fill="'+felt.bed+'"/><image href="assets/ui/collection/felt-detail-v3.webp" x="91" y="43" width="458" height="120" opacity=".09" preserveAspectRatio="xMidYMid slice"/>'+[[87,39],[320,34],[553,39],[87,167],[320,172],[553,167]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="10" fill="#07120b"/>').join('')+'<circle cx="228" cy="101" r="10" fill="#f7edd9"/><circle cx="419" cy="90" r="10" fill="#101712"/><circle cx="419" cy="88" r="4" fill="#e6dfcc"/><g transform="rotate(-8 320 211)"><path d="M78 211h145" stroke="'+hex(cue.butt)+'" stroke-width="9"/><path d="M225 211h337" stroke="'+hex(cue.shaft)+'" stroke-width="5"/><path d="M224 206v10" stroke="'+(cue.ring==='chrome'?'#c6d3d8':'#e1bd76')+'" stroke-width="4"/><path d="M562 209v4" stroke="#96c0ce" stroke-width="3"/></g></svg></div>';
-  },
-  tutorial(step){
-    const icons=['target','eye','cue','sparkle','trophy'];
-    const captions=['Find the angle','See the whole room','Control the pace','Shape your next shot','Earn your place'];
-    const diagrams=[
-      '<path d="M70 110h186" stroke="#e7cd8d" stroke-width="2" stroke-dasharray="5 7"/><circle cx="124" cy="110" r="14" fill="#f6efdf"/><circle cx="265" cy="110" r="15" fill="#ca9b36"/><path d="m280 106 43-38" stroke="#e7cd8d" stroke-width="2" stroke-dasharray="5 7"/>',
-      '<path d="m195 38 75 100H120l75-100Z" fill="#d5bd7333" stroke="#cbb877"/><circle cx="195" cy="38" r="7" fill="#eddbb0"/><path d="M90 155q110 50 220-10m-10-7 12 7-12 7" stroke="#baa878" fill="none"/>',
-      '<rect x="65" y="89" width="260" height="24" rx="12" fill="#06140c" stroke="#bea66b"/><rect x="70" y="94" width="170" height="14" rx="7" fill="#c9bc72"/><path d="M245 80v42" stroke="#edd8a6" stroke-width="2"/>',
-      '<circle cx="195" cy="103" r="61" fill="#eee5cd"/><path d="M142 103h106m-53-53v106" stroke="#968963" opacity=".5"/><circle cx="213" cy="122" r="8" fill="#c35e45" stroke="#fff3d5" stroke-width="2"/><path d="M275 65q40 40 0 75" stroke="#cfb77e" fill="none" stroke-dasharray="5 5"/>',
-      '<g transform="translate(165 65) scale(2.6)">'+UIArt.icon('trophy').replace(/<svg[^>]*>/,'<g fill="none" stroke="#e7cf91" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">').replace('</svg>','</g>')+'</g>'
-    ];
-    return '<div class="tutorial-visual"><svg viewBox="0 0 390 210" aria-hidden="true"><rect x="8" y="8" width="374" height="194" rx="17" fill="#163225" stroke="#b79b5c55"/>'+diagrams[step]+'</svg><span>'+UIArt.icon(icons[step])+captions[step]+'</span></div>';
+  equipment(tab='felt'){
+    const catalogs={felt:FELTS,cue:CUES,rail:RAILS};
+    const d=catalogs[tab][Profile.data[tab]];
+    return '<div class="equipment-stage stage-'+tab+'"><div class="equipment-stage-label"><span class="deco-eyebrow">CURRENTLY EQUIPPED</span><strong>'+d.name+'</strong><small>'+(d.desc||{felt:'Regulation cloth · 2:1 playing surface',cue:'Full-length cue · tapered shaft',rail:'Timber finish · polished edge'}[tab])+'</small></div><div class="equipment-preview">'+UIArt.item(tab,d,'equipped')+'</div></div>';
   },
   init(){
     const menu=document.getElementById('ta-menu');menu.inert=true;menu.setAttribute('aria-hidden','true');

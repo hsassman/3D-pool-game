@@ -26,6 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Albert+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/styles/main.css">
 <link rel="stylesheet" href="src/styles/collection.css">
+<link rel="stylesheet" href="vendor/driver.css">
 <link rel="stylesheet" href="src/styles/interface.css">
 </head>
 <body>
@@ -132,7 +133,7 @@
     </div>
     <div class="club-status"><span></span> THE CLUB IS OPEN <span class="club-status-rule"></span> YOUR NEXT FRAME AWAITS</div>
     <header class="bento-head">
-      <div class="deco-eyebrow">EST. 2026 · MEMBERS ONLY</div>
+      <div class="deco-eyebrow">EST. 1924 · MEMBERS ONLY</div>
       <div class="brand-lockup">
         <img class="brand-mark" src="/assets/ui/logo-mark.png" alt="" aria-hidden="true">
         <h1 class="title-main">The <em>Gilded</em> Rail</h1>
@@ -256,20 +257,7 @@
   </div>
 </div>
 
-<!-- ===================== TUTORIAL ===================== -->
-<div class="overlay hidden" id="tutorial-overlay">
-  <div id="tutorial-card" class="panel">
-    <div id="tut-art"></div>
-    <div class="deco-eyebrow">HOW TO PLAY</div>
-    <div id="tut-title"></div>
-    <div id="tut-body"></div>
-    <div id="tut-dots"></div>
-    <div class="tut-actions">
-      <button class="linklike" id="tut-skip">Skip</button>
-      <button class="btn primary" id="tut-next">Next</button>
-    </div>
-  </div>
-</div>
+<!-- Onboarding is rendered by the locally bundled Driver.js tour. -->
 
 <!-- ===================== MODALS ===================== -->
 <div class="overlay hidden" id="modal-overlay">
@@ -320,6 +308,7 @@
      and online multiplayer. The publishable key it uses is safe to ship; all data
      access is guarded by Row Level Security on the server. -->
 <script src="vendor/supabase.js"></script>
+<script src="vendor/driver.js.iife.js"></script>
 <!-- hCaptcha: loaded live from hCaptcha's own CDN (never vendored - a bot check
      that shipped a static, pre-baked copy would defeat the point of it). Guards
      sign-up, sign-in, password reset and guest play against automated abuse;
@@ -345,7 +334,6 @@
      build copies these into dist/assets/models/ and rewrites the paths. -->
 <script>window.__MODELS = {
   ashtray:     "public/assets/models/ashtray.glb",
-  redcup:      "public/assets/models/redcup.glb",
   bottles:     "public/assets/models/bottles.glb",
   jackdaniels: "public/assets/models/jackdaniels.glb",
   stool:       "public/assets/models/stool.glb",
@@ -366,7 +354,9 @@
   <script src="src/engine/02a-account.js"></script>
   <script src="src/engine/03-audio.js"></script>
   <script src="src/engine/04-scene-materials.js"></script>
+  <script src="src/engine/04a-world-materials.js"></script>
   <script src="src/engine/04b-models.js"></script>
+  <script src="src/engine/04c-craft.js"></script>
   <script src="src/engine/05-table.js"></script>
   <script src="src/engine/06-balls.js"></script>
   <script src="src/engine/07-decor-smoke.js"></script>
@@ -375,6 +365,7 @@
   <script src="src/engine/10-decor-furniture.js"></script>
   <script src="src/engine/11-decor-lounge.js"></script>
   <script src="src/engine/12-decor-bar.js"></script>
+  <script src="src/engine/12a-club-world.js"></script>
   <script src="src/engine/13-flicker.js"></script>
   <script src="src/engine/14-unlocks.js"></script>
   <script src="src/engine/14a-ui-art.js"></script>
@@ -388,6 +379,7 @@
   <script src="src/engine/19b-progression.js"></script>
   <script src="src/engine/20-input-camera.js"></script>
   <script src="src/engine/21-ui.js"></script>
+  <script src="src/engine/21a-onboarding.js"></script>
   <script src="src/engine/21b-postfx.js"></script>
   <script src="src/engine/21c-online.js"></script>
   <script src="src/engine/22-loop.js"></script>

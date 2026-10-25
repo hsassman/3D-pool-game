@@ -1,0 +1,33 @@
+{
+  "generator": "Built-in image_gen",
+  "assets": [
+    {
+      "name": "quarter-sawn-walnut",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless game material albedo texture, square. Primary request: finely detailed quarter-sawn walnut timber grain for a polished 1920s billiard club. Orthographic straight-on flat surface, long restrained horizontal continuous grain and fine pores, subtle natural figure, neutral medium gray-brown tones so runtime tinting works. Uniform diffuse lighting, no baked highlights, no directional shadows, no perspective, no objects, no plank seams, no text. Tile seamlessly on all four edges. Entire image is the same wood surface."
+    },
+    {
+      "name": "club-leather",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square game material albedo texture. Primary request: authentic fine pebble-grain leather upholstery for a 1920s private billiard club. Orthographic flat macro surface, small irregular pores, subtle variation, refined restrained grain, neutral mid gray suitable for runtime tinting. Uniform diffuse lighting, no seams, no buttons, no folds, no directional shadows, no highlights, no objects, no text. Seamless repeat on all edges. Entire image is leather."
+    },
+    {
+      "name": "club-rug",
+      "prompt": "Use case: historical-scene. Asset type: square game texture for a complete woven billiard-room rug viewed exactly from overhead. Primary request: elegant 1920s Persian-inspired wool rug, deep oxblood, forest green, antique ivory and muted brass, intricate symmetrical botanical medallion and multiple restrained ornamental borders, aged but well kept. Whole rug fills square frame to edges, all four borders visible and symmetrical, no fringe outside edges. Flat orthographic view, uniform diffuse light, fine woven detail. No furniture, no floor outside rug, no perspective, no shadows, no text."
+    },
+    {
+      "name": "harbor-nocturne",
+      "prompt": "Use case: historical-scene. Asset type: landscape oil painting texture for a framed artwork inside a 1920s billiard club. Primary request: an atmospheric nocturne of a rain-soaked old harbor, a distant steamship, warm lamps reflected in dark emerald water, moody ink-blue sky, restrained antique gold accents. Painterly fine art, visible delicate brushwork, believable period architecture, refined composition. Painting fills entire image edge to edge, no physical frame, no wall, no text, no signature, no watermark. Landscape 3:2 composition."
+    },
+    {
+      "name": "champions-study",
+      "prompt": "Use case: historical-scene. Asset type: landscape oil painting texture for a framed artwork in a 1920s billiard club. Primary request: intimate still-life study of one polished black number eight billiard ball, a single ivory cue ball and a long elegant maple cue crossing a dark emerald felt table diagonally, warm brass lamp light, subdued oxblood background. Rich traditional oil painting, restrained chiaroscuro, visible fine brushwork, sophisticated old members' club atmosphere. Exactly two balls, readable small white circular 8 on black ball. Painting edge to edge, no border, no wall, no frame, no words, no signature, no watermark. Landscape 3:2."
+    },
+    {
+      "name": "deco-cue-wrap",
+      "prompt": "Use case: stylized-concept. Asset type: seamless square surface texture for the cylindrical butt of a premium 1920s billiard cue. Primary request: refined Art Deco marquetry, narrow symmetrical elongated ivory spearpoint inlays and slender antique brass pinstripes over charcoal ebony wood, fine physical grain. Orthographic flat unwrapped surface, repeated elegant geometric pattern, tiny restrained details, predominantly dark ebony. Uniform diffuse albedo lighting, no highlights, no shadows, no perspective, no actual cue object, no text, no frame. Seamlessly tileable on all edges, spearpoints run vertically."
+    },
+    {
+      "name": "worsted-cloth",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square grayscale microtexture for premium worsted wool billiard cloth in a 1920s private club, used as a very subtle surface weave over colored playing felt. Primary request: extremely fine tightly woven directional wool fibers, uniform medium gray, delicate authentic nap, almost smooth at distance. Flat orthographic macro material scan, even diffuse illumination, no pattern, no markings, no table, no balls, no objects, no highlights, no shadows, no text. Seamless all four edges, understated contrast for clear gameplay."
+    }
+  ]
+}

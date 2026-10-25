@@ -15,7 +15,17 @@ function makeLeatherTexture(){
   const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return t;
 }
 const leatherTex = makeLeatherTexture();
+function makeEnamelCup(){
+  const group=new THREE.Group(),material=new THREE.MeshPhysicalMaterial({color:0xd5ccb6,roughness:.28,metalness:.15,clearcoat:.45});
+  const profile=[[0,.002],[.023,.002],[.031,.006],[.033,.015],[.034,.068],[.036,.071],
+    [.034,.075],[.031,.072],[.030,.014],[.024,.011],[0,.011]].map(([r,y])=>new THREE.Vector2(r,y));
+  group.add(new THREE.Mesh(new THREE.LatheGeometry(profile,28),material));
+  const handle=new THREE.Mesh(new THREE.TorusGeometry(.020,.0038,8,24),material);handle.position.set(.042,.041,0);group.add(handle);
+  const drink=new THREE.Mesh(new THREE.CircleGeometry(.030,28),new THREE.MeshStandardMaterial({color:0x29170c,roughness:.2}));
+  drink.rotation.x=-Math.PI/2;drink.position.y=.059;group.add(drink);return group;
+}
 const cushionMat = new THREE.MeshStandardMaterial({color:0x6a4630, map:leatherTex, roughness:0.55, metalness:0.05, envMap:envMap, envMapIntensity:0.3});
+WorldMaterials.bind('club-leather',cushionMat,{bump:.0008,disposeFallback:true});
 
 /* yaw applied to the supplied bar-stool model so its front (the side you sit facing)
    points +z, matching the old procedural stool - existing placements/rotations then

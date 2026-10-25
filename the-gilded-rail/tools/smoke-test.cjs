@@ -87,6 +87,14 @@ let code=files.map(f=>fs.readFileSync(path.join(engDir,f),'utf8')).join('\n\n');
 /* expose internals for the test */
 code=code.replace('  loop();', '  window.__G={Game, Input, UI, Profile, balls, get cueBall(){return cueBall;}, physicsFrame, simIsActive:()=>simActive, Trough, Unlocks, FELTS, CUES, RAILS, BORDERS, BANNERS, Sfx, Smoke, Flicker, flickerLights, Campaign, LEAGUES, Progression, ACHIEVEMENTS, CHALLENGE_POOL, WEEKLY_POOL, TRICKSHOTS, shotEvents, POCKETS, AI, TUTORIAL_STEPS, Haptics, Embers, Graphics, get feltMat(){return feltMat;}, get woodMat(){return woodMat;}, get renderer(){return renderer;}, get cueStick(){return cueStick;}, cueParts};\n  loop();');
 
+/* Driver DOM/placement is tested in Edge. This adapter checks tour lifecycle in
+   the headless engine harness without pretending to implement browser layout. */
+global.driver={js:{driver(config){let active=false,index=0;const tour={
+  drive(){active=true;},getActiveIndex(){return index;},isActive(){return active;},
+  moveNext(){if(index<config.steps.length-1)index++;else tour.destroy();},
+  destroy(){if(active){active=false;config.onDestroyed();}}
+};return tour;}}};
+code+='\nwindow.__onboarding=Onboarding;';
 process.on('unhandledRejection', e=>{ console.error('UNHANDLED REJECTION:', e); process.exit(1); });
 try{ eval(code); }catch(e){ console.error('TOP-LEVEL THROW:', e); process.exit(1); }
 
@@ -96,6 +104,7 @@ setTimeout(()=>{
   console.log('init ok. phase=', G.Game.phase, 'balls=', G.balls.length);
 
   /* click New Game */
+  G.Profile.data.tutorialSeen=true;
   try{ elById('btn-newgame').click(); }catch(e){ console.error('NEWGAME THROW:', e); process.exit(1); }
   console.log('after click: phase=', G.Game.phase, 'mode=', G.Input.mode);
 
@@ -181,6 +190,24 @@ ok(bFar.mesh.visible===true,   'far-pocket ball arrives after its distance delay
 G.Trough.reset();
 
 console.log('--- unlock system ---');
+console.log('--- return queue clearance and scoring order ---');
+const returnBalls=G.balls.filter(b=>b.num>0);
+returnBalls.forEach((b,i)=>{
+  b.fallPocket={pos:i===0?new THREE.Vector3(1.13,0,.57):new THREE.Vector3(G.Trough.laneX,0,G.Trough.entryZ)};
+  G.Trough.add(b);
+});
+for(let i=0;i<25;i++)G.Trough.update(1/60);
+ok(returnBalls.every(b=>!b.mesh.visible),'a shorter route cannot overtake the first scored ball');
+let clearance=true;
+for(let i=0;i<1400;i++){
+  G.Trough.update(1/60);
+  const visible=returnBalls.filter(b=>b.mesh.visible).sort((a,b)=>a.pos.z-b.pos.z);
+  for(let j=1;j<visible.length;j++)if(visible[j].pos.z-visible[j-1].pos.z<2*returnBalls[0].mesh.geometry.parameters.radius-.0001)clearance=false;
+}
+ok(clearance,'all fifteen returned balls remain separated throughout their travel');
+ok(returnBalls.every((b,i)=>Math.abs(b.pos.z-(G.Trough.s0-i*G.Trough.dx))<1e-6),'a full rack settles in scoring order');
+ok(G.Trough.pending.length===0&&G.Trough.anims.length===0,'the full-rack return queue drains completely');
+G.Trough.reset();
 G.Profile.data.xp=5000;
 const lvl=G.Profile.level().lvl;
 ok(lvl>=5, 'xp grants level 5+ (lvl='+lvl+')');
@@ -206,7 +233,7 @@ G.Profile.data.xp=999999; const hiLvl=G.Profile.level().lvl;
 ok(hiLvl>=14, 'high XP reaches level 14+ so there is always a chase (lvl='+hiLvl+')');
 ok(G.Unlocks.has(G.CUES.gilded)&&G.Unlocks.has(G.FELTS.rose)&&G.Unlocks.has(G.RAILS.bleached), 'top-tier items unlock at high level');
 G.Profile.data.rail='ebony'; G.Unlocks.applyRail();
-ok(G.woodMat.color.getHexString()===new THREE.Color(G.RAILS.ebony.wood).getHexString(), 'wood finish recolours the timber material');
+ok(G.woodMat.color.getHexString()===new THREE.Color(G.RAILS.ebony.wood).convertSRGBToLinear().getHexString(), 'wood finish uses the correct linear-light timber colour');
 G.Profile.data.rail='walnut'; G.Profile.data.xp=0; G.Unlocks.applyRail();
 /* new cosmetics: glowing + flaming cues, profile borders + banners */
 ok(Object.values(G.CUES).some(c=>c.glow), 'at least one glowing cue exists');
@@ -435,14 +462,13 @@ G.Game.diff=1;
 console.log('--- tutorial / onboarding ---');
 ok(Array.isArray(G.TUTORIAL_STEPS) && G.TUTORIAL_STEPS.length>=3, 'tutorial has multiple steps');
 G.Profile.data.tutorialSeen=false;
-elById('tutorial-overlay').classList.add('hidden');
 G.UI.tutorialOpen(false);
-ok(!elById('tutorial-overlay').classList.contains('hidden'), 'tutorial overlay opens on first play');
+ok(global.__onboarding.active && G.Game.paused, 'Driver tour holds the frame while explaining controls');
 for(let i=0;i<G.TUTORIAL_STEPS.length+2;i++) G.UI.tutorialNext();
 ok(G.Profile.data.tutorialSeen===true, 'finishing the tutorial marks it seen (persisted)');
-ok(elById('tutorial-overlay').classList.contains('hidden'), 'tutorial overlay closes at the end');
+ok(!global.__onboarding.active, 'Driver tour restores the frame at the end');
 G.UI.tutorialOpen(true);
-ok(!elById('tutorial-overlay').classList.contains('hidden'), 'tutorial replays from the menu');
+ok(global.__onboarding.active, 'Driver tour can be replayed');
 G.UI.tutorialClose();
 
 console.log('--- haptics + control tuning ---');

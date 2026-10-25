@@ -50,7 +50,7 @@ function loop(){
     p.needsUpdate=true;
   }
   /* rain streaks running down the window glass */
-  if(glassRain && glassRain.userData.tex){ glassRain.userData.tex.offset.y -= dt*0.06; }
+  if(glassRain){const texture=glassRain.material.alphaMap;if(texture)texture.offset.y-=dt*.012;}
 
   /* ceiling fan */
   if(ceilingFan) ceilingFan.rotation.y += dt*1.7;

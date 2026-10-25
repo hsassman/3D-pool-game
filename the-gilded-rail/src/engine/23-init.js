@@ -8,6 +8,8 @@
      stays up until they all land; see Boot in 22b-preload.js */
   const booted = Boot.run();
   buildTable();
+  ClubWorld.build();
+  const materialsReady=WorldMaterials.load();
   Trough.build();
   if(typeof matchMedia!=='undefined' && matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
   for(let n=0;n<=15;n++) makeBall(n);
@@ -41,7 +43,7 @@
      exact stutter this loader exists to prevent. Bytes are already local (blob: URLs
      from Boot), so parsing is fast; the watchdog still guarantees the curtain can
      never trap the player on a broken network. */
-  const barProps=['jackdaniels','redcup','bottles','stool','ashtray'];
+  const barProps=['jackdaniels','bottles','stool','ashtray'];
   const decorReady = booted.then(()=>Models.loadAll()).then(()=>
     Promise.all(barProps.map(n=>Models.ready(n)))
   ).then(()=>{
@@ -51,6 +53,6 @@
     ash.position.set(W2*0.78, 0.061, -(H2+TABLE.CUSH_D+TABLE.RAIL/2));
     tableGroup.add(ash);
   });
-  await Promise.race([decorReady, new Promise(r=>setTimeout(r, 60000))]);
+  await Promise.race([Promise.all([decorReady,materialsReady]), new Promise(r=>setTimeout(r, 60000))]);
   Boot.hide();
 })();

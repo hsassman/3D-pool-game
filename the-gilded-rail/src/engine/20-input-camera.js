@@ -35,6 +35,7 @@ const Input = {
     };
     gestures.forEach(ev=>addEventListener(ev, resumeAudio));
     addEventListener('keydown', e=>{
+      if(typeof Onboarding!=='undefined'&&Onboarding.active)return;
       if(e.repeat) return;
       this.keys[e.code]=true;
       /* Esc closes any open transient (quick-match setup, actions dropdown) first,
@@ -59,6 +60,7 @@ const Input = {
         if((this.mode==='SHOOT'||this.mode==='FINE') && (Game.phase==='AIM'||Game.phase==='CHARGE')) this.beginCharge(); }
     });
     addEventListener('keyup', e=>{
+      if(typeof Onboarding!=='undefined'&&Onboarding.active)return;
       this.keys[e.code]=false;
       if(e.code==='Space' && this.charging) this.releaseCharge();
     });

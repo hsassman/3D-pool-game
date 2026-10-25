@@ -86,10 +86,10 @@ function buildBar(){
   /* two crystal decanters at the free OUTER ends of the lower bays - clear of the bottles */
   const d1=makeDecanter(); d1.position.set(1.24,1.313,-0.46); grp.add(d1);
   const d2=makeDecanter(); d2.position.set(-1.24,1.313,-0.46); grp.add(d2);
-  /* on the counter: the Jack Daniels, a beer bottle beside the lone red cup, two
+  /* on the counter: the Jack Daniels, a beer bottle beside an enamel cup, two
      whisky glasses, a decanter, two smouldering cigarettes */
   if(Models.has('jackdaniels')) Models.place('jackdaniels', grp, 0.34, BARTOP, 0.04, 0.26, {yaw:0.2});
-  if(Models.has('redcup'))      Models.place('redcup',      grp, 0.66, BARTOP, 0.16, 0.105, {yaw:0.9});
+  const cup=makeEnamelCup();cup.position.set(.66,BARTOP,.16);cup.rotation.y=.9;grp.add(cup);
   if(Models.has('bottles'))     Models.place('bottles',     grp, 0.52, BARTOP, 0.09, 0.22, {only:'Beer', yaw:-0.5});  /* beer bottle next to the cup */
   const g1=makeGlass(true, true);  g1.position.set(0.18,BARTOP,0.20); grp.add(g1);   /* whisky on the rocks, beside the Jack */
   const g2=makeGlass(false);       g2.position.set(-0.24,BARTOP,0.16); grp.add(g2);
@@ -98,8 +98,7 @@ function buildBar(){
   const c2=makeCigSet(0.95); c2.position.set(0.92,BARTOP+0.001,0.06); c2.rotation.y=2.2; grp.add(c2);
   const cand=makeCandle(1.1); cand.position.set(-0.04,BARTOP,0.18); grp.add(cand);   /* candle on the bar */
   /* a dim shaded light hangs over the counter */
-  const shade=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.16,0.10,16,1,true),
-    new THREE.MeshStandardMaterial({color:0x1c5038, roughness:0.5, metalness:0.3, side:THREE.DoubleSide}));
+  const shade=new THREE.Mesh(Craft.shade(.16,.14),[Craft.enamel,Craft.lampLiner]);
   shade.position.set(0,2.04,0.05); grp.add(shade);
   const cord=new THREE.Mesh(new THREE.CylinderGeometry(0.004,0.004,0.5,6),
     new THREE.MeshStandardMaterial({color:0x0c0c0e, roughness:0.9}));

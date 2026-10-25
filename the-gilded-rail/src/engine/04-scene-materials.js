@@ -16,7 +16,7 @@ renderer.physicallyCorrectLights = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x020203);
-scene.fog = new THREE.FogExp2(0x020203, 0.132);   /* deeper black; folds the room smoothly into shadow */
+scene.fog = new THREE.FogExp2(0x020203, 0.085);   /* retain depth while keeping the club walls readable */
 
 const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.01, 60);
 camera.position.set(0, 1.7, 2.6);
@@ -58,7 +58,7 @@ const Flashlight = {
 
 /* ---- lighting: brass billiard lamp over the table ---- */
 const flickerLights=[];
-scene.add(new THREE.HemisphereLight(0x20242c, 0x080604, 0.30));   /* soft cool/warm ambient fill, dimmed */
+scene.add(new THREE.HemisphereLight(0x657080, 0x282016, 0.48));
 const lampPositions = [-0.72, 0, 0.72];
 lampPositions.forEach((x,i)=>{
   /* warm tungsten amber (not orange), eased intensity so the felt isn't washed white */
@@ -70,8 +70,8 @@ lampPositions.forEach((x,i)=>{
   s.castShadow=true; s.shadow.mapSize.set(2048,2048); s.shadow.radius=5; s.shadow.blurSamples=16;
   s.shadow.bias=-0.0004; s.shadow.camera.near=0.4; s.shadow.camera.far=5;
 });
-const amb1 = new THREE.PointLight(0xc9743a, 0.38, 9, 2); amb1.position.set(-3.4, 1.1, -2.2); scene.add(amb1);
-const amb2 = new THREE.PointLight(0x3a5cc9, 0.20, 9, 2); amb2.position.set( 3.2, 0.9,  2.4); scene.add(amb2);
+const amb1 = new THREE.PointLight(0xd69c63, 0.55, 9, 2); amb1.position.set(-3.4, 1.1, -2.2); scene.add(amb1);
+const amb2 = new THREE.PointLight(0x7793bc, 0.25, 9, 2); amb2.position.set( 3.2, 0.9,  2.4); scene.add(amb2);
 flickerLights.push(amb1, amb2);
 
 /* ---- graphics quality (Settings → Graphics) ----
@@ -103,8 +103,8 @@ const Graphics = {
     q=q||(Profile.data&&Profile.data.quality)||'low';
     const hi = q==='high';
     /* kept deep so the background falls smoothly into shadow (no bright floor halo) */
-    if(typeof floorMat!=='undefined' && floorMat) floorMat.color.setHex(hi?0x1d160e:0x0c0906);
-    if(typeof rugMat!=='undefined'  && rugMat)  rugMat.color.setHex(hi?0x331a20:0x160a0e);
+    if(typeof floorMat!=='undefined' && floorMat) floorMat.color.setHex(hi?0x8b7967:0x64584a);
+    if(typeof rugMat!=='undefined'  && rugMat)  rugMat.color.setHex(hi?0xb3a493:0x91877b);
   }
 };
 
@@ -131,6 +131,13 @@ function makeFeltTexture(felt, markings){
   const vg=x.createRadialGradient(Wc/2,Hc/2,Hc*0.35,Wc/2,Hc/2,Hc*0.95);
   vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.22)');
   x.fillStyle=vg; x.fillRect(0,0,Wc,Hc);
+  const weave=typeof WorldMaterials!=='undefined'&&WorldMaterials.textures['worsted-cloth'];
+  if(weave&&weave.image){
+    x.save();x.globalCompositeOperation='soft-light';x.globalAlpha=felt.weave==='worsted'?.38:.2;
+    // Repeat the scan at fibre scale; never stretch a few large threads across the bed.
+    for(let wy=0;wy<Hc;wy+=128)for(let wx=0;wx<Wc;wx+=128)x.drawImage(weave.image,wx,wy,128,128);
+    x.restore();
+  }
   if(markings){
     /* regulation cloth markings: head string across the kitchen, head/centre/foot spots */
     const bw=TABLE.W+0.20, bh=TABLE.H+0.20;
@@ -241,7 +248,8 @@ const woodTex = (function(){
   t.anisotropy=renderer.capabilities.getMaxAnisotropy();
   t.minFilter=THREE.LinearMipmapLinearFilter;
   return t; })();
-const woodMat  = new THREE.MeshStandardMaterial({color:0x6b4226, map:woodTex, roughness:0.4, metalness:0.12});
+const woodMat  = new THREE.MeshPhysicalMaterial({color:0x6b4226, map:woodTex, roughness:0.4, metalness:0,
+  clearcoat:.55,clearcoatRoughness:.24,envMapIntensity:.65});
 const brassMat = new THREE.MeshStandardMaterial({color:0xc9a35c, roughness:0.24, metalness:0.95, envMap:envMap, envMapIntensity:1.15});
 const darkMat  = new THREE.MeshStandardMaterial({color:0x0c0c10, roughness:0.85});
 const leatherMat = new THREE.MeshStandardMaterial({color:0x17110c, roughness:0.7});

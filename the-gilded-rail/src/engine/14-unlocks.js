@@ -16,6 +16,9 @@
      RAIL  : { name, lvl, wood:0xRRGGBB (timber albedo - grain texture is neutral so this reads true), rough?:0..1 }
 */
 const FELTS = {
+  billiardroom:{name:'Founders’ Green',lvl:1,bed:'#164b3d',cush:0x123e32,hi:'223,237,215',weave:'worsted',desc:'Quiet forest wool, chosen for the first members’ table in 1924.'},
+  petrol:{name:'Harbor Petrol',lvl:7,bed:'#173d46',cush:0x12333b,hi:'201,226,230',weave:'worsted',desc:'Deep blue-green worsted cloth, inspired by the harbor after midnight.'},
+  claret:{name:'Reserve Claret',lvl:15,bed:'#491f30',cush:0x3d1928,hi:'237,211,218',weave:'worsted',desc:'The private room’s restrained claret cloth, commissioned for long evenings.'},
   emerald: {name:'Club Emerald',    lvl:1,  bed:'#0f5238', cush:0x0f5036, hi:'255,255,255'},
   crimson: {name:'Crimson Velvet',  lvl:1,  bed:'#5a1820', cush:0x51151d, hi:'255,205,205'},   /* toned down */
   forest:  {name:'Forest Green',    lvl:2,  bed:'#16402a', cush:0x143a26, hi:'205,255,220'},
@@ -36,6 +39,9 @@ const FELTS = {
   gilded:  {name:'The Gilded Cloth',lvl:50, bed:'#123a2e', cush:0x0e2f25, hi:'255,232,150'},    /* signature */
 };
 const CUES = {
+  founders:{name:'The Founders’ Cue',lvl:1,shaft:0xd7bd8e,butt:0x433127,ring:'brass',inlay:true,desc:'Maple shaft and ebony spearpoint marquetry. The house’s original signature.'},
+  harbormaster:{name:'The Harbormaster',lvl:9,shaft:0xcbb891,butt:0x253c3d,ring:'chrome',inlay:true,desc:'Ivory spearpoints over petrol-dark timber, made for a captain who never hurried a shot.'},
+  regent:{name:'The Midnight Regent',lvl:23,shaft:0xd8c8a5,butt:0x302736,ring:'brass',inlay:true,desc:'A discreet brass joint and dark marquetry, reserved for the upstairs table.'},
   classic: {name:'House Classic',     lvl:1,  shaft:0xc89a5e, butt:0x2a1812, ring:'brass',  smoke:false},
   ivory:   {name:'Ivory & Gold',      lvl:3,  shaft:0xeae0c8, butt:0xb89a5e, ring:'brass',  smoke:false},
   obsidian:{name:'Obsidian & Silver', lvl:4,  shaft:0x16161a, butt:0x0c0c0e, ring:'chrome', smoke:false},
@@ -56,6 +62,8 @@ const CUES = {
   eternal: {name:'Eternal Flame',     lvl:50, shaft:0xc9a35c, butt:0x6e4f1f, ring:'brass',  flame:true, flameColor:0xffd66a, glow:0xffcf5a, smoke:true},
 };
 const RAILS = {
+  smokedoak:{name:'Smoked Oak',lvl:5,wood:0x77614c,rough:0.38,desc:'Open grain and a soft oil finish from the club’s restored oak paneling.'},
+  palisander:{name:'Reserve Palisander',lvl:19,wood:0x71483e,rough:0.3,desc:'Warm red-brown timber under a thin, hand-polished lacquer.'},
   walnut:  {name:'Walnut',            lvl:1,  wood:0x6b4226},
   mahogany:{name:'Mahogany',          lvl:1,  wood:0x5a2418},
   ebony:   {name:'Ebony',             lvl:6,  wood:0x2a2420, rough:0.30},
@@ -92,6 +100,8 @@ const Unlocks = {
   has(def){ return Profile.level().lvl >= def.lvl; },
   applyFelt(){
     const f=FELTS[Profile.data.felt]||FELTS.emerald;
+    if(this._feltKey===Profile.data.felt)return;
+    const oldBed=bedTopMat.map,oldCush=feltMat.map;
     bedTopMat.map=makeFeltTexture(f, true); bedTopMat.needsUpdate=true;
     /* cushions get their own baked texture in the cushion tone; material color
        stays white so the map isn't double-tinted toward black */
@@ -100,11 +110,16 @@ const Unlocks = {
     cushTex.needsUpdate=true;
     feltMat.color.set(0xffffff); feltMat.map=cushTex; feltMat.needsUpdate=true;
     feltCushMat.color.set(0xffffff); feltCushMat.map=cushTex; feltCushMat.needsUpdate=true;
+    if(oldBed)oldBed.dispose();if(oldCush&&oldCush!==oldBed)oldCush.dispose();
+    this._feltKey=Profile.data.felt;
   },
   applyCue(){
     const cdef=CUES[Profile.data.cue]||CUES.classic;
     cueParts.shaft.material.color.set(cdef.shaft);
-    cueParts.butt.material.color.set(cdef.butt);
+    cueParts.butt.material.color.set(cdef.inlay?0xe0d6c2:cdef.butt);
+    cueParts.butt.material.map=cdef.inlay?WorldMaterials.textures['deco-cue-wrap']||null:null;
+    cueParts.butt.material.roughness=cdef.inlay?.32:.5;
+    cueParts.butt.material.needsUpdate=true;
     cueParts.ring.material = cdef.ring==='chrome' ? chromeMat : brassMat;
     /* glowing cue: emissive shaft (+ a soft butt glow) */
     const gl=cdef.glow||0;
@@ -127,7 +142,7 @@ const Unlocks = {
     /* recolours the shared timber material (rails, skirt, legs, lounge table); the
        grain texture is neutral so the colour reads as the true wood albedo */
     const r=RAILS[Profile.data.rail]||RAILS.walnut;
-    woodMat.color.set(r.wood);
+    woodMat.color.set(r.wood).convertSRGBToLinear();
     woodMat.roughness = (r.rough!=null) ? r.rough : 0.42;
     woodMat.needsUpdate=true;
   },

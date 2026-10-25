@@ -94,7 +94,7 @@ if (view==='menu') {
       Game.ruleset='8ball'; Game.mode='cpu'; Game.newGame();
       Game.phase='AIM'; Input.enterShootMode(true); Input.mode='FINE'; UI.sync();   // show power + spin
       document.getElementById('menu-overlay').classList.add('hidden');
-      document.getElementById('tutorial-overlay').classList.add('hidden');
+      if(Onboarding.active)Onboarding.close();
     }catch(e){ console.error('hud setup failed', e); }
   });
   await page.waitForTimeout(1500);

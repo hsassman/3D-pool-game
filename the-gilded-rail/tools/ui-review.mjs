@@ -10,9 +10,16 @@ const hudOnly=process.argv.includes('--hud-only');
 const browser=await chromium.launch({channel:'msedge',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--enable-webgl']});
 const errors=[],missing=[],results=[];
 try {
-  for(const viewport of [{width:1440,height:1000},{width:1280,height:720},{width:390,height:844},{width:844,height:390}].filter(v=>(!process.argv.includes('--phone-only')||v.width===390)&&(!process.argv.includes('--compact-only')||v.width<900))){
-    const page=await browser.newPage({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900});
-    page.on('pageerror',e=>{errors.push(e.stack||e.message);console.log('PAGE ERROR:',e.stack||e.message);});
+  for(const viewport of [{width:1440,height:1000},{width:1280,height:720},{width:390,height:844},{width:844,height:390}].filter(v=>(!process.argv.includes('--phone-only')||v.width===390)&&(!process.argv.includes('--compact-only')||v.width<900)&&(!process.argv.includes('--readme')||v.width===1440))){
+    const page=await browser.newPage({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900,reducedMotion:'reduce'});
+    await page.addInitScript(()=>{
+      const raf=window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame=callback=>{
+        if(callback.name==='loop'){window.__reviewLoopHeld=true;return 0;}
+        return raf(callback);
+      };
+    });
+    page.on('pageerror',e=>{const message=e.stack||e.message;if(!errors.includes(message)){errors.push(message);console.log('PAGE ERROR:',message);}});
     page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(url))missing.push(r.url());});
     console.log('Loading',viewport);
     await page.route('https://js.hcaptcha.com/**',route=>route.abort());
@@ -20,14 +27,14 @@ try {
     await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
     console.log('DOM ready');
     console.log(await page.evaluate(()=>({ui:typeof UI,art:typeof UIArt,profile:typeof Profile==='undefined'?null:Profile.data.gfxReset1,phase:typeof Game==='undefined'?null:Game.phase})));
-    await page.waitForFunction(()=>typeof UI!=='undefined'&&typeof UIArt!=='undefined'&&Profile.data.gfxReset1,null,{timeout:60000,polling:100});
+    await page.waitForFunction(()=>typeof UI!=='undefined'&&typeof UIArt!=='undefined'&&Profile.data.gfxReset1&&window.__reviewLoopHeld,null,{timeout:60000,polling:100});
     await page.evaluate(()=>{
-      window.requestAnimationFrame=()=>0;
       document.getElementById('boot-loader')?.remove();
       document.getElementById('gl').style.display='none';
       Profile.data.tutorialSeen=true;
     });
     console.log('Engine ready');
+    await page.waitForFunction(()=>Object.keys(WorldMaterials.textures).length===11,null,{timeout:60000});
     await page.waitForTimeout(400);
     await page.evaluate(()=>{renderer.dispose();renderer.forceContextLoss();});
     const tag=viewport.width+'x'+viewport.height;
@@ -39,7 +46,7 @@ try {
       assert.equal(overflow,false,`${name} horizontal page overflow at ${tag}`);
       const cardOverflow=await page.evaluate(()=>Array.from(document.querySelectorAll('.overlay:not(.hidden)>div')).filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.id));
       assert.deepEqual(cardOverflow,[],`${name} horizontal card overflow at ${tag}`);
-      const action={profile:'prof-save',tutorial:'tut-next',victory:'go-rematch',defeat:'go-rematch'}[name];
+      const action={profile:'prof-save',victory:'go-rematch',defeat:'go-rematch'}[name];
       if(action){
         const bounds=await page.locator('#'+action).boundingBox();
         assert.ok(bounds&&bounds.y>=0&&bounds.y+bounds.height<=viewport.height,`${name} primary action must stay visible at ${tag}`);
@@ -49,17 +56,33 @@ try {
         assert.ok(close&&close.y>=0&&close.y+close.height<=viewport.height,`${name} close button must stay visible at ${tag}`);
       }
     };
-    if(process.argv.includes('--tutorial-only')){
+    const tourReview=async()=>{
+      const previous=await page.evaluate(()=>({phase:Game.phase,mode:Input.mode,paused:Game.paused}));
       await page.evaluate(()=>UI.tutorialOpen(true));
-      for(let step=0;step<5;step++){
-        await capture('tutorial-'+step);
-        if(step<4)await page.locator('#tut-next').click();
+      const count=await page.evaluate(()=>TUTORIAL_STEPS.length);
+      for(let step=0;step<count;step++){
+        await page.locator('.driver-popover').waitFor({state:'visible'});
+        assert.equal(await page.evaluate(()=>Onboarding.tour.getActiveIndex()),step);
+        const bounds=await page.locator('.driver-popover').boundingBox();
+        assert.ok(bounds&&bounds.x>=0&&bounds.y>=0&&bounds.x+bounds.width<=viewport.width+1&&bounds.y+bounds.height<=viewport.height+1,'Driver popover must fit the viewport');
+        if(step===0||step===3||step===4)await capture('tour-'+step);
+        await page.locator('.driver-popover-next-btn').click();
       }
-      results.push({viewport:tag,checks:'all five tutorial steps'});
+      assert.equal(await page.evaluate(()=>Onboarding.active),false);
+      assert.deepEqual(await page.evaluate(()=>({phase:Game.phase,mode:Input.mode,paused:Game.paused})),previous);
+    };
+    if(process.argv.includes('--tutorial-only')){
+      await tourReview();
+      results.push({viewport:tag,checks:'all Driver.js steps, placement and frame restoration'});
       await page.close();continue;
     }
     if(!hudOnly){
     await capture('menu');
+    if(process.argv.includes('--readme')){
+      await page.evaluate(()=>{Profile.data.cue='founders';UI.customizeModal('cue');});
+      await capture('founders-cue');results.push({viewport:tag,checks:'README menu and equipment captures'});
+      await page.close();continue;
+    }
     await page.locator('#btn-quick').click();
     await capture('quick');
     assert.equal(await page.locator('.difficulty-chip img').count(),3);
@@ -71,17 +94,30 @@ try {
     assert.equal(await page.locator('.opponent-portrait img').count(),5);
     await capture('roster');
     await page.evaluate(()=>UI.customizeModal('felt'));
-    assert.equal(await page.locator('[data-felt]').count(),18);
+    assert.equal(await page.locator('[data-felt]').count(),21);
+    assert.equal(await page.locator('.swatch [data-part="bed"]').first().evaluate(el=>el.getBBox().width/el.getBBox().height),2);
+    await page.locator('[data-felt="billiardroom"]').click();
+    assert.equal(await page.evaluate(()=>Profile.data.felt),'billiardroom');
     await capture('atelier');
     await page.locator('#equipment-search').fill('gilded');
     assert.equal(await page.locator('.swatch:visible').count(),1);
     await page.locator('#equipment-search').fill('');
     await page.locator('#equipment-available').click();
-    assert.equal(await page.locator('.swatch:visible').count(),2);
+    assert.equal(await page.locator('.swatch:visible').count(),3);
     await page.locator('[data-atelier="cue"]').click();
-    assert.equal(await page.locator('[data-cue]').count(),16);
+    assert.equal(await page.locator('[data-cue]').count(),19);
+    const proportions=await page.locator('.swatch .item-cue').first().evaluate(el=>{
+      const butt=el.querySelector('[data-part="butt"]').getBBox(),shaft=el.querySelector('[data-part="shaft"]').getBBox();
+      return {ratio:shaft.width/butt.width,slender:butt.width/butt.height};
+    });
+    assert.ok(proportions.ratio>2.5&&proportions.ratio<3&&proportions.slender>14,'Cue proportions should match the in-game model');
+    await capture('cues');
+    await page.locator('[data-cue="founders"]').click();
+    assert.equal(await page.evaluate(()=>Profile.data.cue),'founders');
+    await capture('founders-cue');
     await page.locator('[data-atelier="rail"]').click();
-    assert.equal(await page.locator('[data-rail]').count(),10);
+    assert.equal(await page.locator('[data-rail]').count(),12);
+    await capture('wood');
     await page.locator('[data-rail="mahogany"]').click();
     assert.equal(await page.evaluate(()=>Profile.data.rail),'mahogany');
     assert.equal(await page.locator('[data-rail="mahogany"]').getAttribute('aria-pressed'),'true');
@@ -129,9 +165,8 @@ try {
     await page.evaluate(()=>{Net.code='ABC234';Net.seat=0;Net.peerHere=false;LobbyUI.view='hosting';LobbyUI.render();});
     assert.equal(await page.locator('#room-start').isDisabled(),true);
     await capture('room');
-    await page.evaluate(()=>{Net.code=null;Net.seat=-1;UI.$('modal-overlay').classList.add('hidden');UI.tutorialOpen(true);});
-    await capture('tutorial');
-    await page.evaluate(()=>UI.tutorialClose());
+    await page.evaluate(()=>{Net.code=null;Net.seat=-1;UI.$('modal-overlay').classList.add('hidden');});
+    await tourReview();
     await page.evaluate(()=>UI.gameOver(true,'A well-earned frame',120,14,7));
     await capture('victory');
     await page.evaluate(()=>UI.gameOver(false,'The next frame is yours to write',18,12,4));
@@ -141,10 +176,23 @@ try {
     await page.evaluate(()=>{
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('menu-overlay').classList.add('hidden');
-      Game.mode='cpu';Game.diff=2;Game.ruleset='8ball';Game.newGame();
-      Input.mode='FINE';UI.sync();UI.gauge(.65);
+      Game.mode='cpu';Game.diff=2;Game.ruleset='8ball';Profile.data.tutorialSeen=false;Game.newGame();
     });
+    assert.equal(await page.evaluate(()=>Onboarding.active),true,'First-play onboarding should start automatically');
+    await page.keyboard.press('h');await page.keyboard.press('Space');
+    assert.equal(await page.evaluate(()=>Game.frameShots),0,'Tour keys must not strike a ball');
+    assert.equal(await page.evaluate(()=>document.body.classList.contains('ui-hidden')),false);
+    assert.equal(await page.evaluate(()=>Onboarding.active),true,'Shot key must not activate the focused tour button');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(()=>Onboarding.active),false);
+    assert.equal(await page.evaluate(()=>Game.paused),false);
+    await page.evaluate(()=>{Input.mode='FINE';UI.sync();UI.gauge(.65);});
     await capture('hud');
+    const hudSize=await page.evaluate(()=>({score:document.getElementById('scoreboard').getBoundingClientRect().height,power:document.getElementById('power-wrap').getBoundingClientRect().height}));
+    assert.ok(hudSize.score<=62&&hudSize.power<=90,'Match instruments should stay compact');
+    await page.locator('#spin-ball').focus();await page.keyboard.press('ArrowRight');
+    assert.equal(await page.evaluate(()=>Input.spin.x),.05);
+    await page.keyboard.press('Home');assert.equal(await page.evaluate(()=>Input.spin.x),0);
     assert.match(await page.locator('#p1av').evaluate(el=>el.style.backgroundImage),/portrait-cpu-shark/);
     const collisions=await page.evaluate(()=>{
       const ids=['power-wrap','spin-wrap','status','stick','mode-controls'];

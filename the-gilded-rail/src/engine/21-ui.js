@@ -3,38 +3,27 @@
    Relies on symbols defined in earlier-numbered files. */
 
 /* ================= UI ================= */
-/* EASY TO EDIT: the first-run coaching steps. Add/remove cards freely. */
+/* Driver.js steps highlight the real controls, not a separate tutorial screen. */
 const TUTORIAL_STEPS = [
-  {title:'Take Aim', body:'Drag the table or use <b>← →</b> to aim. The dotted line shows your path and the ghost ring shows where the cue ball will strike. Press <b>G</b> to switch the guide between Full, Cue-line and Off.'},
-  {title:'Two Views', body:'<b>Tab</b> toggles between <b>Shoot Mode</b> (down on the shot) and <b>Walk &amp; Orbit</b> (look around the room with <b>WASD</b> + drag). <b>Esc</b> opens the menu.'},
-  {title:'Power', body:'Hold <b>Space</b> - or the <b>Hold to Charge</b> button - and release to strike. The meter rises and falls, so time your release.'},
-  {title:'Spin &amp; English', body:'Press <b>E</b> for <b>Fine-Tune</b>, then click the cue-ball pad to add follow, draw or side english. Strike very low to <b>jump</b> the cue ball over a blocking ball.'},
-  {title:'Win the Frame', body:'Pot your group (solids or stripes), then sink the <b>8</b> to win. Earn XP, unlock cues &amp; cloths, and climb the <b>Career Ladder</b>.'},
+  {title:'Welcome to your table',body:'Drag across the table to aim. On a keyboard, use ← and → for small adjustments. Your frame is held safely while we show you around.'},
+  {element:'#scoreboard',title:'Follow the frame',body:'Your active player is marked in gold. Once groups are claimed, these ball markers show what remains. Clear your group, then pot the eight.',side:'bottom'},
+  {element:'#mode-controls',title:'Find your angle',body:'Switch between looking around, lining up a shot, and fine aim. Tab changes view; E toggles fine aim.',side:'top'},
+  {element:'#power-wrap',title:'Choose your power',body:'Hold this button, or Space, to build power. Release to strike. Lower power gives you more control over the next shot.',side:'top'},
+  {element:'#spin-wrap',title:'Shape your next shot',body:'In fine aim, move the contact point for follow, draw, or side spin. Center strike resets it. Use arrow keys when this control has keyboard focus.',side:'left'},
+  {element:'#ta-toggle',title:'Make yourself at home',body:'Open the match menu to resume a frame, adjust settings, or change equipment. You can replay this guide from How to Play in the club menu.',side:'bottom'},
 ];
 const UI = {
   $(id){ return document.getElementById(id); },
 
   /* ---- first-run tutorial / how-to-play ---- */
   tutorialOpen(replay){
-    this._tutReplay=!!replay; this._tutStep=0;
-    this.$('tutorial-overlay').classList.remove('hidden');
-    this._renderTut();
-  },
-  _renderTut(){
-    const s=TUTORIAL_STEPS[this._tutStep];
-    this.$('tut-title').textContent=s.title.replace(/&amp;/g,'&');
-    this.$('tut-body').innerHTML=s.body;
-    this.$('tut-art').innerHTML=Interface.tutorial(this._tutStep);
-    this.$('tut-dots').innerHTML='<span class="tutorial-step">'+String(this._tutStep+1).padStart(2,'0')+' / '+String(TUTORIAL_STEPS.length).padStart(2,'0')+'</span>'+TUTORIAL_STEPS.map((_,i)=>'<span class="tut-dot'+(i===this._tutStep?' on':'')+'"></span>').join('');
-    this.$('tut-next').textContent = this._tutStep>=TUTORIAL_STEPS.length-1 ? 'Got It' : 'Next';
+    return Onboarding.start(!!replay);
   },
   tutorialNext(){
-    if(this._tutStep>=TUTORIAL_STEPS.length-1){ this.tutorialClose(); return; }
-    this._tutStep++; this._renderTut(); Sfx.play('ui',0.3);
+    if(Onboarding.tour) Onboarding.tour.moveNext();
   },
   tutorialClose(){
-    this.$('tutorial-overlay').classList.add('hidden');
-    Profile.data.tutorialSeen=true; Profile.save(); Sfx.play('ui');
+    Onboarding.close();
   },
 
   refreshProfile(){
@@ -158,8 +147,8 @@ const UI = {
 
   spinDot(){
     const d=this.$('spin-dot');
-    d.style.left='calc(50% + '+(Input.spin.x*46)+'px)';
-    d.style.top ='calc(50% + '+(-Input.spin.y*46)+'px)';
+    d.style.left=(50+Input.spin.x*50)+'%';
+    d.style.top =(50-Input.spin.y*50)+'%';
     const sx=Input.spin.x, sy=Input.spin.y;
     let t='center strike';
     if(sy<-0.60){                                   // extreme low contact = jump/scoop
@@ -170,6 +159,8 @@ const UI = {
       t=[v,h].filter(Boolean).join(' + ')||'center strike';
     }
     this.$('spin-readout').textContent=t;
+    const control=this.$('spin-ball');control.setAttribute('aria-valuemin','-75');control.setAttribute('aria-valuemax','75');
+    control.setAttribute('aria-valuenow',Math.round(Input.spin.y*100));control.setAttribute('aria-valuetext',t);
   },
 
   sync(){
@@ -315,7 +306,6 @@ const UI = {
       '<input type="range" id="vol-'+id+'" min="0" max="100" value="'+Math.round(val*100)+'" aria-label="'+label+' volume"></div>';
     const panel=(id,html)=>'<div class="settings-pane" id="setting-panel-'+id+'" role="tabpanel" aria-labelledby="setting-tab-'+id+'" data-settings-panel="'+id+'">'+html+'</div>';
     const audio=Interface.section('sound','The sound of the club',
-      UIArt.image('sound-v3','settings-scene')+
       row('sfx','Sound effects',v.sfx,'cue','Every strike, cushion and pocket')+
       row('music','Music',v.music,'music','The club soundtrack')+
       row('amb','Ambience',v.amb,'ambience','Rain, room tone and atmosphere')+
@@ -329,7 +319,6 @@ const UI = {
       Interface.toggle('haptics-on','Vibration feedback','A subtle response to strikes and pots on supported devices.',Profile.data.haptics!==false)+
       '<div class="comfort-note">'+UIArt.icon('keyboard')+'<p>All menus support keyboard navigation. Use Tab to move, Enter to choose, and Esc to close. Motion follows your device’s reduced-motion preference.</p></div>');
     const graphics=Interface.section('display','Set the atmosphere',
-      UIArt.image('graphics-v3','settings-scene')+
       '<div class="preference-label"><strong>Graphics quality</strong><p>Balance visual detail with a smooth game.</p></div>'+Interface.choices('q',[['low','Low','Fastest · no shadows'],['medium','Balanced','Detail meets performance'],['high','High','Full lighting & shadows']],Profile.data.quality)+
       '<div class="preference-label"><strong>Depth of field</strong><p>Bring your shot into focus with cinematic lens blur.</p></div>'+Interface.choices('dof',[['off','Off'],['normal','Subtle'],['strong','Cinematic']],Profile.data.dof||'off'));
     const club=Interface.section('shield','A few club secrets',this._secretSection(), 'An invitation, a discovery, a little history.');
@@ -708,22 +697,27 @@ const UI = {
     const tabs=[['felt','Table cloth','target'],['cue','Cues','cue'],['rail','Wood finishes','sparkle']].map(([key,label,icon])=>
       '<button type="button" class="atelier-tab'+(tab===key?' active':'')+'" data-atelier="'+key+'" aria-pressed="'+(tab===key)+'">'+UIArt.icon(icon)+label+'</button>').join('');
     this.modal(UIArt.header('THE EQUIPMENT ATELIER','Make it yours.','An expression of your game, down to the last detail.','atelier-v3')+
-      Interface.equipment()+
+      Interface.equipment(tab)+
       '<div class="atelier-tabs" aria-label="Equipment category">'+tabs+'</div>'+
       '<div class="atelier-tools"><label class="equipment-search">'+UIArt.icon('search')+'<input id="equipment-search" type="search" placeholder="Find your next signature…" aria-label="Search equipment"></label><button class="qual-btn" id="equipment-available" aria-pressed="false">Unlocked only</button></div>'+
       '<div class="equipment-count">'+count+' of '+Object.keys(cats[tab]).length+' unlocked · Select an item to equip</div>'+
-      '<div class="swatch-grid">'+previews+'</div>'+
+      '<div class="swatch-grid catalog-'+tab+'">'+previews+'</div><p class="equipment-empty" id="equipment-empty" hidden>No equipment matches this search.</p>'+
       '<p class="atelier-note">Earn XP by potting balls, winning frames and clearing the career ladder. Every level brings something new.</p>', 'customize');
     if(document.querySelector){
-      let available=false;
+      this._equipmentFilters=this._equipmentFilters||{};
+      const state=this._equipmentFilters[tab]||(this._equipmentFilters[tab]={query:'',available:false});
+      this.$('equipment-search').value=state.query;
       const filter=()=>{
-        const q=this.$('equipment-search').value.trim().toLowerCase();let shown=0;
-        document.querySelectorAll('.swatch').forEach(el=>{const match=el.textContent.toLowerCase().includes(q)&&(!available||!el.classList.contains('locked'));el.hidden=!match;if(match)shown++;});
-        this.$('equipment-available').setAttribute('aria-pressed',available);
+        state.query=String(this.$('equipment-search').value||'');
+        const q=state.query.trim().toLowerCase();let shown=0;
+        document.querySelectorAll('.swatch').forEach(el=>{const match=el.textContent.toLowerCase().includes(q)&&(!state.available||!el.classList.contains('locked'));el.hidden=!match;if(match)shown++;});
+        this.$('equipment-available').setAttribute('aria-pressed',state.available);
+        this.$('equipment-empty').hidden=shown!==0;
         const countEl=document.querySelector('.equipment-count');if(countEl)countEl.textContent=shown+' items · '+count+' unlocked';
       };
       this.$('equipment-search').addEventListener('input',filter);
-      this.$('equipment-available').addEventListener('click',()=>{available=!available;filter();});
+      this.$('equipment-available').addEventListener('click',()=>{state.available=!state.available;filter();});
+      filter();
     }
     document.querySelectorAll('[data-atelier]').forEach(b=>b.addEventListener('click',()=>this.customizeModal(b.dataset.atelier)));
     /* generic picker wiring for each catalog */
@@ -829,8 +823,6 @@ const UI = {
     this.$('btn-challenges').addEventListener('click',()=>{ Sfx.play('ui'); this.challengesModal(); });
     this.$('btn-trickshots').addEventListener('click',()=>{ Sfx.play('ui'); this.trickshotModal(); });
     this.$('btn-howto').addEventListener('click',()=>{ Sfx.play('ui'); this.tutorialOpen(true); });
-    this.$('tut-next').addEventListener('click',()=>this.tutorialNext());
-    this.$('tut-skip').addEventListener('click',()=>this.tutorialClose());
     this.$('modal-close').addEventListener('click',()=>this.$('modal-overlay').classList.add('hidden'));
     this.$('modal-overlay').addEventListener('click',e=>{ if(e.target===this.$('modal-overlay')) this.$('modal-overlay').classList.add('hidden'); });
 
@@ -873,7 +865,7 @@ const UI = {
     const toggleUI=()=>{ document.body.classList.toggle('ui-hidden'); Sfx.play('ui'); };
     this.$('btn-uitoggle').addEventListener('click',toggleUI);
     this.$('ui-restore').addEventListener('click',toggleUI);
-    addEventListener('keydown',e=>{ if(e.code==='KeyH' && Game.phase!=='MENU') toggleUI(); });
+    addEventListener('keydown',e=>{ if(e.code==='KeyH' && Game.phase!=='MENU' && !Onboarding.active) toggleUI(); });
 
     this.$('btn-rules').addEventListener('click',()=>this.modal(
       '<h2>House Rules</h2>'+
@@ -914,6 +906,17 @@ const UI = {
     let sd=false;
     sb.addEventListener('pointerdown',e=>{ sd=true; e.preventDefault();
       try{ sb.setPointerCapture(e.pointerId); }catch(_){}; setSpin(e); });
+    sb.addEventListener('keydown',e=>{
+      if(Onboarding.active||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home'].includes(e.key))return;
+      e.preventDefault();e.stopPropagation();
+      if(e.key==='Home'){Input.spin.x=0;Input.spin.y=0;}
+      else {
+        if(e.key==='ArrowLeft')Input.spin.x-=.05;if(e.key==='ArrowRight')Input.spin.x+=.05;
+        if(e.key==='ArrowUp')Input.spin.y+=.05;if(e.key==='ArrowDown')Input.spin.y-=.05;
+        const length=Math.hypot(Input.spin.x,Input.spin.y);if(length>.75){Input.spin.x*=.75/length;Input.spin.y*=.75/length;}
+      }
+      this.spinDot();
+    });
     addEventListener('pointermove',e=>{ if(sd) setSpin(e); });
     addEventListener('pointerup',()=>sd=false);
     addEventListener('pointercancel',()=>sd=false);

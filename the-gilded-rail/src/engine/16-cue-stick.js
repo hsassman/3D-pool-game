@@ -14,6 +14,7 @@ const cueParts = {};
   butt.position.y=-1.42;
   const ring=new THREE.Mesh(new THREE.CylinderGeometry(0.0125,0.0125,0.012,16), brassMat); ring.position.y=-1.205;
   cueParts.shaft=shaft; cueParts.butt=butt; cueParts.ring=ring;
+  WorldMaterials.bind('deco-cue-wrap',butt.material,{when:()=>!!(CUES[Profile.data.cue]||CUES.classic).inlay});
   const ferrule=new THREE.Mesh(new THREE.CylinderGeometry(0.006,0.0065,0.018,12),
     new THREE.MeshStandardMaterial({color:0xf2ecdc, roughness:0.5})); ferrule.position.y=-0.022;
   const tip=new THREE.Mesh(new THREE.CylinderGeometry(0.0058,0.006,0.009,12),

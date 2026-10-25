@@ -5,6 +5,8 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, cpSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import './sync-driver.mjs';
+import { Script } from 'node:vm';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const r = (...p) => readFileSync(join(root, ...p), 'utf8');
@@ -15,19 +17,20 @@ const engineFiles = readdirSync(engineDir).filter(f => f.endsWith('.js')).sort()
 const engine = engineFiles.map(f => r('src', 'engine', f)).join('\n\n');
 
 let html = r('index.html');
-html = html.replace('<link rel="stylesheet" href="src/styles/main.css">', `<style>\n${css}\n</style>`);
-html = html.replace('<link rel="stylesheet" href="src/styles/collection.css">', `<style>\n${r('src', 'styles', 'collection.css')}\n</style>`);
-html = html.replace('<link rel="stylesheet" href="src/styles/interface.css">', `<style>\n${r('src', 'styles', 'interface.css')}\n</style>`);
-html = html.replace(/(?:\s*<script src="src\/engine\/[^"]+"><\/script>)+/, `\n<script>\n${engine}\n</script>`);
+html = html.replace('<link rel="stylesheet" href="src/styles/main.css">', () => `<style>\n${css}\n</style>`);
+html = html.replace('<link rel="stylesheet" href="src/styles/collection.css">', () => `<style>\n${r('src', 'styles', 'collection.css')}\n</style>`);
+html = html.replace('<link rel="stylesheet" href="src/styles/interface.css">', () => `<style>\n${r('src', 'styles', 'interface.css')}\n</style>`);
+html = html.replace('<link rel="stylesheet" href="vendor/driver.css">', () => `<style>\n${r('vendor', 'driver.css')}\n</style>`);
+html = html.replace(/(?:\s*<script src="src\/engine\/[^"]+"><\/script>)+/, () => `\n<script>\n${engine}\n</script>`);
 
 /* inline the locally-vendored three.js example scripts (post-processing for DoF + bloom,
    GLTFLoader) in place, so the deployed file carries them itself and never depends on a CDN.
    Order is preserved - each must run after three.min.js and before the engine. */
 const vendorOrder = ['three.min','CopyShader','BokehShader','EffectComposer','RenderPass','ShaderPass',
-  'MaskPass','BokehPass','LuminosityHighPassShader','UnrealBloomPass','FXAAShader','GLTFLoader','supabase'];
+  'MaskPass','BokehPass','LuminosityHighPassShader','UnrealBloomPass','FXAAShader','GLTFLoader','supabase','driver.js.iife'];
 for (const name of vendorOrder) {
   html = html.replace(`<script src="vendor/${name}.js"></script>`,
-    `<script>\n/* vendored: ${name} */\n${r('vendor', name + '.js')}\n</script>`);
+    () => `<script>\n/* vendored: ${name} */\n${r('vendor', name + '.js')}\n</script>`);
 }
 
 mkdirSync(join(root, 'dist'), { recursive: true });
@@ -44,6 +47,7 @@ function externalize(name) {
 externalize('audio');   // soundtrack, SFX, one-shots (kept external so the HTML stays light)
 externalize('models');  // GLB props
 externalize('ui');      // menu artwork
+externalize('world');   // bounded material textures and framed paintings
 /* the build also tolerates server-root /assets/ui paths from the CSS */
 html = html.replace(/\/assets\/ui\//g, 'assets/ui/');
 
@@ -54,7 +58,7 @@ html = html.replace(/\/assets\/ui\//g, 'assets/ui/');
 if (existsSync(join(root, 'public', 'easter-egg.html'))) {
   let egg = r('public', 'easter-egg.html');
   egg = egg.replace('<script src="vendor/three.min.js"></script>',
-    `<script>\n/* vendored: three.min */\n${r('vendor', 'three.min.js')}\n</script>`);
+    () => `<script>\n/* vendored: three.min */\n${r('vendor', 'three.min.js')}\n</script>`);
   writeFileSync(join(root, 'dist', 'easter-egg.html'), egg);
 }
 
@@ -62,6 +66,12 @@ if (existsSync(join(root, 'public', 'easter-egg.html'))) {
 if (existsSync(join(root, 'public', 'manifest.webmanifest')))
   copyFileSync(join(root, 'public', 'manifest.webmanifest'), join(root, 'dist', 'manifest.webmanifest'));
 
+/* Preserve literal replacement tokens in vendored code, and compile every
+   deployed script before shipping the portable HTML. */
+if (!html.includes(r('vendor','driver.js.iife.js'))) throw new Error('Driver.js changed during inlining');
+let scriptIndex=0;
+for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))
+  new Script(match[1], {filename:'dist inline script '+scriptIndex++});
 writeFileSync(join(root, 'dist', 'the-gilded-rail.html'), html);
 writeFileSync(join(root, 'dist', 'index.html'), html);
 console.log(`Built dist/ (${(html.length / 1e6).toFixed(2)} MB HTML + external assets, ${engineFiles.length} engine files)`);
