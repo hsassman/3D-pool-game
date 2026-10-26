@@ -198,74 +198,139 @@ body.charging #status{display:none}
 .club-tour .driver-popover-arrow-side-right{border-top-color:transparent;border-bottom-color:transparent;border-left-color:transparent}
 .club-tour .driver-popover-arrow-side-top{border-bottom-color:transparent;border-left-color:transparent;border-right-color:transparent}
 .club-tour .driver-popover-arrow-side-bottom{border-top-color:transparent;border-left-color:transparent;border-right-color:transparent}
-@media(max-width:760px){
-  .modal-card,#quick-card{width:calc(100vw - 20px);padding:18px;max-height:calc(100dvh - 20px);border-radius:11px}
-  #modal-card>#modal-close{margin:-4px -4px -30px auto}
-  .modal-card .collection-head{gap:10px;margin-right:32px;margin-bottom:18px}
-  .modal-card .collection-head h2{font-size:25px}.collection-cover{width:48px;height:42px}.collection-head .deco-eyebrow{font-size:7px;letter-spacing:.1em}.modal-card .collection-head p{font-size:10px}
-  .settings-layout{display:block}.settings-nav{position:static;display:flex;flex-direction:row;gap:2px;padding:0 0 10px;margin-bottom:16px;border:0;border-bottom:1px solid var(--line-soft);overflow-x:auto}
-  .settings-nav button{flex:1;min-width:0;min-height:48px;padding:7px 3px;flex-direction:column;justify-content:center;gap:5px;font-size:8px;text-align:center;border-radius:6px}
-  .settings-nav button .ui-icon{width:16px;height:16px}
-  .section-heading{margin-bottom:10px}.modal-card .section-heading h3{font-size:18px}
-  .volume-control{grid-template-columns:1fr;gap:8px;min-height:0;padding:13px 0}.volume-heading label small{font-size:9px}.volume-control input[type=range]{height:24px}
-  .preference-toggle{padding:13px 0;min-height:65px}.preference-copy small{font-size:10px}.qual-row .qual-btn{font-size:10px;padding:9px 6px;min-width:60px}
-  .settings-save-note{font-size:9px;flex-wrap:wrap}.settings-save-note span{width:100%;margin-left:20px;font-size:8px}
-  .member-card{padding:16px;margin-bottom:12px}.member-card-top{margin-bottom:13px}.member-card-top .deco-eyebrow{font-size:7px}
-  .prof-head{gap:12px}.prof-avatar{width:56px;height:56px;min-height:56px}.prof-avatar .prof-av-ini{font-size:25px}.prof-name-in{font-size:22px;max-width:100%}
-  .profile-name-label{font-size:7px}.prof-sub{font-size:8px}.profile-progress{padding:8px 0 13px}.profile-progress strong{font-size:17px}
-  .profile-account-card{flex-wrap:wrap;gap:8px}.profile-account-card>.section-icon{display:none}.profile-account-card>div{flex:1;min-width:180px}.profile-account-card .btn{width:100%}
-  .profile-cosmetics{grid-template-columns:1fr;gap:18px}.cos-row{grid-template-columns:repeat(4,minmax(0,1fr))}.cos-sw{min-height:78px}.profile-save-bar>span{display:none}.profile-save-bar .btn{width:100%}
-  .equipment-stage{grid-template-columns:minmax(0,1fr) 125px;padding:10px 12px;gap:10px}.equipment-preview .item-preview{height:80px}
-  .equipment-stage-label strong{font-size:20px}.equipment-stage-label small{font-size:9px}.equipment-stage-label .deco-eyebrow{font-size:7px}
-  .atelier-tab{font-size:10px;gap:5px;padding:9px 3px}.atelier-tab .ui-icon{width:14px;height:14px}.atelier-tools{gap:6px}.equipment-search input{font-size:10px}
-  .atelier-tools>.qual-btn{font-size:9px;padding:8px}.swatch-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.swatch{padding:8px}.swatch .sw-name{font-size:10px}.sw-info{padding:7px 2px 2px}.catalog-cue{grid-template-columns:1fr}
-  .catalog-cue .item-preview{max-height:145px}.equipment-count{font-size:9px}.swatch .sw-sub{font-size:8px}
-  .room-option{padding:14px;min-height:110px}.room-option strong{font-size:20px}.room-option small{font-size:9px}
-  #gameover-card{padding:22px 18px}#go-title{font-size:33px}#gameover-card .go-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin:18px 0}
-  #bento{padding:16px;gap:13px;width:100%}.bento-head .title-main{font-size:31px}.bento-head .brand-mark{height:36px}.bento-head .title-sub{margin-left:51px;font-size:10px}
-  .b-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:9px}.b-career{min-height:185px}.b-career .b-t{font-size:29px}.career-cta{margin-top:12px;padding:8px 11px}
-  .b-quick,.b-online,.b-chal,.b-trick{min-height:140px}.b-wide{min-height:84px}.b-t{font-size:20px}.b-wide .b-t{font-size:20px}.b-s{font-size:9px}
-  #scoreboard{top:max(10px,var(--safe-t));width:calc(100vw - 24px);max-width:550px;gap:4px;padding:4px;transform:translateX(-50%)}
-  .pstrip{flex:1;display:grid;grid-template-columns:20px minmax(0,1fr);gap:3px 6px;padding:4px;min-height:28px}
-  .pstrip .turn-dot{display:none}.pstrip .p-av{grid-column:1;grid-row:1;width:20px;height:20px;border-radius:6px}
-  .player-stack{grid-column:2;grid-row:1;max-width:none}.pname-s,#scoreboard .pname-s{font-size:9px;letter-spacing:.025em;max-width:100%}
-  .pstrip .mini-balls{grid-column:1/-1;grid-row:2;justify-content:center;max-width:100%;gap:3px}
-  .mini-ball,#scoreboard .mini-ball{width:10px;height:10px;font-size:6px}
-  #vs-sep{width:20px;min-width:20px;font-size:7px}
-  #top-actions{top:68px;right:12px;left:auto;align-items:flex-end}
-  #banner{top:68px;left:12px;transform:none;text-align:left;max-width:calc(100vw - 78px);padding:0;width:auto}
-  #banner .big{font-size:17px}#banner .sub{font-size:8px;letter-spacing:0}
-  #match-strip{top:63px;left:12px;transform:none}body.match-active #banner{top:86px}
-  #power-wrap{right:12px;bottom:max(14px,var(--safe-b));width:166px}
-  #pbar{height:116px;left:40%}#pbar-fill{background-size:100% 116px}
-  #charge-btn,body.touch #charge-btn{height:42px;min-height:42px;font-size:9px;padding:8px}
-  #spin-wrap,body.touch #spin-wrap{right:12px;bottom:99px;width:80px;padding:7px}
-  #spin-ball{width:58px;height:58px}#spin-readout{font-size:7px}#spin-reset{min-height:25px;font-size:7px}
-  #mode-controls{left:12px;bottom:max(14px,var(--safe-b));gap:5px}.mode-ic{width:36px;height:36px;min-height:36px;border-radius:8px}
-  #status{left:14px;right:auto;bottom:200px;font-size:10px;max-width:calc(100vw - 180px)}
-  #call-pockets{bottom:110px}#bih-notice{max-width:calc(100vw - 28px);font-size:10px}
-  body.a11y #scoreboard .mini-ball{width:15px;height:15px;font-size:8px}
-  .club-tour.driver-popover{padding:17px;max-width:min(285px,calc(100vw - 20px))}
+/* One mobile sizing policy; these rules own the final responsive cascade. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:760px),(max-height:520px) and (pointer:coarse){
+  .overlay{padding:calc(8px + var(--safe-t)) calc(8px + var(--safe-r)) calc(8px + var(--safe-b)) calc(8px + var(--safe-l))}
+  #menu-overlay{padding:0}
+  .modal-card,#quick-card,#gameover-card{width:100%;max-width:740px;max-height:100%;padding:16px;border-radius:12px;overscroll-behavior:contain;scrollbar-gutter:stable;scroll-padding:64px 12px 72px}
+  .modal-card{overflow-y:auto;overflow-x:hidden}
+  #modal-card>#modal-close,#quick-close{position:sticky;top:0;right:auto;display:grid;place-items:center;margin:-4px -4px -40px auto;width:44px;height:44px;min-height:44px;z-index:25;background:#14251b;border-radius:9px}
+  .modal-card .collection-head{min-height:0;margin:0 48px 18px 0;gap:8px}
+  .modal-card .collection-head-copy{padding:0}.collection-cover{display:none}
+  .modal-card .collection-head h2,.quick-title{font-size:26px;line-height:1.15}
+  .modal-card .collection-head p,.quick-intro{font-size:12px;line-height:1.5}
+  .collection-head .deco-eyebrow{font-size:9px;letter-spacing:.1em}
+  .modal-card p,.modal-card li{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+  .modal-card .btn,#quick-card .btn,.qual-btn,.chip,.acct-tabs .qual-btn,.atelier-tab{min-height:44px;font-size:12px}
+  .modal-card .linklike{min-height:44px;padding:10px 4px;font-size:12px}
+  .modal-card input:not([type=range]):not([type=checkbox]):not([type=file]),.equipment-search input{font-size:16px;min-height:44px}
+  .settings-layout{display:block}
+  .settings-nav{position:sticky;top:0;z-index:10;display:flex;flex-direction:row;gap:6px;padding:6px 0 10px;margin:0 0 18px;border:0;border-bottom:1px solid var(--line-soft);background:#111e17;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+  .settings-nav button{flex:0 0 auto;min-width:80px;min-height:44px;padding:9px 11px;flex-direction:row;font-size:12px;white-space:nowrap}
+  .settings-nav button .ui-icon{width:17px;height:17px}
+  .section-heading{margin-bottom:10px}.modal-card .section-heading h3{font-size:20px}
+  .volume-control{grid-template-columns:1fr;gap:6px;padding:14px 0}
+  .volume-heading label,.preference-copy strong{font-size:14px}
+  .volume-heading label small,.preference-copy small,.qual-btn small{font-size:12px;line-height:1.5}
+  .volume-control input[type=range]{height:36px}
+  .preference-toggle{min-height:76px;padding:14px 0}
+  .qual-row{gap:6px}.qual-row .qual-btn{min-width:64px;font-size:12px;padding:10px 8px}
+  .settings-save-note{font-size:11px;flex-wrap:wrap}.settings-save-note span{margin-left:0;font-size:10px}
+  .member-card{padding:14px;margin-bottom:12px}.member-card-top{margin-bottom:12px}.prof-head{gap:12px}
+  .prof-avatar,body.touch .prof-avatar{width:56px;height:56px;min-height:56px}
+  .profile-name-label{font-size:10px}.prof-sub{font-size:11px;letter-spacing:0}.prof-actions{gap:10px}
+  .profile-progress{padding:10px 0 14px}.profile-progress small,.modal-profile .prof-stats span{font-size:10px}
+  .profile-account-card{flex-wrap:wrap;gap:8px}.profile-account-card>.section-icon{display:none}.profile-account-card>div{flex:1;min-width:0}.profile-account-card .btn{width:100%}
+  .profile-cosmetics{grid-template-columns:1fr;gap:18px}.cos-row{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cos-sw{min-height:82px}.cos-nm{font-size:11px}.cos-nm small{font-size:10px}
+  .profile-save-bar{padding:10px 0 0;bottom:-1px}.profile-save-bar>span{display:none}.profile-save-bar .btn{width:100%;min-height:48px}
+  .equipment-stage{grid-template-columns:minmax(0,1fr) 100px;padding:12px;gap:8px}
+  .equipment-stage-label strong{font-size:21px;overflow-wrap:anywhere}.equipment-stage-label small{font-size:11px;line-height:1.5}.equipment-stage-label .deco-eyebrow{font-size:9px}
+  .equipment-preview .item-preview{height:72px}.equipment-stage.stage-cue .item-preview{max-height:46px}
+  .atelier-tabs{gap:4px}.atelier-tab{gap:5px;padding:10px 3px;font-size:12px}.atelier-tab .ui-icon{width:15px;height:15px}
+  .atelier-tools{gap:6px}.atelier-tools>.qual-btn{font-size:11px;padding:9px 8px;min-height:44px}
+  .equipment-search{min-width:0}.equipment-search input{height:44px}.equipment-count{font-size:11px}
+  .swatch-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.swatch{padding:8px}.swatch .sw-name{font-size:12px}.swatch .sw-sub{font-size:10px}.sw-info{padding:8px 2px 4px}
+  .catalog-cue{grid-template-columns:1fr}.catalog-cue .item-preview{max-height:90px}
+  .room-option{padding:14px;min-height:116px}.room-option strong{font-size:22px}.room-option small{font-size:12px}.room-in{letter-spacing:.12em}
+  .account-field>span,.acct-fine{font-size:12px}.captcha-box{overflow:hidden}
+  .lg-cover-grid{gap:8px}.lg-card,.lg-card:nth-child(4),.lg-card:nth-child(5){height:145px}.lg-cardbody{padding:12px}.lg-cname{font-size:20px}
+  .opponent-grid,.trick-grid{grid-template-columns:1fr}.opponent-portrait{height:190px}.opponent-card.boss{display:block}.opponent-card.boss .opponent-portrait{height:210px;min-height:0}
+  .opponent-copy,.opponent-card.boss .opponent-copy{padding:12px}.camp-blurb,.trick-card .camp-blurb{min-height:0;font-size:13px!important}
+  .camp-head{flex-wrap:wrap}.chal-row{padding:12px}.chal-name{font-size:21px}
+  .quick-title,.quick-intro{margin-right:44px}.quick-intro{margin-bottom:16px}
+  .gt-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gt-card{height:100px}.gt-name{font-size:21px}.gt-sub{font-size:11px}
+  .difficulty-chip{padding:10px;gap:7px;flex-direction:column;align-items:flex-start}.difficulty-chip img{width:30px;height:30px}.difficulty-chip small{font-size:10px}
+  #btn-newgame{position:sticky;bottom:0;z-index:8;min-height:48px;background:#ceb985;box-shadow:0 -10px 16px #111e17}
+  #gameover-card{padding:20px 16px}#go-title{font-size:30px}#gameover-card .go-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:16px 0}
+  #bento{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;max-height:100dvh;gap:12px;padding:calc(12px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) calc(12px + var(--safe-l));overscroll-behavior:contain}
+  .bento-top{position:static;grid-column:2;grid-row:1;gap:8px;align-self:center}
+  .bento-ic{width:44px;height:44px;min-height:44px}
+  .club-status{grid-column:1;grid-row:1;min-width:0;padding:0;font-size:9px;letter-spacing:.05em;white-space:nowrap;overflow:hidden}
+  .club-status::after{content:none}.club-status-rule,.club-status-detail{display:none}.club-status-copy{font-size:10px;flex:none}.bento-head{grid-column:1/-1;padding:0}.bento-head .deco-eyebrow{display:none}
+  .bento-head .brand-lockup{gap:10px}.bento-head .title-main{font-size:clamp(27px,7.6vw,36px)}.bento-head .brand-mark{height:32px}
+  .bento-head .title-sub{font-size:12px;margin:6px 0 0 42px}
+  .b-grid{grid-column:1/-1;grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:8px}
+  .b-career{grid-column:1/-1;grid-row:auto;min-height:120px}.b-career .b-label{padding:16px}.b-career .b-t{font-size:28px;max-width:none}.b-career .b-s{font-size:12px;max-width:none}
+  .career-cta{display:none}.b-quick,.b-online,.b-chal,.b-trick{grid-column:auto;grid-row:auto;min-height:108px}
+  .b-wide{grid-column:1/-1;grid-row:auto;min-height:78px}
+  .b-tile .b-label{padding:13px;right:12px}.b-t{font-size:22px}.b-s{font-size:12px}.b-k{font-size:9px;letter-spacing:.07em}
+  .tile-symbol{width:26px;height:26px;top:10px;left:auto;right:10px}.tile-symbol .ui-icon{width:15px;height:15px}.b-career .tile-symbol{right:12px;left:auto}
+  .b-pill{display:none}.tile-arrow{display:none}
+  .b-wide .tile-symbol{left:12px;right:auto;width:32px;height:32px}.b-wide .b-label{left:43px;padding:12px}.b-wide .b-t{font-size:22px}.b-wide .b-s{display:none}
+  .bento-foot{grid-column:1/-1;flex-wrap:wrap;justify-content:center;gap:4px;padding-top:8px;font-size:11px}
+  .bento-links{width:100%;justify-content:space-evenly;gap:4px;flex-wrap:nowrap}.bento-links .linklike,body.touch .bento-links .linklike{min-height:44px;padding:10px 4px;font-size:11px;letter-spacing:.03em;white-space:nowrap}
+  #scoreboard{top:calc(8px + var(--safe-t));left:calc(50% + (var(--safe-l) - var(--safe-r))/2);width:calc(100vw - 16px - var(--safe-l) - var(--safe-r));max-width:550px;gap:4px;padding:4px;transform:translateX(-50%)}
+  .pstrip{flex:1;min-width:0;display:grid;grid-template-columns:20px minmax(0,1fr);gap:3px 6px;padding:4px;min-height:28px}.pstrip .turn-dot{display:none}
+  .pstrip .p-av{grid-column:1;grid-row:1;width:20px;height:20px;border-radius:6px}.player-stack{grid-column:2;grid-row:1;max-width:none;min-width:0}
+  .pname-s,#scoreboard .pname-s{font-size:11px;letter-spacing:0;max-width:100%}.pstrip .mini-balls{grid-column:1/-1;grid-row:2;justify-content:center;gap:3px}
+  .mini-ball,#scoreboard .mini-ball{width:10px;height:10px;font-size:7px}#vs-sep{width:18px;min-width:18px;font-size:9px}
+  #top-actions{top:calc(70px + var(--safe-t));right:calc(8px + var(--safe-r));left:auto}
+  #ta-toggle,#chat-btn{width:44px;height:44px;min-height:44px}#ta-menu button{min-height:44px;font-size:12px}
+  #banner{top:calc(70px + var(--safe-t));left:calc(8px + var(--safe-l));max-width:calc(100vw - 76px - var(--safe-l) - var(--safe-r));transform:none;text-align:left;padding:0;width:auto}
+  #banner,#banner.show{transform:none}#banner .big{font-size:18px}#banner .sub{font-size:11px;letter-spacing:0}
+  #match-strip{top:calc(65px + var(--safe-t));left:calc(8px + var(--safe-l));transform:none}body.match-active #banner{top:calc(91px + var(--safe-t))}
+  #power-wrap{right:calc(8px + var(--safe-r));bottom:calc(8px + var(--safe-b));width:clamp(148px,42vw,176px)}
+  #pbar-row{height:22px}#pbar{height:100px;left:38%}#pbar-fill{background-size:100% 100px}#power-pct{font-size:11px}
+  #charge-btn,body.touch #charge-btn{height:48px;min-height:48px;font-size:11px;padding:8px}
+  #mode-controls,body.touch #mode-controls{left:calc(8px + var(--safe-l));bottom:calc(8px + var(--safe-b));gap:4px;flex-direction:row}
+  .mode-ic{width:44px;height:44px;min-height:44px;border-radius:9px}
+  #spin-wrap,body.touch #spin-wrap{right:calc(8px + var(--safe-r));bottom:calc(106px + var(--safe-b));width:80px;padding:7px;gap:5px}
+  #spin-ball{width:58px;height:58px}#spin-readout{font-size:9px}#spin-reset{min-height:44px;font-size:10px;flex-wrap:wrap;line-height:1.3}
+  #status{left:calc(12px + var(--safe-l));right:auto;bottom:calc(220px + var(--safe-b));font-size:11px;max-width:calc(100vw - 120px - var(--safe-l) - var(--safe-r))}
+  #call-pockets{bottom:calc(104px + var(--safe-b));max-width:calc(100vw - 16px)}.callp{min-width:40px;min-height:44px}
+  #bih-notice{max-width:calc(100vw - 24px - var(--safe-l) - var(--safe-r));font-size:12px}
+  body.touch #stick{left:calc(12px + var(--safe-l));bottom:calc(76px + var(--safe-b))}
+  body.touch #look-stick{right:calc(12px + var(--safe-r));bottom:calc(76px + var(--safe-b))}
+  .club-tour.driver-popover{padding:16px;max-width:min(285px,calc(100vw - 24px));min-width:0}
+  .club-tour .driver-popover-description{font-size:13px;line-height:1.5}.club-tour .driver-popover-title{font-size:23px}
+  .club-tour .driver-popover-footer-btn{min-height:44px;font-size:12px}.club-tour .driver-popover-close-btn{width:44px;height:44px;top:0;right:0}
 }
-@media(max-height:520px){
-  .modal-card,#quick-card{max-height:calc(100dvh - 20px);padding:18px 22px}.collection-cover{display:none}
-  .modal-card .collection-head{margin-bottom:15px}.modal-card .collection-head h2{font-size:25px}
-  .modal-card .collection-head p{font-size:10px}.member-card{padding:15px}.member-card-top{margin-bottom:10px}
-  .equipment-stage{padding:8px 14px}.equipment-preview .item-preview{height:80px}
-  #scoreboard{top:8px;max-width:calc(100vw - 130px);padding:3px 5px;transform:translateX(-50%)}
-  #top-actions{top:8px;right:12px;left:auto}
-  #banner{top:55px;width:auto;max-width:calc(100vw - 260px);left:50%;transform:translateX(-50%);text-align:center}
-  #banner .big{font-size:16px}#banner .sub{font-size:8px}#match-strip{top:49px;left:50%;transform:translateX(-50%)}body.match-active #banner{top:68px}
-  #power-wrap{right:12px;bottom:12px;width:166px}
-  #spin-wrap,body.touch #spin-wrap{right:195px;bottom:12px;width:80px;padding:7px}
-  #spin-ball{width:58px;height:58px}
-  #status{bottom:18px;left:calc(50% - 50px);right:auto;max-width:calc(100vw - 520px);transform:translateX(-50%);font-size:10px}
-  #gameover-card{padding:20px 28px}#result-medallion{display:none}#go-title{font-size:29px}#gameover-card .go-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin:14px 0}
-  #gameover-card .go-grid b{font-size:23px}.result-actions{padding-top:10px}
-  #bento{padding:12px 18px;gap:10px}.bento-head .title-main{font-size:29px}.bento-head .brand-mark{height:28px}
-  .bento-head .deco-eyebrow,.bento-head .title-sub,.club-status{display:none}
-  .b-grid{grid-template-rows:110px 110px 66px}.b-career .b-t{font-size:27px}.b-t{font-size:19px}.b-wide .b-t{font-size:20px}
-  .club-tour.driver-popover{max-width:280px;padding:15px}.club-tour .driver-popover-title{font-size:21px}.club-tour .driver-popover-description{font-size:11px}
+/* Compact portrait keeps every main-menu destination visible on smaller phones. */
+@media(max-width:760px) and (max-height:740px) and (orientation:portrait){
+  #bento{gap:8px}
+  .bento-head .title-sub{display:none}
+  .b-career{min-height:76px}.b-quick,.b-online,.b-chal,.b-trick{min-height:68px}.b-wide{min-height:52px}
+  .b-tile .b-s{display:none}.b-career .b-t{font-size:25px}.b-t{font-size:19px}.b-wide .b-t{font-size:20px}
+  .b-tile .b-label,.b-career .b-label{padding:10px;right:0}.tile-symbol{display:none}
+  .bento-foot{padding-top:4px}.bento-foot>span,.b-wide .b-k{display:none}
 }
-@media(max-width:360px){.modal-card,#quick-card{padding:16px}.collection-cover{display:none}.equipment-stage{grid-template-columns:minmax(0,1fr) 100px;padding:10px}.equipment-stage-label strong{font-size:18px}.settings-nav button{font-size:7.5px}.equipment-search input{font-size:9px}.atelier-tools>.qual-btn{font-size:8px}.catalog-cue .item-preview{max-height:125px}}
+/* Landscape is a deliberate three-column menu, not squeezed portrait cards. */
+@media(max-height:520px) and (min-width:480px){
+  #bento{display:flex;gap:8px}
+  .club-status,.bento-head .deco-eyebrow,.bento-head .title-sub{display:none}
+  .bento-top{position:absolute;top:calc(10px + var(--safe-t));right:calc(12px + var(--safe-r));gap:6px}
+  .bento-head{min-height:44px;display:flex;align-items:center;margin-right:104px}
+  .bento-head .brand-mark{height:26px}.bento-head .title-main{font-size:27px}
+  .b-grid{grid-template-columns:1.1fr 1fr 1fr;grid-template-rows:76px 76px 54px;gap:7px}
+  .b-career{grid-column:1;grid-row:1/3;min-height:0}.b-quick{grid-column:2;grid-row:1}.b-online{grid-column:3;grid-row:1}
+  .b-chal{grid-column:2;grid-row:2}.b-trick{grid-column:3;grid-row:2}.b-wide{grid-column:1/4;grid-row:3}
+  .b-quick,.b-online,.b-chal,.b-trick,.b-wide{min-height:0}
+  .b-tile .b-label,.b-career .b-label{padding:10px;right:0}.b-wide .b-label{left:0}
+  .b-tile .b-s,.tile-symbol,.career-cta{display:none}.b-t{font-size:19px}.b-career .b-t{font-size:25px}.b-wide .b-t{font-size:20px}
+  .bento-foot{flex-wrap:nowrap;justify-content:space-between;padding-top:0;gap:8px}.bento-links{width:auto;gap:10px}
+  #scoreboard{max-width:calc(100vw - 126px - var(--safe-l) - var(--safe-r))}
+  #top-actions{top:calc(8px + var(--safe-t))}
+  #banner,#banner.show{top:calc(65px + var(--safe-t));left:50%;transform:translateX(-50%);text-align:center;max-width:calc(100vw - 180px - var(--safe-l) - var(--safe-r))}
+  #match-strip{top:calc(60px + var(--safe-t));left:50%;transform:translateX(-50%)}body.match-active #banner{top:calc(83px + var(--safe-t))}
+  #spin-wrap,body.touch #spin-wrap{right:calc(194px + var(--safe-r));bottom:calc(8px + var(--safe-b))}
+  #status{left:50%;transform:translateX(-50%);bottom:calc(166px + var(--safe-b));max-width:calc(100vw - 240px - var(--safe-l) - var(--safe-r))}
+  #result-medallion{display:none}#go-title{font-size:27px}#gameover-card .go-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin:12px 0}
+}
+@media(max-width:360px){
+  .equipment-stage{grid-template-columns:1fr}.equipment-stage .equipment-preview{display:none}
+  .room-options{grid-template-columns:1fr}.atelier-tab{font-size:11px}
+}
 @media(prefers-reduced-motion:reduce){.swatch,.switch-track::after{transition:none}}
+@media(hover:none){.b-tile:hover,.b-tile:hover .b-art{transform:none}.b-tile{transition:none}}

@@ -103,3 +103,31 @@ Supabase multiplayer test. hCaptcha is blocked and its widget stubbed only in th
 review browser. Room interfaces are rendered with local test state; no rooms or
 accounts are created. `tools/pause-test.cjs` independently checks the real CPU
 scheduler during paused thinking, paused lineup, resume and stale-turn replacement.
+
+## Mobile consistency pass
+
+The final responsive rules live together in `interface.css`. Compact portrait
+uses shorter bento cards and one row of footer actions; landscape uses a deliberate
+three-column grid. Settings/profile actions occupy their own header row, and
+safe-area insets contribute to menu, dialog and HUD spacing. Longer dialogs keep
+one vertical scroll surface, with reachable close and primary action buttons.
+
+Settings tabs scroll horizontally instead of shrinking labels. Phone input text
+is at least 16px, primary actions and HUD buttons have 44px or larger targets,
+and equipment previews leave room for names and descriptions. Hover zoom is
+disabled on touch devices. All layout changes use CSS without resize observers
+or layout polling in the game loop.
+
+Authentication uses hCaptcha's documented compact mode on phones and narrow
+containers, including after rotation; verification is not disabled or scaled.
+See [hCaptcha configuration](https://docs.hcaptcha.com/configuration).
+
+```sh
+node tools/ui-review.mjs http://127.0.0.1:5175/ --mobile
+```
+
+This review covers 320×568, 360×640, 390×844, 667×375 and 844×390. It simulates
+notch/home-indicator insets, checks menu labels and controls fit, primary actions
+stay reachable, inputs avoid small-text auto-zoom, and the shown turn banner
+stays in bounds. It rotates an open settings dialog in both directions. These
+are browser layout and interaction checks, not physical-device FPS measurements.

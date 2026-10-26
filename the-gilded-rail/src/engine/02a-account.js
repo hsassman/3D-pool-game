@@ -58,6 +58,8 @@ const Captcha = {
     el.innerHTML='';
     const id=hcaptcha.render(el, {
       sitekey: GR_NET.CAPTCHA_SITEKEY,
+      size:el.getBoundingClientRect().width<310||Math.min(innerWidth,innerHeight)<420?'compact':'normal',
+      theme:'dark',
       callback: token=>{ this._tokens[containerId]=token||''; },
       'expired-callback': ()=>{ this._tokens[containerId]=''; },
       'error-callback': ()=>{ this._tokens[containerId]=''; }

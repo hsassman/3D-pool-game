@@ -9,8 +9,10 @@ const url=process.argv[2]||'http://127.0.0.1:5173/';
 const hudOnly=process.argv.includes('--hud-only');
 const browser=await chromium.launch({channel:'msedge',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--enable-webgl']});
 const errors=[],missing=[],results=[];
+const mobileReview=process.argv.includes('--mobile');
+const viewports=mobileReview?[{width:320,height:568},{width:360,height:640},{width:390,height:844},{width:667,height:375},{width:844,height:390}]:[{width:1440,height:1000},{width:1280,height:720},{width:390,height:844},{width:844,height:390}];
 try {
-  for(const viewport of [{width:1440,height:1000},{width:1280,height:720},{width:390,height:844},{width:844,height:390}].filter(v=>(!process.argv.includes('--phone-only')||v.width===390)&&(!process.argv.includes('--compact-only')||v.width<900)&&(!process.argv.includes('--readme')||v.width===1440))){
+  for(const viewport of viewports.filter(v=>(!process.argv.includes('--phone-only')||v.width===390)&&(!process.argv.includes('--compact-only')||v.width<900)&&(!process.argv.includes('--readme')||v.width===(mobileReview?390:1440)))){
     const page=await browser.newPage({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900,reducedMotion:'reduce'});
     await page.addInitScript(()=>{
       const raf=window.requestAnimationFrame.bind(window);
@@ -33,6 +35,10 @@ try {
       document.getElementById('gl').style.display='none';
       Profile.data.tutorialSeen=true;
     });
+    if(mobileReview)await page.evaluate(({width,height})=>{
+      const insets=width>height?{t:0,b:21,l:32,r:32}:width>320?{t:24,b:20,l:0,r:0}:{t:0,b:0,l:0,r:0};
+      Object.entries(insets).forEach(([key,value])=>document.documentElement.style.setProperty('--safe-'+key,value+'px'));
+    },viewport);
     console.log('Engine ready');
     await page.waitForFunction(()=>Object.keys(WorldMaterials.textures).length===11,null,{timeout:60000});
     await page.waitForTimeout(400);
@@ -78,6 +84,14 @@ try {
     }
     if(!hudOnly){
     await capture('menu');
+    if(mobileReview){
+      const menuFit=await page.evaluate(()=>{
+        const card=document.getElementById('bento'),r=card.getBoundingClientRect();
+        return {fits:card.scrollHeight<=card.clientHeight+1,buttons:Array.from(card.querySelectorAll('button')).every(b=>{const a=b.getBoundingClientRect();return a.x>=0&&a.y>=0&&a.right<=innerWidth+1&&a.bottom<=innerHeight+1&&a.height>=44;}),labels:Array.from(card.querySelectorAll('.b-k,.b-t,.b-s')).filter(el=>el.getClientRects().length).every(el=>{const a=el.getBoundingClientRect(),b=el.closest('.b-tile').getBoundingClientRect();return a.y>=b.y-1&&a.bottom<=b.bottom+1;}),headerOverlap:(()=>{const a=card.querySelector('.bento-head').getBoundingClientRect(),b=card.querySelector('.bento-top').getBoundingClientRect();return a.x<b.right&&a.right>b.x&&a.y<b.bottom&&a.bottom>b.y;})()};
+      });
+      assert.ok(menuFit.fits&&menuFit.buttons&&menuFit.labels&&!menuFit.headerOverlap,'Menu actions and labels should fit without collisions and retain 44px touch targets: '+JSON.stringify(menuFit));
+      if(viewport.width<761)assert.equal(await page.locator('.club-status').evaluate(el=>getComputedStyle(el,'::after').content),'none','The status label should not be duplicated by legacy CSS');
+    }
     if(process.argv.includes('--readme')){
       await page.evaluate(()=>{Profile.data.cue='founders';UI.customizeModal('cue');});
       await capture('founders-cue');results.push({viewport:tag,checks:'README menu and equipment captures'});
@@ -85,6 +99,7 @@ try {
     }
     await page.locator('#btn-quick').click();
     await capture('quick');
+    if(mobileReview){const start=await page.locator('#btn-newgame').boundingBox();assert.ok(start&&start.y>=0&&start.y+start.height<=viewport.height,'Start Match must remain reachable without scrolling');}
     assert.equal(await page.locator('.difficulty-chip img').count(),3);
     await page.locator('#quick-close').click();
     await page.evaluate(()=>UI.campaignModal());
@@ -146,8 +161,13 @@ try {
     assert.equal(await page.locator('#prof-name').inputValue(),'Juniper','Cosmetics must preserve an edited name');
     await page.locator('#prof-save').click();
     assert.equal(await page.evaluate(()=>Profile.data.name),'Juniper');
-    await page.evaluate(()=>{window.hcaptcha={render:el=>{el.innerHTML='<div class="verification-preview">Security verification</div>';return 1;},remove(){},reset(){}};AccountUI.accountModal();});
+    await page.evaluate(()=>{window.hcaptcha={render:(el,config)=>{el.dataset.reviewSize=config.size;el.innerHTML='<div class="verification-preview" style="width:'+(config.size==='compact'?164:303)+'px;height:78px">Security verification</div>';return 1;},remove(){},reset(){}};AccountUI.accountModal();});
     await capture('account');
+    if(mobileReview){
+      const field=await page.locator('.acct-in').first().evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),height:el.getBoundingClientRect().height}));
+      assert.ok(field.font>=16&&field.height>=44,'Phone inputs must be readable without browser auto-zoom');
+      assert.equal(await page.locator('[data-review-size]').first().getAttribute('data-review-size'),'compact');
+    }
     await page.locator('#tab-up').click();
     assert.equal(await page.locator('label[for="ac-email2"]').count(),1);
     await capture('signup');
@@ -188,6 +208,13 @@ try {
     assert.equal(await page.evaluate(()=>Game.paused),false);
     await page.evaluate(()=>{Input.mode='FINE';UI.sync();UI.gauge(.65);});
     await capture('hud');
+    if(mobileReview){
+      await page.evaluate(()=>UI.banner('Your break','Open table — sink a ball to claim a group'));
+      const banner=await page.locator('#banner').boundingBox();
+      assert.ok(banner&&banner.x>=0&&banner.x+banner.width<=viewport.width+1,'Turn banner must stay inside the phone screen');
+      assert.ok(await page.locator('#charge-btn').evaluate(el=>el.getBoundingClientRect().height>=44));
+      assert.ok(await page.locator('#spin-reset').evaluate(el=>el.getBoundingClientRect().height>=44));
+    }
     const hudSize=await page.evaluate(()=>({score:document.getElementById('scoreboard').getBoundingClientRect().height,power:document.getElementById('power-wrap').getBoundingClientRect().height}));
     assert.ok(hudSize.score<=62&&hudSize.power<=90,'Match instruments should stay compact');
     await page.locator('#spin-ball').focus();await page.keyboard.press('ArrowRight');
@@ -228,6 +255,16 @@ try {
     assert.equal(await page.evaluate(()=>Input.mode),inputMode,'Dialog Tab must not change game camera');
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#modal-overlay').evaluate(el=>el.classList.contains('hidden')),true);
+    if(mobileReview&&viewport.width===320){
+      await page.evaluate(()=>UI.settingsModal());
+      await page.setViewportSize({width:667,height:375});
+      const card=await page.locator('#modal-card').boundingBox();
+      assert.ok(card&&card.x>=0&&card.y>=0&&card.x+card.width<=668&&card.y+card.height<=376,'An open settings dialog must survive rotation');
+      await page.setViewportSize(viewport);
+      const portrait=await page.locator('#modal-card').boundingBox();
+      assert.ok(portrait&&portrait.y>=0&&portrait.y+portrait.height<=569,'Rotating back must retain a reachable dialog');
+      await page.keyboard.press('Escape');
+    }
     results.push({viewport:tag,checks:hudOnly?'HUD, pause/resume, keyboard controls':'all screens, settings persistence, profile drafts, equipment filters, account forms, room UI, tutorial, results, HUD, pause/resume'});
     await page.close();
   }
