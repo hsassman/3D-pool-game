@@ -91,7 +91,7 @@ const Progression = {
       if(have.includes(a.id)) continue;
       let hit=false; try{ hit=!!a.cond(Profile.data.stats, ev); }catch(e){}
       if(hit){ have.push(a.id); Profile.data.xp+=a.xp; any=true;
-        if(typeof UI!=='undefined'){ UI.xpToast('🏅 '+a.name+' · +'+a.xp+' XP'); if(UI.refreshProfile) UI.refreshProfile(); }
+        if(typeof UI!=='undefined'){ UI.xpToast(a.name+' · +'+a.xp+' XP','award'); if(UI.refreshProfile) UI.refreshProfile(); }
       }
     }
     if(any) Profile.save();
@@ -121,7 +121,7 @@ const Progression = {
     const def=this._def(pool, slot.id); if(!def || slot.done || def.track!==track) return;
     slot.prog = (track==='beststreak') ? Math.max(slot.prog, value) : slot.prog+value;
     if(slot.prog>=def.goal){ slot.done=true; Profile.data.xp+=def.xp;
-      if(typeof UI!=='undefined'){ UI.xpToast('✓ '+def.name+' · +'+def.xp+' XP'); if(UI.refreshProfile) UI.refreshProfile(); }
+      if(typeof UI!=='undefined'){ UI.xpToast(def.name+' · +'+def.xp+' XP'); if(UI.refreshProfile) UI.refreshProfile(); }
     }
   },
   track(track, value){

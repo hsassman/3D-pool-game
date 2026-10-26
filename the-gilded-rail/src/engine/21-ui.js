@@ -27,7 +27,7 @@ const UI = {
   },
 
   refreshProfile(){
-    const L=Profile.level(), pr=Profile.prestige(), star=pr>0?(' ★'+pr):'';
+    const L=Profile.level(), pr=Profile.prestige(), star=pr>0?(' · Prestige '+pr):'';
     this.$('lvl-num').textContent=L.lvl;
     this.$('hud-pname').textContent=Profile.data.name;
     this.$('menu-pname').textContent=Profile.data.name;
@@ -133,8 +133,10 @@ const UI = {
     this._bt=setTimeout(()=>el.classList.remove('show'), 3400);
   },
 
-  xpToast(txt){
-    const t=document.createElement('div'); t.className='xp-toast'; t.textContent=txt;
+  xpToast(txt,icon='check'){
+    const t=document.createElement('div');t.className='xp-toast';t.setAttribute('role','status');
+    t.innerHTML=UIArt.icon(icon);
+    const message=document.createElement('span');message.textContent=txt;t.appendChild(message);
     document.body.appendChild(t); setTimeout(()=>t.remove(),1700);
   },
 
@@ -175,6 +177,7 @@ const UI = {
     const lookStick=this.$('look-stick'); if(lookStick) lookStick.classList.toggle('on', orbitLook);
     this.$('btn-shoot').classList.toggle('active', m==='SHOOT'&&(ph==='AIM'||ph==='CHARGE'));
     this.$('btn-fine').classList.toggle('active',  m==='FINE'&&(ph==='AIM'||ph==='CHARGE'));
+    ['btn-orbit','btn-shoot','btn-fine'].forEach(id=>{const button=this.$(id);button.setAttribute('aria-pressed',button.classList.contains('active'));});
     const canShoot=(ph==='AIM'||ph==='CHARGE')&&(m==='SHOOT'||m==='FINE');
     this.$('power-wrap').classList.toggle('on', canShoot);
     document.body.classList.toggle('charging', canShoot);   // moves #status clear of the meter
@@ -407,7 +410,7 @@ const UI = {
       ov.style.cssText='position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column';
       ov.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#0b0c10;border-bottom:1px solid rgba(201,163,92,.3)">'+
         '<span style="font-family:Fraunces,serif;color:#e8c987;font-size:14px;letter-spacing:.1em">The Gilded Rail · Original Build</span>'+
-        '<button id="original-close" class="btn" style="padding:6px 14px">Close ✕</button></div>'+
+        '<button id="original-close" class="btn" style="padding:6px 14px">Close</button></div>'+
         '<iframe id="original-frame" title="Original build" allow="autoplay" style="flex:1;width:100%;border:0;background:#000"></iframe>';
       document.body.appendChild(ov);
       this.$('original-close').addEventListener('click',()=>{ const f=this.$('original-frame'); if(f) f.src='about:blank'; ov.remove(); Sfx.play('ui',0.3); });
@@ -468,7 +471,7 @@ const UI = {
     const s=Profile.data.stats, L=Profile.level(), lvl=L.lvl;
     const acc=s.shots?Math.round(100*s.potted/s.shots):0;
     const rk=(typeof Progression!=='undefined')?Progression.rankTier():'';
-    const star=Profile.prestige()>0?(' ★'+Profile.prestige()):'';
+    const star=Profile.prestige()>0?(' · Prestige '+Profile.prestige()):'';
     const a=this._safeAvatar(Profile.data.avatar);
     const bdef=BORDERS[Profile.data.avatarBorder]||BORDERS.gold;
     const bandef=BANNERS[Profile.data.banner]||BANNERS.felt;
@@ -577,7 +580,7 @@ const UI = {
       const done=l.opps.filter(o=>Campaign.cleared(o.id)).length;
       const full=Campaign.leagueCleared(l);
       const pct=Math.round(100*done/l.opps.length);
-      const meta = open ? (done+' / '+l.opps.length+' cleared'+(full?' ✓':'')) : '🔒 Reach Level '+l.minLevel;
+      const meta = open ? (done+' / '+l.opps.length+' cleared'+(full?UIArt.icon('check'):'')) : UIArt.icon('lock')+' Reach Level '+l.minLevel;
       return '<button class="lg-card art-league'+(i+1)+(open?'':' locked')+(full?' cleared':'')+'" data-lg="'+l.id+'">'+
         '<div class="lg-shade"></div>'+
         '<div class="lg-cardbody">'+
@@ -589,9 +592,9 @@ const UI = {
     }).join('');
     const done=Campaign.clearedCount(), total=Campaign.totalOpps();
     const prestige = Profile.canPrestige()
-      ? '<button class="btn primary" id="do-prestige" style="width:100%;margin:6px 0 14px">★ Prestige '+(Profile.prestige()+1)+
+      ? '<button class="btn primary" id="do-prestige" style="width:100%;margin:6px 0 14px">'+UIArt.icon('star')+' Prestige '+(Profile.prestige()+1)+
         ' - reset to Level 1, keep every unlock</button>'
-      : (Profile.prestige()>0?'<p style="text-align:center;color:var(--gold-bright)">★ Prestige '+Profile.prestige()+'</p>':'');
+      : (Profile.prestige()>0?'<p style="text-align:center;color:var(--gold-bright)">'+UIArt.icon('star')+' Prestige '+Profile.prestige()+'</p>':'');
     this.modal(UIArt.header('THE ROAD TO HOUSE CHAMPION','The Career Ladder','Every table has its legends. Earn your place among them.','career-v2')+
       '<p>Five leagues, each with five players - the fifth is the boss. Pick a league to see its roster. '+
       '<b>'+done+' of '+total+'</b> opponents cleared.</p>'+ prestige +
@@ -614,12 +617,12 @@ const UI = {
         : '<span class="camp-lock">'+(open?'Win the previous match':'Reach Level '+l.minLevel)+'</span>';
       return '<div class="camp-card opponent-card'+(cleared?' cleared':'')+(unlocked?'':' locked')+(opp.boss?' boss':'')+'">'+
         '<div class="opponent-portrait"><img src="'+UIArt.portrait(opp.id)+'" alt="Portrait of '+opp.name.replace(/"/g,'&quot;')+'" width="256" height="256" loading="lazy" decoding="async">'+(opp.boss?'<span class="boss-seal">'+UIArt.icon('trophy')+'League boss</span>':'')+'</div><div class="opponent-copy">'+
-        '<div class="camp-head"><div class="camp-name">'+(opp.boss?'★ ':'')+opp.name+(cleared?' ✓':'')+'</div>'+
+        '<div class="camp-head"><div class="camp-name">'+(opp.boss?UIArt.icon('crown'):'')+opp.name+(cleared?UIArt.icon('check'):'')+'</div>'+
         '<span class="camp-state">'+state+'</span></div>'+
         '<div class="camp-meta">'+opp.title+' · Best of '+opp.frames+' · '+DIFFS[opp.diff].name+'</div>'+
         '<p class="camp-blurb">'+opp.blurb+'</p><div class="opponent-reward">'+UIArt.icon('sparkle')+' '+opp.xp+' XP first clear</div>'+action+'</div></div>';
     }).join('');
-    this.modal('<button class="linklike lg-back" id="lg-back">‹ All leagues</button>'+
+    this.modal('<button class="linklike lg-back" id="lg-back">'+UIArt.icon('arrowLeft')+' All leagues</button>'+
       UIArt.header('LEAGUE '+(i+1),l.name,l.blurb,'league-'+l.id)+
       '<p class="lg-detail-sub">League '+(i+1)+' · '+(open?(done+' / '+l.opps.length+' cleared'):'Unlocks at Level '+l.minLevel)+'</p>'+
       '<div class="camp-list opponent-grid">'+cards+'</div>', 'roster');
@@ -658,7 +661,7 @@ const UI = {
       if(!def) return '';
       const pct=Math.min(100, Math.round(100*st.prog/def.goal));
       return '<div class="chal-row'+(st.done?' done':'')+'">'+
-        '<div class="chal-top"><span class="chal-name">'+def.name+(st.done?' ✓':'')+'</span>'+
+        '<div class="chal-top"><span class="chal-name">'+def.name+(st.done?UIArt.icon('check'):'')+'</span>'+
         '<span class="chal-xp">+'+def.xp+' XP</span></div>'+
         '<div class="chal-desc">'+def.desc+'</div>'+
         '<div class="chal-bar"><div class="chal-fill" style="width:'+pct+'%"></div></div>'+
@@ -666,7 +669,7 @@ const UI = {
     };
     const d=Progression.daily(), w=Progression.weekly();
     const ach=Progression.achList().map(a=>{ const got=Progression.unlocked(a.id);
-      return '<div class="ach'+(got?' got':'')+'"><div class="ach-badge">'+UIArt.icon(got?'trophy':'lock')+'</div>'+
+      return '<div class="ach'+(got?' got':'')+'"><div class="ach-badge">'+UIArt.icon(got?'award':'lock')+'</div>'+
         '<div class="ach-body"><div class="ach-name">'+a.name+'</div><div class="ach-desc">'+a.desc+'</div></div>'+
         '<div class="ach-xp">'+a.xp+'</div></div>';
     }).join('');
@@ -683,7 +686,7 @@ const UI = {
     this._atelierTab=tab;
     const lvl=Profile.level().lvl;
     /* one renderer for any catalog (felt/cue/rail) keeps the three sections in sync */
-    const tags=d=>(d.smoke||d.glow||d.flame)?'<span class="item-effect" title="'+[d.smoke?'Smoke':null,d.glow?'Glow':null,d.flame?'Flame':null].filter(Boolean).join(' · ')+'">'+UIArt.icon(d.flame?'light':'sparkle')+'</span>':'';
+    const tags=d=>(d.smoke||d.glow||d.flame)?'<span class="item-effect" title="'+[d.smoke?'Smoke':null,d.glow?'Glow':null,d.flame?'Flame':null].filter(Boolean).join(' · ')+'">'+UIArt.icon(d.flame?'flame':d.glow?'bolt':'smoke')+'</span>':'';
     const swatches=(catalog, current, attr)=>Object.entries(catalog).map(([k,d])=>{
       const open=lvl>=d.lvl, sel=current===k;
       return '<button type="button" class="swatch'+(sel?' sel':'')+(open?'':' locked')+'" data-'+attr+'="'+k+'" aria-pressed="'+sel+'" aria-disabled="'+!open+'"'+(!open?' title="Unlocks at Level '+d.lvl+'"':'')+'>'+
@@ -694,7 +697,7 @@ const UI = {
     const cats={felt:FELTS,cue:CUES,rail:RAILS};
     const previews=swatches(cats[tab],Profile.data[tab],tab);
     const count=Object.values(cats[tab]).filter(d=>lvl>=d.lvl).length;
-    const tabs=[['felt','Table cloth','target'],['cue','Cues','cue'],['rail','Wood finishes','sparkle']].map(([key,label,icon])=>
+    const tabs=[['felt','Table cloth','cloth'],['cue','Cues','cue'],['rail','Wood finishes','wood']].map(([key,label,icon])=>
       '<button type="button" class="atelier-tab'+(tab===key?' active':'')+'" data-atelier="'+key+'" aria-pressed="'+(tab===key)+'">'+UIArt.icon(icon)+label+'</button>').join('');
     this.modal(UIArt.header('THE EQUIPMENT ATELIER','Make it yours.','An expression of your game, down to the last detail.','atelier-v3')+
       Interface.equipment(tab)+
@@ -743,8 +746,12 @@ const UI = {
          a data-tip here would hijack the same ::after the badge uses and morph it on
          hover. The badge text is fixed so the locked card never changes on hover. */
       b.removeAttribute('data-tip');
-      if(!open) b.setAttribute('data-lock','🔒 Locked · Lvl '+Progression.modeLevel(t));
-      else b.removeAttribute('data-lock');
+      b.setAttribute('aria-disabled',!open);
+      const badge=b.querySelector('.mode-lock-badge');
+      if(!open){
+        b.setAttribute('data-lock','Locked · Level '+Progression.modeLevel(t));
+        if(!badge)b.insertAdjacentHTML('beforeend','<span class="mode-lock-badge">'+UIArt.icon('lock')+'<span>Level '+Progression.modeLevel(t)+'</span></span>');
+      }else{b.removeAttribute('data-lock');if(badge)badge.remove();}
     });
   },
 
@@ -844,6 +851,7 @@ const UI = {
       const fsb=this.$('btn-fullscreen'); if(!fsb) return;
       fsb.title = fsEl() ? 'Exit fullscreen (Esc)' : 'Fullscreen';
       const lbl=fsb.querySelector('.ta-lbl'); if(lbl) lbl.textContent = fsEl() ? 'Exit Fullscreen' : 'Fullscreen';
+      const icon=fsb.querySelector('.ta-ic');if(icon)icon.innerHTML=UIArt.icon(fsEl()?'fullscreenExit':'fullscreen');
     };
     ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
       .forEach(ev=>document.addEventListener(ev,onFsChange));

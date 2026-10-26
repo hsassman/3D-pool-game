@@ -74,7 +74,7 @@ const Profile = {
   canPrestige(){ return this.level().max; },
   doPrestige(){ if(!this.canPrestige()) return false;
     this.data.prestige=(this.data.prestige||0)+1; this.data.xp=0; this.save();
-    if(typeof UI!=='undefined'){ UI.refreshProfile(); UI.xpToast('★ Prestige '+this.data.prestige+'!'); }
+    if(typeof UI!=='undefined'){ UI.refreshProfile(); UI.xpToast('Prestige '+this.data.prestige+'!','star'); }
     return true; },
   addXP(n, label){
     if(n<=0) return;

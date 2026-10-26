@@ -493,7 +493,7 @@ const AccountUI = {
         Captcha.reset('ac-captcha');
         if(r.error) return this._say('ac-msg',r.error);
         /* success: _onSignedIn either opens the 2FA prompt or completes silently */
-        if(!Account.aalPending){ UI.$('modal-overlay').classList.add('hidden'); UI.xpToast('Signed in ✓'); this.refreshBadge(); }
+        if(!Account.aalPending){ UI.$('modal-overlay').classList.add('hidden'); UI.xpToast('Signed in'); this.refreshBadge(); }
       });
       this.$('ac-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') this.$('ac-go').click(); });
       this.$('ac-forgot').addEventListener('click', async ()=>{
@@ -560,7 +560,7 @@ const AccountUI = {
     const factors=await Account.mfaFactors();
     if(!zone || !this.$('ac-out')) return;      // modal was closed meanwhile
     if(factors.length){
-      zone.innerHTML='<div class="acct-row"><span class="acct-k">Authenticator app</span><b style="color:var(--teal,#6fc7b4)">✓ Enabled</b></div>'+
+      zone.innerHTML='<div class="acct-row"><span class="acct-k">Authenticator app</span><b style="color:var(--teal,#6fc7b4)">Enabled</b></div>'+
         '<button class="qual-btn" id="mfa-off">Disable 2FA</button>'+this._msg('mfa-msg');
       this.$('mfa-off').addEventListener('click', async ()=>{
         const r=await Account.mfaUnenroll(factors[0].id);
@@ -591,7 +591,7 @@ const AccountUI = {
       if(!/^\d{6,8}$/.test(c)) return this._say('mfa-msg2','Enter the 6-digit code from the app.');
       const v=await Account.mfaVerify(r.id, c);
       if(v.error) return this._say('mfa-msg2', v.error);
-      UI.xpToast('2FA enabled ✓');
+      UI.xpToast('2FA enabled');
       this.statusModal();
     });
     code.addEventListener('keydown',e=>{ if(e.key==='Enter') this.$('mfa-verify').click(); });
@@ -614,7 +614,7 @@ const AccountUI = {
       const v=await Account.mfaVerify(factors[0].id, c);
       if(v.error) return this._say('mfa-cmsg', v.error);
       UI.$('modal-overlay').classList.add('hidden');
-      UI.xpToast('Signed in ✓'); this.refreshBadge();
+      UI.xpToast('Signed in'); this.refreshBadge();
     });
     inp.addEventListener('keydown',e=>{ if(e.key==='Enter') this.$('mfa-ok').click(); });
     this.$('mfa-cancel').addEventListener('click', async ()=>{
@@ -635,7 +635,7 @@ const AccountUI = {
       const r=await Account.setNewPassword(pw);
       if(r.error) return this._say('rec-msg', r.error);
       UI.$('modal-overlay').classList.add('hidden');
-      UI.xpToast('Password updated ✓');
+      UI.xpToast('Password updated');
     });
   }
 };
@@ -756,7 +756,7 @@ const LobbyUI = {
     const st=this.$('room-status');
     if(st){
       if(Net.peerHere){
-        st.textContent=(Net.names[1-Net.seat]||'Opponent')+' is at the table ✓';
+        st.textContent=(Net.names[1-Net.seat]||'Opponent')+' is at the table';
         st.style.color='var(--teal,#6fc7b4)';
       } else {
         st.textContent=Net._status || 'Waiting for your opponent…';

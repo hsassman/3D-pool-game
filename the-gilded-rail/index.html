@@ -74,20 +74,20 @@
   </div>
   <!-- in-match actions: a single trigger that drops down the full set (same on mobile) -->
   <div id="top-actions" class="ta-closed">
-    <button class="icon-btn" id="ta-toggle" data-tip="Menu &amp; options" aria-label="Open quick menu" aria-haspopup="true" aria-expanded="false" aria-controls="ta-menu">≡</button>
+    <button class="icon-btn" id="ta-toggle" data-tip="Menu &amp; options" aria-label="Open quick menu" aria-haspopup="true" aria-expanded="false" aria-controls="ta-menu"></button>
     <div id="ta-menu" role="menu" aria-label="Quick menu">
-      <button class="ta-item" id="btn-menu" role="menuitem"><span class="ta-ic">⌂</span><span class="ta-lbl">Match menu</span></button>
-      <button class="ta-item" id="btn-settings" role="menuitem"><span class="ta-ic">⚙</span><span class="ta-lbl">Settings</span></button>
-      <button class="ta-item" id="btn-custom2" role="menuitem"><span class="ta-ic">✦</span><span class="ta-lbl">Customize</span></button>
-      <button class="ta-item" id="btn-fullscreen" role="menuitem"><span class="ta-ic">⛶</span><span class="ta-lbl">Fullscreen</span></button>
-      <button class="ta-item" id="btn-uitoggle" role="menuitem"><span class="ta-ic">◫</span><span class="ta-lbl">Hide Interface</span></button>
+      <button class="ta-item" id="btn-menu" role="menuitem"><span class="ta-ic" aria-hidden="true"></span><span class="ta-lbl">Match menu</span></button>
+      <button class="ta-item" id="btn-settings" role="menuitem"><span class="ta-ic" aria-hidden="true"></span><span class="ta-lbl">Settings</span></button>
+      <button class="ta-item" id="btn-custom2" role="menuitem"><span class="ta-ic" aria-hidden="true"></span><span class="ta-lbl">Customize</span></button>
+      <button class="ta-item" id="btn-fullscreen" role="menuitem"><span class="ta-ic" aria-hidden="true"></span><span class="ta-lbl">Fullscreen</span></button>
+      <button class="ta-item" id="btn-uitoggle" role="menuitem"><span class="ta-ic" aria-hidden="true"></span><span class="ta-lbl">Hide Interface</span></button>
     </div>
   </div>
 
   <div id="mode-controls">
-    <button class="mode-ic" id="btn-orbit" data-tip="Walk &amp; Orbit (Tab)" aria-label="Walk and orbit">⟲</button>
-    <button class="mode-ic" id="btn-shoot" data-tip="Shoot Mode (Tab)" aria-label="Shoot mode">◉</button>
-    <button class="mode-ic" id="btn-fine" data-tip="Fine-Tune Aim (E)" aria-label="Fine-tune aim">✛</button>
+    <button class="mode-ic" id="btn-orbit" data-tip="Walk &amp; Orbit (Tab)" aria-label="Walk and orbit"></button>
+    <button class="mode-ic" id="btn-shoot" data-tip="Shoot Mode (Tab)" aria-label="Shoot mode"></button>
+    <button class="mode-ic" id="btn-fine" data-tip="Fine-Tune Aim (E)" aria-label="Fine-tune aim"></button>
   </div>
 
   <div id="status" role="status" aria-live="polite"></div>
@@ -124,7 +124,7 @@
   <div id="bento">
     <!-- top-right: profile (name / stats / picture) + settings -->
     <div class="bento-top">
-      <button class="bento-ic" id="btn-settings3" data-tip="Settings" aria-label="Settings">⚙</button>
+      <button class="bento-ic" id="btn-settings3" data-tip="Settings" aria-label="Settings"></button>
       <button class="bento-ic bento-avatar" id="btn-profile" data-tip="Profile" aria-label="Profile, change name and picture">
         <span class="avatar-img" id="menu-avatar"></span>
         <span class="avatar-fallback" id="menu-avatar-initials">G</span>
@@ -152,7 +152,7 @@
           <span class="b-k">The pursuit of greatness</span>
           <span class="b-t">The Career Ladder</span>
           <span class="b-s">25 rivals. Five leagues. One seat at the top.</span>
-          <span class="career-cta">Enter the club <span aria-hidden="true">↗</span></span>
+          <span class="career-cta">Enter the club <span aria-hidden="true"></span></span>
         </div>
       </button>
 
@@ -215,7 +215,7 @@
 <!-- ===================== QUICK MATCH (setup overlay) ===================== -->
 <div class="overlay hidden" id="quick-overlay">
   <div id="quick-card" class="panel" role="dialog" aria-modal="true" aria-labelledby="quick-title">
-    <button class="modal-close" id="quick-close" aria-label="Close">✕</button>
+    <button class="modal-close" id="quick-close" aria-label="Close"></button>
     <div class="deco-eyebrow">PLAY NOW</div>
     <h2 class="quick-title" id="quick-title">Your table is ready.</h2>
     <p class="quick-intro">Choose your game. Find your rhythm.</p>
@@ -262,7 +262,7 @@
 <!-- ===================== MODALS ===================== -->
 <div class="overlay hidden" id="modal-overlay">
   <div class="modal-card panel" id="modal-card" role="dialog" aria-modal="true" aria-label="Club menu">
-    <button class="modal-close" id="modal-close">✕</button>
+    <button class="modal-close" id="modal-close" aria-label="Close dialog"></button>
     <div id="modal-content"></div>
   </div>
 </div>

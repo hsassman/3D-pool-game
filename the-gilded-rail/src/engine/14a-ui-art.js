@@ -2,24 +2,60 @@
    portraits and editorial images are compressed, on-demand WebP assets. */
 const UIArt = {
   root:'assets/ui/collection/',
+  /* Shared 24px optical grid; icons never depend on an OS emoji/font. */
   paths:{
-    arrow:'M7 17 17 7M7 7h10v10',
-    trophy:'M8 3h8v7a4 4 0 0 1-8 0V3ZM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 14v5m-4 2h8',
-    cue:'m5 19 14-14m-2-2 4 4M3 21l3-1-2-2-1 3Z',
-    people:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-7a4 4 0 0 1 0 8',
-    target:'M21 12a9 9 0 1 1-9-9m0 4a5 5 0 1 0 5 5m-5 0 9-9m-5 0h5v5',
-    sparkle:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z',
-    settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2',
-    lock:'M6 10h12v11H6V10Zm3 0V6a3 3 0 0 1 6 0v4m-3 5v2',
-    check:'m5 12 4 4L19 6',
-    close:'m6 6 12 12M6 18 18 6',
-    book:'M4 4h6l2 2 2-2h6v15h-6l-2 2-2-2H4V4Zm8 2v15',
-    home:'m3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7',
-    fullscreen:'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5',
-    menu:'M4 6h16M4 12h16M4 18h16'
+    arrow:"M7 17 17 7M7 7h10v10",
+    trophy:"M8 3h8v7a4 4 0 0 1-8 0V3ZM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 14v5m-4 2h8",
+    cue:"M3 21 20 4M5 17l2 2M17 5l2 2M21 17a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
+    people:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-7a4 4 0 0 1 0 8",
+    target:"M18 12a6 6 0 1 1-12 0 6 6 0 0 1 12 0ZM12 2v4m0 12v4M2 12h4m12 0h4M13 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z",
+    sparkle:"m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z",
+    settings:"M3 6h4m4 0h10M3 12h10m4 0h4M3 18h4m4 0h10M11 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM17 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM11 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z",
+    lock:"M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5V10Zm7 5v2",
+    check:"m5 12 4 4L19 6",
+    close:"m6 6 12 12M6 18 18 6",
+    book:"M4 4h6l2 2 2-2h6v15h-6l-2 2-2-2H4V4Zm8 2v15",
+    home:"m3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7",
+    fullscreen:"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5",
+    fullscreenExit:"M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5",
+    menu:"M4 6h16M4 12h16M4 18h16",
+    sound:"M4 9h4l5-5v16l-5-5H4V9Zm12-1a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14",
+    music:"M9 18V5l11-2v13M9 9l11-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm11-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+    ambience:"M3 15q3-4 6 0t6 0 6 0M3 20q3-4 6 0t6 0 6 0M12 3v5M5 5l2 2m12-2-2 2",
+    eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+    display:"M3 4h18v13H3V4Zm9 13v4m-5 0h10",
+    shield:"m12 2 8 4v6c0 5-8 10-8 10S4 17 4 12V6l8-4Zm-4 9 3 3 5-6",
+    user:"M4 21v-2a8 8 0 0 1 16 0v2M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z",
+    edit:"m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4",
+    crown:"m3 6 5 5 4-7 4 7 5-5-2 13H5L3 6Zm3 10h12",
+    cloud:"M7 18H6c-5 0-5-8 0-8 0-8 12-8 12-1 6 0 6 9 0 9h-1M9 14l3-3 3 3m-3-3v10",
+    search:"M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 6 6",
+    arrowLeft:"m14 5-7 7 7 7M7 12h14",
+    copy:"M8 8h13v13H8V8ZM3 16V3h13",
+    chat:"M3 3h18v14H9l-6 4V3Zm4 5h10M7 12h7",
+    cloth:"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM3 8h18M8 3v18",
+    wood:"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM3 8q5-4 10 0t8 0M3 13q4-3 8 0t10 0M3 18q5-4 10 0t8 0",
+    keyboard:"M2 6h20v13H2V6Zm4 4h1m3 0h1m3 0h1m3 0h1M6 14h1m3 0h8",
+    light:"M9 18h6m-6 3h6M8 13a6 6 0 1 1 8 0l-1 2H9l-1-2Z",
+    exit:"M9 3H3v18h6m6-15 6 6-6 6m-7-6h13",
+    center:"M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM12 8v8m-4-4h8",
+    orbit:"M20 8a9 9 0 1 0 0 8M20 3v5h-5M14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z",
+    customize:"m12 3-9 5 9 5 9-5-9-5ZM3 12l9 5 9-5M3 16l9 5 9-5",
+    eyeOff:"m3 3 18 18M10 5h2c6 0 10 7 10 7a18 18 0 0 1-4 4M6 6a19 19 0 0 0-4 6s4 7 10 7c2 0 4-1 5-2M10 10a3 3 0 0 0 4 4",
+    award:"M17 8a5 5 0 1 1-10 0 5 5 0 0 1 10 0ZM8 12 6 21l6-3 6 3-2-9",
+    flame:"M13 2c1 5-4 6-4 10-2-1-2-3-2-3-5 6-3 13 5 13s11-9 5-14c1 5-2 6-2 6 1-5-2-7-2-12Z",
+    smoke:"M7 21c-5-4 5-6 0-10M13 21c-5-6 5-8 0-14M19 21c-5-8 5-10 0-18",
+    bolt:"m13 2-9 12h7l-1 8 10-12h-7l1-8Z",
+    route:"M6 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM4 7v7a5 5 0 0 0 5 5h6m-3-3 3 3-3 3M20 3l-6 6m0-6 6 6",
+    play:"m8 4 12 8-12 8V4Z",
+    pause:"M7 4v16M17 4v16",
+    star:"m12 3 3 6 6.5 1-4.7 4.6 1.1 6.4-5.9-3.1L6.1 21l1.1-6.4L2.5 10 9 9l3-6Z",
+    chevronRight:"m9 5 7 7-7 7",
+    chevronDown:"m5 9 7 7 7-7",
+    refresh:"M20 7a9 9 0 1 0 1 9M20 2v5h-5"
   },
   icon(name, cls=''){
-    return '<svg class="ui-icon '+cls+'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(this.paths[name]||this.paths.sparkle)+'"/></svg>';
+    return '<svg class="ui-icon '+cls+'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="'+name+'"><path d="'+(this.paths[name]||this.paths.sparkle)+'"/></svg>';
   },
   portrait(id){ return this.root+'portrait-'+id+'.webp'; },
   cpuPortrait(){ return Game.mode==='cpu' ? this.portrait(Game.match ? Game.match.opp.id : ['cpu-regular','cpu-hustler','cpu-shark'][Game.diff]||'cpu-regular') : null; },
@@ -74,16 +110,17 @@ const UIArt = {
     return '<svg class="layout-preview" viewBox="0 0 300 170" role="img" aria-label="'+t.name+' ball layout"><rect x="5" y="5" width="290" height="160" rx="13" fill="#4d3825"/><rect x="15" y="15" width="270" height="140" rx="8" fill="#17503b"/>'+[[17,17],[150,16],[283,17],[17,153],[150,154],[283,153]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="7" fill="#091710"/>').join('')+mark(t.cue,0)+t.balls.map(b=>mark(b,b.num)).join('')+'</svg>';
   },
   init(){
-    const icons={'btn-settings3':'settings','ta-toggle':'menu','btn-orbit':'eye','btn-shoot':'cue','btn-fine':'target'};
+    const icons={'btn-settings3':'settings','ta-toggle':'menu','btn-orbit':'orbit','btn-shoot':'cue','btn-fine':'target'};
     Object.keys(icons).forEach(id=>{const el=document.getElementById(id);if(el) el.innerHTML=this.icon(icons[id]);});
-    const tiles=[['btn-campaign','trophy'],['btn-quick','cue'],['btn-online','people'],['btn-challenges','target'],['btn-trickshots','sparkle'],['btn-custom','settings']];
+    const tiles=[['btn-campaign','trophy'],['btn-quick','cue'],['btn-online','people'],['btn-challenges','award'],['btn-trickshots','route'],['btn-custom','customize']];
     tiles.forEach(([id,icon])=>{
       const el=document.getElementById(id);if(!el)return;
       el.insertAdjacentHTML('beforeend','<span class="tile-symbol">'+this.icon(icon)+'</span><span class="tile-arrow">'+this.icon('arrow')+'</span>');
     });
-    const actions={'btn-menu':'home','btn-settings':'settings','btn-custom2':'sparkle','btn-fullscreen':'fullscreen','btn-uitoggle':'menu'};
+    const actions={'btn-menu':'home','btn-settings':'settings','btn-custom2':'customize','btn-fullscreen':'fullscreen','btn-uitoggle':'eyeOff'};
     Object.keys(actions).forEach(id=>{const el=document.querySelector('#'+id+' .ta-ic');if(el)el.innerHTML=this.icon(actions[id]);});
     document.querySelectorAll('.modal-close').forEach(el=>{el.innerHTML=this.icon('close');el.setAttribute('aria-label','Close dialog');});
+    const cta=document.querySelector('.career-cta>span');if(cta)cta.innerHTML=this.icon('arrow');
     const pressed=()=>document.querySelectorAll('.chip,.gt-card').forEach(el=>el.setAttribute('aria-pressed',el.classList.contains('sel')));
     pressed();
     document.addEventListener('click',e=>{if(e.target.closest('.chip,.gt-card'))pressed();});

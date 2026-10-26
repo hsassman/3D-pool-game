@@ -40,12 +40,22 @@ try {
       Object.entries(insets).forEach(([key,value])=>document.documentElement.style.setProperty('--safe-'+key,value+'px'));
     },viewport);
     console.log('Engine ready');
+    assert.equal(await page.evaluate(()=>{
+      UI.xpToast('<b>Literal notification</b>','award');
+      const toast=document.querySelector('.xp-toast');
+      const valid=toast.textContent==='<b>Literal notification</b>'&&!toast.querySelector('b')&&toast.querySelector('svg').dataset.icon==='award';
+      toast.remove();return valid;
+    }),true,'Toast text must remain literal while its SVG is rendered');
     await page.waitForFunction(()=>Object.keys(WorldMaterials.textures).length===11,null,{timeout:60000});
     await page.waitForTimeout(400);
     await page.evaluate(()=>{renderer.dispose();renderer.forceContextLoss();});
     const tag=viewport.width+'x'+viewport.height;
     const capture=async name=>{
       console.log('Capture',tag,name);
+      const iconIssues=await page.evaluate(()=>Array.from(document.querySelectorAll('svg.ui-icon')).filter(svg=>{
+        return !UIArt.paths[svg.dataset.icon]||svg.getAttribute('viewBox')!=='0 0 24 24'||svg.getAttribute('aria-hidden')!=='true'||svg.getAttribute('focusable')!=='false';
+      }).map(svg=>svg.dataset.icon));
+      assert.deepEqual(iconIssues,[],'Shared SVG icons must resolve and stay decorative');
       await page.evaluate(async()=>{await Promise.race([new Promise(r=>setTimeout(r,3000)),Promise.all(Array.from(document.images).filter(i=>i.getBoundingClientRect().top<innerHeight).map(i=>i.decode().catch(()=>{})))]);});
       await page.screenshot({path:'tools/_shot_review_'+tag+'_'+name+'.png',timeout:30000,animations:'disabled'});
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
@@ -208,6 +218,8 @@ try {
     assert.equal(await page.evaluate(()=>Game.paused),false);
     await page.evaluate(()=>{Input.mode='FINE';UI.sync();UI.gauge(.65);});
     await capture('hud');
+    assert.equal(await page.locator('#btn-fine').getAttribute('aria-pressed'),'true');
+    assert.equal(await page.locator('#btn-orbit').getAttribute('aria-pressed'),'false');
     if(mobileReview){
       await page.evaluate(()=>UI.banner('Your break','Open table — sink a ball to claim a group'));
       const banner=await page.locator('#banner').boundingBox();

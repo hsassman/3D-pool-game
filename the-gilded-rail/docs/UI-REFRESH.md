@@ -131,3 +131,26 @@ notch/home-indicator insets, checks menu labels and controls fit, primary action
 stay reachable, inputs avoid small-text auto-zoom, and the shown turn banner
 stays in bounds. It rotates an open settings dialog in both directions. These
 are browser layout and interaction checks, not physical-device FPS measurements.
+
+## Shared iconography
+
+`UIArt.paths` owns 49 glyphs on a common 24px grid, rendered by `UIArt.icon()`.
+Settings use sliders, shot mode uses a cue and ball, orbit uses a circular arrow,
+and equipment categories use cloth, cue and timber symbols. Flame, glow and smoke
+have distinct effect markers. All use rounded 1.8px strokes and inherit the
+control's state color; tiny state badges receive a slightly stronger stroke.
+
+Locks, boss/achievement markers, completion checks, toast notifications and
+navigation arrows use the same SVG system. They do not depend on an OS emoji
+font. Icon-only controls retain accessible names; decorative SVGs are hidden from
+assistive technology and cannot receive focus. View controls expose pressed state,
+and the fullscreen icon changes on entry/exit. Toast messages remain literal text.
+
+```sh
+node tools/icon-review.mjs
+```
+
+The standalone review checks every glyph including stroke bounds at 1×, 1.25× and
+3× pixel ratios and exports ignored contact sheets under `tools/_shot_icons_*`.
+The application review also validates SVG metadata and resolved icon names across
+screens. No icon-font download or new rendering work is added to the 3D loop.
