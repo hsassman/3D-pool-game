@@ -4,6 +4,7 @@
 
 /* ================= MAIN LOOP ================= */
 const clock=new THREE.Clock();
+const frameAimDirection=new THREE.Vector3();
 function loop(){
   requestAnimationFrame(loop);
   const dt=Math.min(clock.getDelta(), 0.05);
@@ -12,7 +13,7 @@ function loop(){
 
   /* aim & cue presentation */
   if((Game.phase==='AIM'||Game.phase==='CHARGE') && (Input.mode==='SHOOT'||Input.mode==='FINE')){
-    const d=Input.aimDir();
+    const d=Input.aimDir(frameAimDirection);
     const g=(Profile.data && Profile.data.aimGuide) || 'full';
     if(g!=='off'){ updateAimGuide(d, g); aimGroup.visible=true; } else aimGroup.visible=false;
     placeCueStick(d, 0.07 + Input.power*0.30, Input.spin.x, Input.spin.y);

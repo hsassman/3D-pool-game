@@ -15,6 +15,15 @@ const ghostRing=new THREE.Mesh(new THREE.RingGeometry(BALL.R*0.82,BALL.R,28),
 ghostRing.rotation.x=-Math.PI/2;
 aimGroup.add(aimLine,objLine,defLine,ghostRing);
 aimGroup.visible=false;
+const guideEnd=new THREE.Vector3(),guideObject=new THREE.Vector3(),guideTangent=new THREE.Vector3();
+aimLineGeo.setAttribute('lineDistance',new THREE.BufferAttribute(new Float32Array(2),1).setUsage(THREE.DynamicDrawUsage));
+[aimLine,objLine,defLine].forEach(line=>{line.frustumCulled=false;line.geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);});
+function setGuideLine(line,ax,ay,az,bx,by,bz){
+  const position=line.geometry.attributes.position;
+  position.setXYZ(0,ax,ay,az);position.setXYZ(1,bx,by,bz);position.needsUpdate=true;
+  const distance=line.geometry.attributes.lineDistance;
+  if(distance){distance.setX(0,0);distance.setX(1,Math.hypot(bx-ax,by-ay,bz-az));distance.needsUpdate=true;}
+}
 
 function raySphere(o, d, c, r){
   const ox=o.x-c.x, oz=o.z-c.z;
@@ -35,9 +44,8 @@ function updateAimGuide(dir, mode){
   const lim=(v,bound,dv)=> dv>1e-6?((bound-v)/dv):(dv<-1e-6?((-bound-v)/dv):Infinity);
   const tc=Math.min(lim(o.x,W2-BALL.R,dir.x), lim(o.z,H2-BALL.R,dir.z));
   if(tc>0 && tc<tMin){ tMin=tc; hit=null; }
-  const end=o.clone().addScaledVector(dir,tMin);
-  aimLine.geometry.setFromPoints([o.clone().setY(BALL.R*0.6), end.clone().setY(BALL.R*0.6)]);
-  aimLine.computeLineDistances();
+  const end=guideEnd.copy(o).addScaledVector(dir,tMin),lineY=BALL.R*.6;
+  setGuideLine(aimLine,o.x,lineY,o.z,end.x,lineY,end.z);
   /* 'cue' mode shows only the cue line + the contact ghost - no post-contact
      prediction (the object & deflection lines), for a cleaner / harder game */
   if(mode==='cue'){
@@ -46,15 +54,16 @@ function updateAimGuide(dir, mode){
   }
   if(hit){
     ghostRing.visible=true; ghostRing.position.set(end.x, 0.002, end.z);
-    const od=hit.pos.clone().sub(end).setY(0).normalize();
+    const od=guideObject.copy(hit.pos).sub(end).setY(0).normalize();
     objLine.visible=true;
-    objLine.geometry.setFromPoints([hit.pos.clone().setY(BALL.R*0.6), hit.pos.clone().addScaledVector(od,0.42).setY(BALL.R*0.6)]);
+    setGuideLine(objLine,hit.pos.x,lineY,hit.pos.z,hit.pos.x+od.x*.42,lineY,hit.pos.z+od.z*.42);
     const dot=dir.dot(od);
-    const tang=dir.clone().sub(od.clone().multiplyScalar(dot));
+    const tang=guideTangent.copy(dir).addScaledVector(od,-dot);
     if(tang.lengthSq()>1e-6){
       tang.normalize();
       defLine.visible=true;
-      defLine.geometry.setFromPoints([end.clone().setY(BALL.R*0.6), end.clone().addScaledVector(tang,0.3*(1-Math.abs(dot))+0.05).setY(BALL.R*0.6)]);
+      const length=.3*(1-Math.abs(dot))+.05;
+      setGuideLine(defLine,end.x,lineY,end.z,end.x+tang.x*length,lineY,end.z+tang.z*length);
     } else defLine.visible=false;
   } else {
     ghostRing.visible=true; ghostRing.position.set(end.x,0.002,end.z);

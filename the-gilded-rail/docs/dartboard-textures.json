@@ -1,0 +1,33 @@
+{
+  "source": "dartboard_cabinet.glb",
+  "colorMaps": [
+    {
+      "material": "Dart_SET-1_4K",
+      "bytes": 1272048,
+      "sourceSha256": "17d908d4e9326714dd16ba6bbaecf93dde9b4131a92c558959e5b2b6b17ca2d3",
+      "shippedSha256": "cd0a8fc3c3703ca2f9ba347e68823e6584697fd31965e8445147bc43f20af09a",
+      "decodedPixelSha256": "9a4aac2999554d02d5a80cccac4c016c56668a54903470f4243d44c1f6c2b2be"
+    },
+    {
+      "material": "Dart_SET-3_1K",
+      "bytes": 760388,
+      "sourceSha256": "d956ab152c972a88c875643dbd4a6a5ab8921e5d432b4db2dc6c31afcc5a11bc",
+      "shippedSha256": "3368052668004bb3e233ee713c9958c10f9702c5efd8cbe336ca8fb815af103c",
+      "decodedPixelSha256": "7ab0c77f28169e29eabfb5c098742208054fdaaa345a60bfdbc88f62852c0e54"
+    },
+    {
+      "material": "Dart_SET-4_1K",
+      "bytes": 856852,
+      "sourceSha256": "5dc221a4b7edbcb3d3bdc45c4c1c02d0ceec47c2cd8ae041bf9897a96decd37f",
+      "shippedSha256": "88c330b08cbec643dcb14d81c5c8f24dbd52ff5b940b3f00f173357487711b49",
+      "decodedPixelSha256": "70cf9bdfd5f19bb330f32ecfb2fd7a3842cac89c9e73611dbc5fc7f7133f82ed"
+    },
+    {
+      "material": "Dart_SET-2_2K",
+      "bytes": 1271828,
+      "sourceSha256": "ef11ea1302b590a9810060ee0db8a4db3181d86e9661de24949a480fa7192cc0",
+      "shippedSha256": "92f34719f06db6ff3840098ba93a4fc044245ee1de5658fcb1d8925f490a6e19",
+      "decodedPixelSha256": "3a975e446f5b743d100c52cbe41016b57455f044de4bb9193fdd6678d9b72d86"
+    }
+  ]
+}

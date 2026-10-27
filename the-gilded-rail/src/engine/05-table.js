@@ -414,6 +414,7 @@ let windowRain=null;
 let glassRain=null;
 let ceilingFan=null;
 let clockHands=null;
+let windowExterior=null;
 
 /* ===== front-wall window (opposite the bar): a rainy night outside, moonlight in =====
    Exterior layers are stacked at increasing depth behind the glass (real 3D parallax as
@@ -482,9 +483,9 @@ function buildWindowWall(wz, RX, baseY, ceilY, wallMat){
     for(let i=0;i<170;i++){ x.fillStyle='rgba(205,222,255,'+(0.12+Math.random()*0.5)+')';
       x.fillRect(Math.random()*512, Math.random()*260, Math.random()<0.15?1.4:0.8, 0.8); } })();
   const skyTex=new THREE.CanvasTexture(skyCv); skyTex.encoding=THREE.sRGBEncoding;
-  const sky=new THREE.Mesh(new THREE.PlaneGeometry(22,12),
+  const sky=new THREE.Mesh(new THREE.PlaneGeometry(120,80),
     new THREE.MeshBasicMaterial({map:skyTex, fog:false}));
-  sky.position.set(xc, yc+0.8, wz+9.0); sky.rotation.y=faceRoom; scene.add(sky);
+  sky.position.set(xc, yc+0.8, wz+28); sky.rotation.y=faceRoom; scene.add(sky);
 
   /* a textured moon (soft maria + craters, limb-darkened), high enough to clear the
      rooftops; toneMapped off so it survives ACES and the bloom gives it a gentle glow */
@@ -502,28 +503,34 @@ function buildWindowWall(wz, RX, baseY, ceilY, wallMat){
   const moonTex=new THREE.CanvasTexture(moonCv);
   const moon=new THREE.Mesh(new THREE.CircleGeometry(0.185,40),
     new THREE.MeshBasicMaterial({map:moonTex, transparent:true, fog:false, toneMapped:false}));
-  moon.position.set(xc+0.32, yc+0.72, wz+7.5); moon.rotation.y=faceRoom; moon.renderOrder=1; scene.add(moon);
+  moon.position.set(xc-1.2,yc+1.2,wz+16);moon.scale.setScalar(2.2);moon.rotation.y=faceRoom;
+  moon.material.depthWrite=false;scene.add(moon);
 
   /* a city skyline canvas (buildings + lit windows); reused at two depths for layering.
      Buildings kept lower so the moon clears them. */
   const cityCanvas=(wide,tall,density,tint)=>{
     const cv=document.createElement('canvas'); cv.width=wide; cv.height=tall; const x=cv.getContext('2d');
     x.clearRect(0,0,wide,tall);
-    let px=-10; while(px<wide){ const w=18+Math.random()*46, h=tall*(0.18+Math.random()*0.36);
+    let seed=wide+tall*1924;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+    let px=-10; while(px<wide){ const w=30+random()*66, h=tall*(.38+random()*.44);
       x.fillStyle=tint; x.fillRect(px, tall-h, w, h);
+      x.fillRect(px-2,tall-h, w+4,4);
+      if(random()>.5)x.fillRect(px+w*.66,tall-h-12,7,14);
+      if(random()>.72){x.beginPath();x.moveTo(px,tall-h);x.lineTo(px+w*.5,tall-h-18);x.lineTo(px+w,tall-h);x.fill();}
       for(let wy=tall-h+8; wy<tall-6; wy+=13){ for(let wk=px+4; wk<px+w-4; wk+=10){
-        if(Math.random()<density){ x.fillStyle='rgba(255,205,135,0.85)'; x.fillRect(wk,wy,3,5); x.fillStyle=tint; } } }
+        if(random()<density){x.fillStyle='rgba(229,188,126,.75)';x.fillRect(wk,wy,3,6);x.fillStyle=tint;} } }
       px+=w+2; }
     const t=new THREE.CanvasTexture(cv); t.encoding=THREE.sRGBEncoding; return t;
   };
   /* far skyline (smaller, fainter, more distant) */
-  const far=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),
-    new THREE.MeshBasicMaterial({map:cityCanvas(512,150,0.10,'#070a12'), transparent:true, fog:false, depthWrite:false, opacity:0.85}));
-  far.position.set(xc, yc-0.4, wz+6.0); far.rotation.y=faceRoom; scene.add(far);
+  const far=new THREE.Mesh(new THREE.PlaneGeometry(22,5),
+    new THREE.MeshBasicMaterial({map:cityCanvas(1024,384,.18,'#172131'),transparent:true,fog:false,depthWrite:false}));
+  far.position.set(xc,yc-.25,wz+9);far.rotation.y=faceRoom;scene.add(far);
   /* nearer rooftops (bigger, darker, more lit windows) */
-  const near=new THREE.Mesh(new THREE.PlaneGeometry(12,3.2),
-    new THREE.MeshBasicMaterial({map:cityCanvas(512,160,0.20,'#04060b'), transparent:true, fog:false, depthWrite:false}));
-  near.position.set(xc, yc-0.7, wz+3.4); near.rotation.y=faceRoom; scene.add(near);
+  const near=new THREE.Mesh(new THREE.PlaneGeometry(12,3.8),
+    new THREE.MeshBasicMaterial({map:cityCanvas(1024,512,.27,'#080e18'),transparent:true,fog:false,depthWrite:false}));
+  near.position.set(xc,yc-.75,wz+2.2);near.rotation.y=faceRoom;scene.add(near);
+  windowExterior={near,far,moon,sky};
 
   /* light rain falling outside, between the glass and the rooftops */
   const rainCv=document.createElement('canvas'); rainCv.width=8; rainCv.height=32;
@@ -533,11 +540,12 @@ function buildWindowWall(wz, RX, baseY, ceilY, wallMat){
   const rainTex=new THREE.CanvasTexture(rainCv);
   const RN=140, rp=new Float32Array(RN*3);
   for(let i=0;i<RN;i++){ rp[i*3]=xc+(Math.random()-0.5)*4.0; rp[i*3+1]=yB+Math.random()*(yT-yB+1.6);
-    rp[i*3+2]=wz+0.4+Math.random()*2.6; }
+    rp[i*3+2]=wz+.25+Math.random()*1.45; }
   const rgeo=new THREE.BufferGeometry(); rgeo.setAttribute('position', new THREE.BufferAttribute(rp,3));
   windowRain=new THREE.Points(rgeo, new THREE.PointsMaterial({color:0xcfe0f5, size:0.06, map:rainTex,
     transparent:true, opacity:0.45, fog:false, depthWrite:false, blending:THREE.AdditiveBlending}));
   windowRain.userData={yTop:yT+1.6, yBot:yB-0.2};
+  windowRain.renderOrder=1;
   scene.add(windowRain);
 
   /* a VERY subtle cool wash through the window - no obvious light source, no shadows.

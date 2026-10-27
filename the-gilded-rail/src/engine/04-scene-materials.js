@@ -52,7 +52,7 @@ const Flashlight = {
     this.light.intensity += ((want?2.4:0) - this.light.intensity)*0.16;
     if(this.light.intensity<0.002 && !want) return;                      // fully off: skip placing
     camera.getWorldDirection(this._dir);
-    this.light.position.copy(camera.position).addScaledVector(this._dir, 0.5).add(new THREE.Vector3(0,-0.04,0));
+    this.light.position.copy(camera.position).addScaledVector(this._dir, 0.5);this.light.position.y-=.04;
   }
 };
 
@@ -94,7 +94,7 @@ const Graphics = {
     }});
     renderer.shadowMap.needsUpdate=true;
     renderer.setSize(innerWidth, innerHeight);
-    if(typeof PostFX!=='undefined') PostFX.setSize(innerWidth, innerHeight);   // FXAA's resolution uniform tracks pixel ratio
+    if(typeof PostFX!=='undefined'){PostFX.init(q);PostFX.setSize(innerWidth,innerHeight);}
     this.floorTone(q);
   },
   /* In HIGH quality lift the floor + rug base colour so the plank/mat textures

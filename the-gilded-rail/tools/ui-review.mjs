@@ -12,7 +12,7 @@ const errors=[],missing=[],results=[];
 const mobileReview=process.argv.includes('--mobile');
 const viewports=mobileReview?[{width:320,height:568},{width:360,height:640},{width:390,height:844},{width:667,height:375},{width:844,height:390}]:[{width:1440,height:1000},{width:1280,height:720},{width:390,height:844},{width:844,height:390}];
 try {
-  for(const viewport of viewports.filter(v=>(!process.argv.includes('--phone-only')||v.width===390)&&(!process.argv.includes('--compact-only')||v.width<900)&&(!process.argv.includes('--readme')||v.width===(mobileReview?390:1440)))){
+  for(const viewport of viewports.filter(v=>(!process.argv.includes('--phone-only')||v.width===390)&&(!process.argv.includes('--landscape-only')||v.width>v.height)&&(!process.argv.includes('--compact-only')||v.width<900)&&(!process.argv.includes('--readme')||v.width===(mobileReview?390:1440)))){
     const page=await browser.newPage({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900,reducedMotion:'reduce'});
     await page.addInitScript(()=>{
       const raf=window.requestAnimationFrame.bind(window);
@@ -252,6 +252,39 @@ try {
       return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
     });
     assert.equal(headerOverlap,false,'Scoreboard and player level must remain separate');
+    if(mobileReview){
+      await page.locator('#ta-toggle').click();
+      assert.equal(await page.locator('#ta-toggle').getAttribute('aria-expanded'),'true');
+      await page.locator('#btn-uitoggle').scrollIntoViewIfNeeded();
+      const lastAction=await page.locator('#btn-uitoggle').boundingBox();
+      assert.ok(lastAction&&lastAction.y>=0&&lastAction.y+lastAction.height<=viewport.height,'Every match-menu action must remain reachable');
+      await page.locator('#ta-toggle').click();
+      const original=await page.evaluate(()=>({active:balls.map(b=>b.active),calledShots:Profile.data.calledShots}));
+      await page.evaluate(()=>{
+        Profile.data.calledShots=true;Game.turn=0;Game.groups=['solid','stripe'];Game.phase='AIM';Input.mode='FINE';
+        balls.filter(b=>b.num>0&&b.num<8).forEach(b=>b.active=false);UI.sync();
+      });
+      await capture('called-pocket');
+      const pocketOverlap=await page.evaluate(()=>{
+        const a=document.getElementById('call-pockets').getBoundingClientRect();
+        return ['spin-wrap','power-wrap','mode-controls','stick'].filter(id=>{
+          const b=document.getElementById(id).getBoundingClientRect();return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+        });
+      });
+      assert.deepEqual(pocketOverlap,[],'Pocket choices must not cover shot instruments or joystick');
+      await page.locator('.callp').first().click();assert.equal(await page.evaluate(()=>Game.calledPocket),0);
+      await page.evaluate(original=>{
+        balls.forEach((b,i)=>b.active=original.active[i]);Profile.data.calledShots=original.calledShots;Game.calledPocket=null;
+        Game.phase='BIH';Input.mode='BIH';UI.sync();
+      },original);
+      await capture('ball-in-hand');
+      assert.equal(await page.evaluate(()=>{
+        const a=document.getElementById('bih-notice').getBoundingClientRect();return ['stick','look-stick','mode-controls'].some(id=>{
+          const b=document.getElementById(id).getBoundingClientRect();return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+        });
+      }),false,'Placement instructions must clear both joysticks');
+      await page.evaluate(()=>{Game.phase='AIM';Input.mode='FINE';UI.sync();});
+    }
     await page.evaluate(()=>{Profile.data.a11y=false;UI.applyA11y();Game.fire(Input.aimDir(),.3,0,0);UI.pauseMenu();});
     assert.equal(await page.evaluate(()=>Game.paused),true);
     assert.equal(await page.evaluate(()=>{const before=cueBall.pos.clone();physicsFrame(.1);return before.distanceTo(cueBall.pos);}),0);

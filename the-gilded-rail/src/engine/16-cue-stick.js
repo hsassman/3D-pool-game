@@ -61,19 +61,19 @@ const CueFX={
   }
 };
 
+const cueContact=new THREE.Vector3(),cueButtDirection=new THREE.Vector3(),cueAxis=new THREE.Vector3(0,-1,0);
 function placeCueStick(dir, pullback, sx, sy){
   // tip points at the chosen contact spot on the cue ball
   const right=_t1.set(-dir.z,0,dir.x).normalize();
-  const contact=new THREE.Vector3().copy(cueBall.pos)
+  const contact=cueContact.copy(cueBall.pos)
     .addScaledVector(dir,-BALL.R)
     .addScaledVector(right, sx*BALL.R*0.62)
     .addScaledVector(UP,    sy*BALL.R*0.62);
   // the stick body extends along local -Y from the tip; map that onto the
   // BUTT direction (opposite the shot), tilted up so the butt clears the rails
-  const buttDir=dir.clone().multiplyScalar(-1);
+  const buttDir=cueButtDirection.copy(dir).multiplyScalar(-1);
   buttDir.y=0.12; buttDir.normalize();
-  const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0), buttDir);
-  cueStick.quaternion.copy(q);
+  cueStick.quaternion.setFromUnitVectors(cueAxis,buttDir);
   // group origin (tip end) sits just behind the contact point, pulled back with power
   cueStick.position.copy(contact).addScaledVector(buttDir, 0.012+pullback);
 }

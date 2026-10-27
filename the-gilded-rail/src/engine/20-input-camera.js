@@ -218,7 +218,7 @@ const Input = {
   },
   killGhost(){ if(this.bihGhost) this.bihGhost.visible=false; },
 
-  aimDir(){ return new THREE.Vector3(Math.cos(this.aimYaw),0,Math.sin(this.aimYaw)); },
+  aimDir(out){ return (out||new THREE.Vector3()).set(Math.cos(this.aimYaw),0,Math.sin(this.aimYaw)); },
 
   /* ----- ball in hand placement ----- */
   feltPoint(e){
@@ -330,15 +330,16 @@ const Input = {
 
   updateCamera(dt){
     const lerp=1-Math.pow(0.0008,dt);
-    let tp=new THREE.Vector3(), tl=new THREE.Vector3(), tfov=50;
+    if(!this._cameraPosition){this._cameraPosition=new THREE.Vector3();this._cameraTarget=new THREE.Vector3();this._cameraDirection=new THREE.Vector3();}
+    const tp=this._cameraPosition,tl=this._cameraTarget;let tfov=50;
     if(Game.phase==='MENU'){
       const t=performance.now()*0.00012;
       tp.set(Math.cos(t)*3.1, 1.5+Math.sin(t*0.7)*0.18, Math.sin(t)*3.1);
       tl.set(0,0.05,0);
     } else if((this.mode==='SHOOT'||this.mode==='FINE') && (Game.phase==='AIM'||Game.phase==='CHARGE')){
-      const d=this.aimDir();
+      const d=this.aimDir(this._cameraDirection);
       const f=this.mode==='FINE'?0.45:1;
-      tp.copy(cueBall.pos).addScaledVector(d,-this.sDist*f).add(new THREE.Vector3(0,this.sH*f,0));
+      tp.copy(cueBall.pos).addScaledVector(d,-this.sDist*f);tp.y+=this.sH*f;
       tl.copy(cueBall.pos).addScaledVector(d, this.mode==='FINE'?0.35:1.1);
     } else {
       /* first-person free-cam: eye at walkPos, looking along (yaw, pitch), wheel-zoomed FOV */

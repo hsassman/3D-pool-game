@@ -69,5 +69,46 @@ base with deterministic numerals, minute marks and tapered moving hands. The
 rain image is sampled in linear space for opacity and relief, with slow scrolling,
 normal blending and visibility from inside the room.
 
+## Mobile adjustments and renderer lifecycle
+
+The existing layout and art direction are retained. Pocket choices sit above the
+spin instrument in portrait and landscape; ball-in-hand guidance clears both
+joysticks and says “tap” on touch screens. Pocket buttons expose full names and
+pressed state. Quick menus have a bounded scroll area, and narrow chat fields
+stay clear of the spin instrument. The mobile review includes these shot states.
+
+Aim lines update their existing position and dash-distance attributes instead of
+replacing them every frame. Cue placement, camera targets and the flashlight
+reuse vectors. One resize handler owns renderer sizing. Low quality defers
+creating the unused postprocessing pipeline; selecting medium/high creates it.
+Composer, depth, bloom and FXAA dimensions follow the selected pixel ratio.
+These changes preserve effects and geometry rather than reducing draw resolution.
+
+The window keeps the same rainy night setting. Detailed nearby roofs, a distant
+skyline and a farther moon use physical world-space separation for parallax.
+Opaque building pixels occlude the moon; transparent sky pixels reveal it.
+The two skyline canvases are built once, with no camera-driven texture uploads.
+The world review measures greater screen movement for roofs than skyline and moon,
+verifies 1,000 aim updates retain their buffers, and renders bloom plus depth of
+field after switching quality. This is not a physical-device FPS benchmark.
+
+## Original dartboard colors
+
+The four original 1024px color maps were restored from the supplied
+`dartboard_cabinet.glb`, preserving decoded RGBA pixels exactly. The packed mesh
+and existing optimized normal/roughness maps remain. The maps use lossless WebP
+through `EXT_texture_webp`, already supported by the vendored GLTF loader.
+The resulting model is 5,572,056 bytes versus the supplied 12,030,948-byte source;
+it is larger than the previous 512px export because the original color detail is
+restored. `docs/dartboard-textures.json` records source, shipped and pixel hashes.
+
+```sh
+python tools/restore-dart-textures.py '3D assets/dartboard_cabinet.glb'
+python tools/restore-dart-textures.py --check
+```
+
+This optional exporter requires the locally supplied source asset and Pillow;
+normal installation and deployment use the committed, self-contained GLB.
+
 Future exports use `python tools/optimize-world-art.py input.json`, where input is
 an array of `{ "name": "asset-name", "source": "path/to/generated.png" }` entries.

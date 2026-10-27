@@ -21,10 +21,12 @@ const PostFX = {
       && typeof THREE.RenderPass==='function'
       && typeof THREE.BokehPass==='function';
   },
-  init(){
+  init(quality){
+    if(this.composer||(quality||Profile.data.quality||'low')==='low')return;
     if(!this.available()) return;
     try{
       this.composer=new THREE.EffectComposer(renderer);
+      this._pixelRatio=renderer.getPixelRatio();
       this.composer.addPass(new THREE.RenderPass(scene, camera));
       this.bokeh=new THREE.BokehPass(scene, camera,
         {focus:0.75, aperture:0.16, maxblur:0.13, width:innerWidth, height:innerHeight});
@@ -33,6 +35,7 @@ const PostFX = {
          swap the composer would feed the original SHARP render to bloom and silently
          throw the DoF result away. Force the swap so the blur actually propagates. */
       this.bokeh.needsSwap=true;
+      this.bokeh.setSize=(w,h)=>{this.bokeh.renderTargetDepth.setSize(w,h);this.bokeh.uniforms.aspect.value=w/h;};
       this.composer.addPass(this.bokeh);
       if(typeof THREE.UnrealBloomPass==='function'){
         this.bloom=new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), 0.72, 0.55, 0.78);
@@ -48,9 +51,13 @@ const PostFX = {
     }catch(e){ this.composer=null; this._on=false; }
   },
   setSize(w,h){
-    if(this.composer) this.composer.setSize(w,h);
-    if(this.bloom) this.bloom.setSize(w,h);
-    if(this.fxaa){ const pr=renderer.getPixelRatio(); this.fxaa.material.uniforms['resolution'].value.set(1/(w*pr), 1/(h*pr)); }
+    if(!this.composer&&!this.fxaa)return;
+    const pr=renderer.getPixelRatio();
+    if(this.composer){
+      if(this._pixelRatio!==pr){this._pixelRatio=pr;this.composer.setPixelRatio(pr);}
+      this.composer.setSize(w,h);
+    }
+    if(this.fxaa)this.fxaa.material.uniforms['resolution'].value.set(1/(w*pr),1/(h*pr));
   },
   enabled(){ return this._on && !(typeof Profile!=='undefined' && Profile.data.quality==='low'); },
   /* depth-of-field level, controlled from Settings: 'off' | 'normal' | 'strong'

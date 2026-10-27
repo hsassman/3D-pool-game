@@ -183,6 +183,7 @@ const UI = {
     document.body.classList.toggle('charging', canShoot);   // moves #status clear of the meter
     this.$('spin-wrap').classList.toggle('on', m==='FINE'&&canShoot);
     this.$('bih-notice').classList.toggle('on', ph==='BIH');
+    if(ph==='BIH')this.$('bih-notice').textContent='Ball in hand — '+(document.body.classList.contains('touch')?'tap':'click')+' the felt to place the cue ball';
     this.refreshCallPockets();
     /* a brief, fading status cue in the bottom-right (replaces the old hint bar) */
     if(ph==='MENU'){ const el=this.$('status'); if(el){ el.classList.remove('show'); this._statusText=null; } }
@@ -557,10 +558,13 @@ const UI = {
   /* called-shots: a compact pocket picker shown only while the human is on the 8 */
   buildCallPockets(){
     const el=this.$('call-pockets'); if(!el) return;
+    el.setAttribute('role','group');el.setAttribute('aria-label','Call a pocket for the eight ball');
     el.innerHTML='';
     POCKETS.forEach((p,i)=>{
       const lab=(p.type==='side'?'S':'')+(p.pos.z<0?'T':'B')+(p.type!=='side'?(p.pos.x<0?'L':'R'):'');
       const b=document.createElement('button'); b.className='callp'; b.textContent=lab; b.dataset.pi=i;
+      const names={TL:'top left',TR:'top right',BL:'bottom left',BR:'bottom right',ST:'top side',SB:'bottom side'};
+      b.setAttribute('aria-label','Call '+names[lab]+' pocket');
       b.addEventListener('click',()=>{ Game.calledPocket=i; Sfx.play('ui',0.4); this.refreshCallPockets(); });
       el.appendChild(b);
     });
@@ -569,7 +573,8 @@ const UI = {
     const el=this.$('call-pockets'); if(!el) return;
     const show = Game.needCall && Game.needCall() && (Game.phase==='AIM'||Game.phase==='CHARGE');
     el.classList.toggle('on', !!show);
-    (el.children?Array.from(el.children):[]).forEach(b=>b.classList.toggle('sel', (+b.dataset.pi)===Game.calledPocket));
+    document.body.classList.toggle('calling-pocket',!!show);
+    (el.children?Array.from(el.children):[]).forEach(b=>{const selected=(+b.dataset.pi)===Game.calledPocket;b.classList.toggle('sel',selected);b.setAttribute('aria-pressed',selected);});
   },
 
   /* the career ladder - COVER VIEW: five league covers. Click one to open its

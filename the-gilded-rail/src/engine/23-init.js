@@ -31,11 +31,7 @@
   UI.refreshScoreboard();
   UI.gauge(0); UI.spinDot(); UI.sync();
   PostFX.init();
-  addEventListener('resize',()=>{
-    camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-    PostFX.setSize(innerWidth,innerHeight);
-  });
+  /* The renderer's resize handler in 04-scene-materials owns sizing. */
   loop();
   /* hold the curtain until EVERY asset has downloaded AND the room decor built from
      them has finished parsing/placing - otherwise the menu would appear "ready" while
